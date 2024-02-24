@@ -1,4 +1,4 @@
-package com.example.quickscanner.ui.notifications;
+package com.example.quickscanner.ui.announcements;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,21 +10,21 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.quickscanner.databinding.FragmentNotificationsBinding;
+import com.example.quickscanner.databinding.FragmentAnnouncementsBinding;
 
-public class NotificationsFragment extends Fragment {
+public class AnnouncementsFragment extends Fragment {
 
-    private FragmentNotificationsBinding binding;
+    private FragmentAnnouncementsBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        NotificationsViewModel notificationsViewModel =
-                new ViewModelProvider(this).get(NotificationsViewModel.class);
+        AnnouncementsViewModel notificationsViewModel =
+                new ViewModelProvider(this).get(AnnouncementsViewModel.class);
 
-        binding = FragmentNotificationsBinding.inflate(inflater, container, false);
+        binding = FragmentAnnouncementsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final TextView textView = binding.textNotifications;
+        final TextView textView = binding.textAnnouncements;
         notificationsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
