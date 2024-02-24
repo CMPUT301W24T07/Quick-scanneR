@@ -1,11 +1,16 @@
-package com.example.quickscanner.ui.home;
+package com.example.quickscanner.ui.event;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+
+
+
 public class EventViewModel extends ViewModel {
 
+
+    // TextView Data
     private final MutableLiveData<String> mText;
 
     public EventViewModel() {

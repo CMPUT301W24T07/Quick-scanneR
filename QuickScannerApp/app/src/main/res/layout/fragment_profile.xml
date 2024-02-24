@@ -3,11 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.scanner.ScannerFragment">
+    android:layout_height="match_parent">
+<!--    tools:context=".ui.profile.ProfileFragment"-->
+    >
 
     <TextView
-        android:id="@+id/text_qr_scanner"
+        android:id="@+id/text_profile"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
