@@ -12,20 +12,20 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.quickscanner.databinding.FragmentHomeBinding;
 
-public class HomeFragment extends Fragment {
+public class EventFragment extends Fragment {
 
     private FragmentHomeBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        HomeViewModel homeViewModel =
-                new ViewModelProvider(this).get(HomeViewModel.class);
+        EventViewModel eventViewModel =
+                new ViewModelProvider(this).get(EventViewModel.class);
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         final TextView textView = binding.textHome;
-        homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+        eventViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 
