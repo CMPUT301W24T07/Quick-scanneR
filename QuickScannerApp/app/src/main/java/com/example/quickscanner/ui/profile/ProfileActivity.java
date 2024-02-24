@@ -28,6 +28,8 @@ public class ProfileActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
 
+
+    // Handles The Top Bar menu clicks
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             // Handle the Back button press
