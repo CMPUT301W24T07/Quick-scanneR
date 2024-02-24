@@ -18,14 +18,14 @@ public class AnnouncementsFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        AnnouncementsViewModel notificationsViewModel =
+        AnnouncementsViewModel announcementsViewModel =
                 new ViewModelProvider(this).get(AnnouncementsViewModel.class);
 
         binding = FragmentAnnouncementsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         final TextView textView = binding.textAnnouncements;
-        notificationsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+        announcementsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 

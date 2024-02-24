@@ -7,13 +7,13 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.example.quickscanner.ui.home.HomeFragment"
+        android:name="com.example.quickscanner.ui.home.EventFragment"
         android:label="@string/title_events"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="com.example.quickscanner.ui.dashboard.DashboardFragment"
+        android:name="com.example.quickscanner.ui.scanner.ScannerFragment"
         android:label="@string/title_scanner"
         tools:layout="@layout/fragment_scan" />
 
