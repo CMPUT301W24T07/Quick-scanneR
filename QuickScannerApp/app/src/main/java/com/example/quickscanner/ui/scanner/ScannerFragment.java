@@ -24,8 +24,7 @@ public class ScannerFragment extends Fragment {
         binding = FragmentScanBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        //final TextView textView = binding.textDashboard;
-        final TextView textView = binding.qrScanner;
+        final TextView textView = binding.textQrScanner;
 
         scannerViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;

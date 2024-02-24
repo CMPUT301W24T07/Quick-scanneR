@@ -3,4 +3,11 @@
     <string name="title_events">Events</string>
     <string name="title_scanner">Scanner</string>
     <string name="title_announcements">Announcements</string>
+    <string name="profile">Profile</string>
+    <string name="button_profile_description">Opens up profile\n</string>
+    <string name="App_Name">Quick_scanneR</string>
+    <string name="notification">notification\n</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="my_events">my events</string>
+    <string name="settings">settings</string>
 </resources>

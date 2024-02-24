@@ -3,23 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_events">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.quickscanner.ui.home.EventFragment"
+        android:id="@+id/navigation_events"
+        android:name="com.example.quickscanner.ui.event.EventFragment"
         android:label="@string/title_events"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_events" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
+        android:id="@+id/navigation_scanner"
         android:name="com.example.quickscanner.ui.scanner.ScannerFragment"
         android:label="@string/title_scanner"
         tools:layout="@layout/fragment_scan" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
+        android:id="@+id/navigation_announcements"
         android:name="com.example.quickscanner.ui.announcements.AnnouncementsFragment"
         android:label="@string/title_announcements"
         tools:layout="@layout/fragment_announcements" />
+
+
+
 </navigation>
