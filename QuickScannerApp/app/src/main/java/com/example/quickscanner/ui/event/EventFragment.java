@@ -25,7 +25,6 @@ public class EventFragment extends Fragment {
     private FragmentEventsBinding binding;
 
     // EventList Data
-    @SuppressLint("StaticFieldLeak")
     ListView eventList;
     ArrayList<Event> eventDataList;
 
@@ -43,16 +42,8 @@ public class EventFragment extends Fragment {
         eventViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
 
-
     }
 
-//    public void onResume() {
-//        super.onResume();
-//        if (getActivity() != null) {
-//            // hide original action bar
-//            //Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).hide();
-//        }
-//    }
 
     @Override
     public void onDestroyView() {

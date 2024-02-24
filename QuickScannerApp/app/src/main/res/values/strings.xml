@@ -10,4 +10,5 @@
     <string name="edit_profile">Edit Profile</string>
     <string name="my_events">my events</string>
     <string name="settings">settings</string>
+    <string name="admin_page">Admin Page</string>
 </resources>
