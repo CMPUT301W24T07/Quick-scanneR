@@ -5,6 +5,10 @@ import android.view.Menu; // Import Menu class
 import android.view.MenuItem; // Import Menu class
 import android.widget.Toast;
 import android.content.Intent;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 
@@ -22,6 +26,16 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private AppBarConfiguration appBarConfiguration;
+
+    // Redirect to other activities
+    private final ActivityResultLauncher<Intent> startProfileActivityLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    new ActivityResultCallback<ActivityResult>() {
+                        @Override
+                        public void onActivityResult(ActivityResult result) {
+                            // Handle the result if needed
+                        }
+                    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         if (itemId == R.id.navigation_profile) {// Handle Edit Profile click
             // Handle Edit Profile click
             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-            startActivity(intent);
+            startProfileActivityLauncher.launch(intent);
             return true;
         } else if (itemId == R.id.navigation_myEvents) {// Handle Events click
             Toast.makeText(this, "Events Clicked", Toast.LENGTH_SHORT).show();
