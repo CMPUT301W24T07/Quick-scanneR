@@ -26,7 +26,10 @@
         android:id="@+id/navigation_settings"
         android:title="@string/settings"
         app:showAsAction="never" />
-
+    <item
+        android:id="@+id/navigation_adminPage"
+        android:title="@string/admin_page"
+        app:showAsAction="never" />
 
 
 

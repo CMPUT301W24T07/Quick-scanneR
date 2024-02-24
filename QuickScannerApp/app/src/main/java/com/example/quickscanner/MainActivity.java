@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import com.example.quickscanner.ui.profile.ProfileActivity;
+import com.example.quickscanner.ui.adminpage.AdminActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -72,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
             startProfileActivityLauncher.launch(intent);
             return true;
+        } else if (itemId == R.id.navigation_adminPage) {
+            Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+            startProfileActivityLauncher.launch(intent);
         } else if (itemId == R.id.navigation_myEvents) {// Handle Events click
             Toast.makeText(this, "Events Clicked", Toast.LENGTH_SHORT).show();
             return true;

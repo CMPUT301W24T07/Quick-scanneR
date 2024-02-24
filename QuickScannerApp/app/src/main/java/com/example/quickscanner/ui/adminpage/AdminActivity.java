@@ -1,0 +1,37 @@
+package com.example.quickscanner.ui.adminpage;
+
+import android.os.Bundle;
+import android.view.MenuItem;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.quickscanner.R;
+import com.example.quickscanner.databinding.FragmentScanBinding;
+
+import java.util.Objects;
+
+public class AdminActivity extends AppCompatActivity {
+
+    private FragmentScanBinding binding;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_admin);
+
+        // back button
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+    }
+
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            // Handle the Back button press
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+
+    }
+
+}
