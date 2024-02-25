@@ -11,4 +11,6 @@
     <string name="my_events">My Events</string>
     <string name="settings">Settings</string>
     <string name="admin_page">Admin Page</string>
+    <string name="CreateEventButton">Swipe to Create an Event</string>
+    <string name="AddEvent_text">This is the Add Event Page</string>
 </resources>
