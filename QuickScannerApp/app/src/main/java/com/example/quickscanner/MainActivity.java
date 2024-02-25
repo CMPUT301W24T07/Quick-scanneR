@@ -1,8 +1,11 @@
 package com.example.quickscanner;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.Menu; // Import Menu class
 import android.view.MenuItem; // Import Menu class
+import android.widget.ListView;
 import android.widget.Toast;
 import android.content.Intent;
 import androidx.activity.result.ActivityResult;
@@ -37,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
                             // Handle the result if needed
                         }
                     });
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +88,14 @@ public class MainActivity extends AppCompatActivity {
             // Handle Scanner click
             Toast.makeText(this, "Scanner Clicked", Toast.LENGTH_SHORT).show();
             return true;
+        } else if (itemId == R.id.menu_notifications) {
+            // Handle Notification Bell Click
+            Dialog dialog = new Dialog(MainActivity.this);
+            dialog.setContentView(R.layout.custom_notificationlist);
+            ListView lv = (ListView ) dialog.findViewById(R.id.lv);
+            dialog.setCancelable(true);
+            dialog.setTitle("ListView");
+            dialog.show();
         }
         return false;
     }

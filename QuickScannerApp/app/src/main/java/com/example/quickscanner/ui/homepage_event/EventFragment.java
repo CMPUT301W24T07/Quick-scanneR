@@ -77,9 +77,11 @@ public class EventFragment extends Fragment {
             // Handle Edit Profile click
             Intent intent = new Intent(requireContext(), AddEventActivity.class);
             startProfileActivityLauncher.launch(intent);
+            swipeButton.setCompleted(false, true);
         }
 
     });
+
 
     }
 
