@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private AppBarConfiguration appBarConfiguration;
 
-    // Redirect to other activities
+    // Function to handle redirecting to other activities
     private final ActivityResultLauncher<Intent> startProfileActivityLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     new ActivityResultCallback<ActivityResult>() {
@@ -54,16 +54,15 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupWithNavController(binding.navView, navController);
-
     }
 
-
-    //Top Bar menu
+    // Create the Top Bar menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_nav_menu, menu);
         return true;
     }
+    // Handle click events for the Top Bar Menu
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
@@ -74,23 +73,20 @@ public class MainActivity extends AppCompatActivity {
             startProfileActivityLauncher.launch(intent);
             return true;
         } else if (itemId == R.id.navigation_adminPage) {
+            // Handle Admin Page Click
             Intent intent = new Intent(MainActivity.this, AdminActivity.class);
             startProfileActivityLauncher.launch(intent);
-        } else if (itemId == R.id.navigation_myEvents) {// Handle Events click
+        } else if (itemId == R.id.navigation_myEvents) {
+            // Handle Events click
             Toast.makeText(this, "Events Clicked", Toast.LENGTH_SHORT).show();
             return true;
-        } else if (itemId == R.id.navigation_settings) {// Handle Scanner click
+        } else if (itemId == R.id.navigation_settings) {
+            // Handle Scanner click
             Toast.makeText(this, "Scanner Clicked", Toast.LENGTH_SHORT).show();
             return true;
         }
         return false;
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
-    }
 
 }

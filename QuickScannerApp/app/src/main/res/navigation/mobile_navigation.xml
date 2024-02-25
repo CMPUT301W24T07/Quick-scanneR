@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/navigation_events"
-        android:name="com.example.quickscanner.ui.event.EventFragment"
+        android:name="com.example.quickscanner.ui.homepage_event.EventFragment"
         android:label="@string/title_events"
         tools:layout="@layout/fragment_events" />
 

@@ -1,33 +1,28 @@
-package com.example.quickscanner.ui.profile;
+package com.example.quickscanner.ui.addevent;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-import android.content.Intent;
-import android.view.MenuItem; // Import Menu class
-import androidx.annotation.NonNull;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
+import android.view.MenuItem;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.quickscanner.R;
 import com.example.quickscanner.databinding.FragmentScanBinding;
-import com.example.quickscanner.ui.profile.ProfileViewModel;
 
 import java.util.Objects;
 
-public class ProfileActivity extends AppCompatActivity {
+public class AddEventActivity extends AppCompatActivity {
 
     private FragmentScanBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_addevent);
 
-        // backbutton
+        // back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
-
 
     // Handles The Top Bar menu clicks
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

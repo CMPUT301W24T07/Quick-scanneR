@@ -1,21 +1,16 @@
-package com.example.quickscanner.ui.event;
+package com.example.quickscanner.ui.addevent;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+public class AddEventViewModel extends ViewModel {
 
-
-
-public class EventViewModel extends ViewModel {
-
-
-    // TextView Data
     private final MutableLiveData<String> mText;
 
-    public EventViewModel() {
+    public AddEventViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is Event fragment");
+        mText.setValue("This is an Add Event activity");
     }
 
     public LiveData<String> getText() {
