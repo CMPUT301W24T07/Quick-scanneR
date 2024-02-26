@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.homepage_event.EventFragment">
+
+
+    <ListView
+        android:id="@+id/event_listview"
+        android:layout_width="412dp"
+        android:layout_height="292dp"
+        android:layout_marginTop="44dp"
+        android:contextClickable="true"
+        android:textAlignment="viewEnd"
+        android:textFilterEnabled="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+
+    <TextView
+        android:id="@+id/text_events"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/slider_createEvent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/event_listview" />
+
+    <com.ncorti.slidetoact.SlideToActView
+        android:id="@+id/slider_createEvent"
+        android:layout_width="279dp"
+        android:layout_height="51dp"
+        android:layout_marginBottom="164dp"
+        app:inner_color="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:outer_color="@color/blue"
+        app:slider_locked="false"
+        app:text="Slide to Create an Event"
+        app:text_size="16dp"
+        app:text_style="bold" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

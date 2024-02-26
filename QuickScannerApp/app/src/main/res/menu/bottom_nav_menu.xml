@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+
 
     <item
-        android:id="@+id/navigation_home"
+        android:id="@+id/navigation_events"
         android:icon="@drawable/ic_home_black_24dp"
-        android:title="@string/title_home" />
+        android:title="@string/title_events"
+        app:showAsAction="never"
+        />
 
     <item
-        android:id="@+id/navigation_dashboard"
-        android:icon="@drawable/ic_dashboard_black_24dp"
-        android:title="@string/title_dashboard" />
-
+        android:id="@+id/navigation_scanner"
+        android:icon="@drawable/ic_qr_code_scanner_24"
+        android:title="@string/title_scanner"
+        app:showAsAction="never" />
     <item
-        android:id="@+id/navigation_notifications"
+        android:id="@+id/navigation_announcements"
         android:icon="@drawable/ic_notifications_black_24dp"
-        android:title="@string/title_notifications" />
+        android:title="@string/title_announcements"
+        app:showAsAction="never" />
+
+
 
 </menu>
