@@ -25,11 +25,26 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.quickscanner.databinding.ActivityMainBinding;
+import com.google.firebase.Firebase;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private AppBarConfiguration appBarConfiguration;
+    private FirebaseFirestore db;
+    private FirebaseStorage idb;
+    private StorageReference storeRef;
+    private CollectionReference profileRef;
+    private CollectionReference eventsRef;
+    private CollectionReference userEventsRef;
+    private CollectionReference imagesRef;
+
+
 
     // Function to handle redirecting to other activities
     private final ActivityResultLauncher<Intent> startProfileActivityLauncher =
@@ -48,6 +63,12 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        db = FirebaseFirestore.getInstance();
+        idb = FirebaseStorage.getInstance();
+        profileRef = db.collection("Profiles");
+        eventsRef = db.collection("Events");
+        userEventsRef = db.collection("User Events");
+        imagesRef = db.collection("Images");
 
         // Create bottom menu
         BottomNavigationView navView = findViewById(R.id.nav_view);
