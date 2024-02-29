@@ -7,11 +7,13 @@ public class Event implements Parcelable {
     public String name;
     public String description;
     public String imagePath;
+    public User organizer;
 
-    public Event(String name, String description, String imagePath) {
+    public Event(String name, String description, String imagePath, User organizer) {
         this.name = name;
         this.description = description;
         this.imagePath = imagePath;
+        this.organizer = organizer;
     }
 
     // Parcelable implementation

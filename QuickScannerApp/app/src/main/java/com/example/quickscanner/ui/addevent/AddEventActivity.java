@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.databinding.FragmentScanBinding;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +104,7 @@ public class AddEventActivity extends AppCompatActivity {
 
         // Create Event Button
         Button createEventInsideBtn = findViewById(R.id.CreateEventInsideBtn);
+        User testUser = new User();
         createEventInsideBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -111,7 +113,7 @@ public class AddEventActivity extends AppCompatActivity {
                         editedEventDescription != null && !editedEventDescription.isEmpty()) {
 
                     // Create an Event object with the edited values
-                    Event newEvent = new Event(editedEventName, editedEventDescription, editedImagePath);
+                    Event newEvent = new Event(editedEventName, editedEventDescription, editedImagePath, testUser);
 
                     // Add the event to the list and update the ArrayAdapter
                     eventDataList.add(newEvent);
