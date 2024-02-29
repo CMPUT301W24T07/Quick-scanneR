@@ -14,25 +14,22 @@ import com.example.quickscanner.databinding.FragmentScanBinding;
 
 public class ScannerFragment extends Fragment {
 
+
     private FragmentScanBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        ScannerViewModel scannerViewModel =
-                new ViewModelProvider(this).get(ScannerViewModel.class);
 
+        // inflate fragment to MainActivity
         binding = FragmentScanBinding.inflate(inflater, container, false);
+
+        // idk why we return view
         View root = binding.getRoot();
-
-        final TextView textView = binding.textQrScanner;
-
-        scannerViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null;
     }
 }
