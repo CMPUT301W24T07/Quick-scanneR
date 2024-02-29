@@ -14,4 +14,5 @@
     <string name="CreateEventButton">Swipe to Create an Event</string>
     <string name="AddEvent_text">This is the Add Event Page</string>
     <string name="notifications">Notifications:</string>
+    <string name="CreateEventInsideBtn">Create Event</string>
 </resources>

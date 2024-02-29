@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="green">#8BC34A</color>
     <color name="blue">#2196F3</color>
+    <color name="beige">#E2D3CD</color>
+    <color name="yellow_beige">#D0C8B6</color>
 </resources>
