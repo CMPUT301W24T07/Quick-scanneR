@@ -10,14 +10,11 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.quickscanner.R;
-import com.example.quickscanner.databinding.FragmentScanBinding;
-import com.example.quickscanner.ui.profile.ProfileViewModel;
 
 import java.util.Objects;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private FragmentScanBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -29,6 +29,7 @@
         android:layout_marginEnd="8dp"
         android:textAlignment="center"
         android:textSize="20sp"
+        android:text="This is the Events Page"
         app:layout_constraintBottom_toTopOf="@+id/slider_createEvent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"

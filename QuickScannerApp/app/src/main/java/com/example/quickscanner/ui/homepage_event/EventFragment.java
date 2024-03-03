@@ -41,26 +41,14 @@ public class EventFragment extends Fragment {
     // button
     SlideToActView swipeButton;
 
-    // Function to handle redirecting to other activities
-    private final ActivityResultLauncher<Intent> startProfileActivityLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    new ActivityResultCallback<ActivityResult>() {
-                        @Override
-                        public void onActivityResult(ActivityResult result) {
-                            // Handle the result if needed
-                        }
-                    });
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        EventViewModel eventViewModel =
-                new ViewModelProvider(this).get(EventViewModel.class);
 
+        // inflate fragment to MainActivity
         binding = FragmentEventsBinding.inflate(inflater, container, false);
+        // idk why we return view
         View root = binding.getRoot();
-
-        final TextView textView = binding.textEvents;
-        eventViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 
@@ -81,10 +69,10 @@ public class EventFragment extends Fragment {
         swipeButton.setOnSlideCompleteListener(new SlideToActView.OnSlideCompleteListener() {
             @Override
             public void onSlideComplete(@NonNull SlideToActView slideToActView) {
-                // Handle Edit Profile click
+                // start new create event activity
                 Intent intent = new Intent(requireContext(), AddEventActivity.class);
                 intent.putExtra("eventAdapter", eventDataList);
-                startActivityForResult(intent, 1);
+                startActivity(intent);
                 swipeButton.setCompleted(false, true);
             }
 
