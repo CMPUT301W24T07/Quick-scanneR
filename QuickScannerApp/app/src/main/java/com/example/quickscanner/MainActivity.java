@@ -77,41 +77,6 @@ public class MainActivity extends AppCompatActivity {
         // Create bottom menu for MainActivity.
         createBottomMenu();
 
-        // FireStore Listener for Events
-        userEventsRef = db.collection("User Events");
-        eventsListView = findViewById(R.id.event_listview);
-        db.collection("Events")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    // listens to changes in db
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                        // error check
-                        if (error != null) {
-                            Log.w(TAG, "Listen failed.", error);
-                            return;
-                        }
-
-                        // refresh list of events
-                        eventsDataList.clear(); // clear old data
-                        // adds every event from db to the list of events
-                        for (QueryDocumentSnapshot doc : value) {
-                            assert value != null;
-                            String name = doc.getId(); // event name
-                            String description = doc.getString("Description");
-                            String eventPoster = doc.getString("Event Poster"); // event Image Path
-                            String location = doc.getString("Location");
-                            String organizers = doc.getString("Organizers");
-                            // TODO temporary code until we resolve firebase
-                            // String time = doc.getString("Time");
-                            // firebaseGetOrganizer(organizers);
-                            // eventsDataList.add(new Event(name, description, eventPoster, organizers, location));
-
-                        }
-                        Log.d(TAG, "Current Event: ");// + events); // logs list of events
-                    }
-                });
-
-
     }
 
 
@@ -161,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (itemId == R.id.navigation_settings) {
             // Handle Scanner click
-            Toast.makeText(this, "Scanner Clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Settings Clicked", Toast.LENGTH_SHORT).show();
             return true;
         } else if (itemId == R.id.menu_notifications) {
             // Handle Notification Bell Click
