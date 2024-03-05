@@ -62,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Event> eventsDataList;
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
