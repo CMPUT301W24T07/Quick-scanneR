@@ -36,7 +36,6 @@ import com.example.quickscanner.databinding.ActivityMainBinding;
 import com.google.firebase.Firebase;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -96,25 +95,21 @@ public class MainActivity extends AppCompatActivity {
                         eventsDataList.clear(); // clear old data
                         // adds every event from db to the list of events
                         for (QueryDocumentSnapshot doc : value) {
-                            if (doc.getId() != null) {
-                                String name = doc.getId(); // event name
-                                String description = doc.getString("Description");
-                                String eventPoster = doc.getString("Event Poster"); // event Image Path
-                                String location = doc.getString("Location");
-                                String organizers = doc.getString("Organizers");
-                                // TODO String time = doc.getString("Time");
-                                eventsDataList.add(Event(name, description, imagePath));
-                            }
+                            assert value != null;
+                            String name = doc.getId(); // event name
+                            String description = doc.getString("Description");
+                            String eventPoster = doc.getString("Event Poster"); // event Image Path
+                            String location = doc.getString("Location");
+                            String organizers = doc.getString("Organizers");
+                            // TODO temporary code until we resolve firebase
+                            // String time = doc.getString("Time");
+                            // firebaseGetOrganizer(organizers);
+                            // eventsDataList.add(new Event(name, description, eventPoster, organizers, location));
+
                         }
-                        Log.d(TAG, "Current Event: " + events); // logs list of events
+                        Log.d(TAG, "Current Event: ");// + events); // logs list of events
                     }
                 });
-
-
-
-
-
-
 
 
     }
