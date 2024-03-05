@@ -27,29 +27,28 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:text="This is the Events Page"
         android:textAlignment="center"
         android:textSize="20sp"
-        android:text="This is the Events Page"
-        app:layout_constraintBottom_toTopOf="@+id/slider_createEvent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/event_listview" />
 
-    <com.ncorti.slidetoact.SlideToActView
-        android:id="@+id/slider_createEvent"
-        android:layout_width="279dp"
-        android:layout_height="51dp"
-        android:layout_marginBottom="164dp"
-        app:inner_color="@color/white"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fob_createEvent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="84dp"
+        android:clickable="true"
+        android:src="@drawable/baseline_add_24"
+        app:backgroundTint="@color/purple_200"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.923"
         app:layout_constraintStart_toStartOf="parent"
-        app:outer_color="@color/blue"
-        app:slider_locked="false"
-        app:text="Slide to Create an Event"
-        app:text_size="16dp"
-        app:text_style="bold" />
+        app:layout_constraintTop_toBottomOf="@+id/text_events"
+        app:layout_constraintVertical_bias="0.657" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
