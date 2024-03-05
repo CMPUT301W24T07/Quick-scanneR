@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private CollectionReference eventsRef;
     private ListView eventsListView;
     private ArrayList<Event> eventsDataList;
+    private FirebaseController fbController;
 
 
     @Override
@@ -68,14 +69,10 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        db = FirebaseFirestore.getInstance();
-        idb = FirebaseStorage.getInstance();
-        profileRef = db.collection("Profiles");
-        eventsRef = db.collection("Events");
-        imagesRef = db.collection("Images");
-
+        fbController = new FirebaseController();
         // Create bottom menu for MainActivity.
         createBottomMenu();
+
 
     }
 
