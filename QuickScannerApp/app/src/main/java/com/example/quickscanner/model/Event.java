@@ -2,28 +2,27 @@ package com.example.quickscanner.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import java.io.Serializable;
 
-import java.util.ArrayList;
-
-public class Event implements Parcelable
-{
+public class Event implements Parcelable {
     public String name;
     public String description;
     public String imagePath;
-    private String organizerUid;
-    private String eventId;
-    private ArrayList<Event> checkedInEvents;
-    private ArrayList<Event> SignedUpEvents;
+    public User organizer;
 
-    public Event(String name, String description, String imagePath, String organizerUid, String eventId, ArrayList<Event> checkedInEvents, ArrayList<Event> SignedUpEvents) {
+    // TODO we have these attributes in firestore
+    public String time;
+    public String location;
+
+
+    public Event(String name, String description, String imagePath, User organizer) {
         this.name = name;
         this.description = description;
         this.imagePath = imagePath;
-        this.organizerUid = organizerUid;
-        this.eventId = eventId;
-        this.checkedInEvents = checkedInEvents;
-        this.SignedUpEvents = SignedUpEvents;
+        this.organizer = organizer;
+    }
 
+    public Event() {
     }
 
     // Parcelable implementation
@@ -50,10 +49,6 @@ public class Event implements Parcelable
         return 0;
     }
 
-    public Event()
-    {
-    }
-
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);
@@ -61,73 +56,20 @@ public class Event implements Parcelable
         dest.writeString(imagePath);
     }
 
-    public String getName()
-    {
-        return name;
-    }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+    // Getters
+    public String getName() {return name;}
+    public String getDescription() {return description;}
+    public String getImagePath() {return imagePath;}
+    public User getOrganizer() {return organizer;}
+    public String getTime() {return time;}
+    public String getLocation() {return location;}
 
-    public String getDescription()
-    {
-        return description;
-    }
-
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
-
-    public String getImagePath()
-    {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath)
-    {
-        this.imagePath = imagePath;
-    }
-
-    public String getOrganizerUid()
-    {
-        return organizerUid;
-    }
-
-    public void setOrganizerUid(String organizerUid)
-    {
-        this.organizerUid = organizerUid;
-    }
-
-    public String getEventId()
-    {
-        return eventId;
-    }
-
-    public void setEventId(String eventId)
-    {
-        this.eventId = eventId;
-    }
-
-    public ArrayList<Event> getCheckedInEvents()
-    {
-        return checkedInEvents;
-    }
-
-    public void setCheckedInEvents(ArrayList<Event> checkedInEvents)
-    {
-        this.checkedInEvents = checkedInEvents;
-    }
-
-    public ArrayList<Event> getSignedUpEvents()
-    {
-        return SignedUpEvents;
-    }
-
-    public void setSignedUpEvents(ArrayList<Event> signedUpEvents)
-    {
-        SignedUpEvents = signedUpEvents;
-    }
+    // Setters
+    public void setName(String name) {this.name = name;}
+    public void setDescription(String description) {this.description = description;}
+    public void setImagePath(String imagePath) {this.imagePath = imagePath;}
+    public void setOrganizer(User organizer) {this.organizer = organizer;}
+    public void setTime(String time) {this.time = time;}
+    public void setLocation(String location) {this.location = location;}
 }

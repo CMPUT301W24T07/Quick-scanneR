@@ -182,33 +182,33 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
-    public void testNewEvent(User user) {
-        // Creates a new Event object
-        Event event = new Event();
-
-        // Sets the organizerUID of the event to the UID of the user
-        event.setOrganizerUid(user.getUid());
-
-        // Adds the event to Firestore
-        fbController.addEvent(event).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-            @Override
-            public void onSuccess(DocumentReference documentReference) {
-                // Gets the ID of the newly created document
-                String docId = documentReference.getId();
-
-                // Updates the document in Firestore to include the ID as a field
-                fbController.updateEvent(docId, event);
-
-                // Logs the ID of the newly created event
-                Log.d(TAG, "Event added with ID: " + docId);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                // Logs an error if the document could not be added
-                // This is important for understanding and resolving failures
-                Log.w(TAG, "Error adding document", e);
-            }
-        });
-    }
+//    public void testNewEvent(User user) {
+//        // Creates a new Event object
+//        Event event = new Event();
+//
+//        // Sets the organizerUID of the event to the UID of the user
+//        event.setOrganizerUid(user.getUid());
+//
+//        // Adds the event to Firestore
+//        fbController.addEvent(event).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//            @Override
+//            public void onSuccess(DocumentReference documentReference) {
+//                // Gets the ID of the newly created document
+//                String docId = documentReference.getId();
+//
+//                // Updates the document in Firestore to include the ID as a field
+//                fbController.updateEvent(docId, event);
+//
+//                // Logs the ID of the newly created event
+//                Log.d(TAG, "Event added with ID: " + docId);
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                // Logs an error if the document could not be added
+//                // This is important for understanding and resolving failures
+//                Log.w(TAG, "Error adding document", e);
+//            }
+//        });
+//    }
 }
