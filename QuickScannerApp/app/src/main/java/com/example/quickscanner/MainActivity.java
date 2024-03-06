@@ -71,12 +71,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e("Testing", "in onCreate");
+        Toast.makeText(this, "First sign in detected", Toast.LENGTH_SHORT).show();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         fbController = new FirebaseController();
         // Check user sign-in status
-        if (!fbController.isFirstSignIn()) {
+        Log.e("Testing", "outside the if statement");
+        if (fbController.isFirstSignIn()) {
+            Log.e("Testing", "Entered the if statement");
             //creates an anonymous user if not signed in
             createUserAndSignIn();
         }
@@ -147,8 +151,6 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
     public void createUserAndSignIn() {
-        // Checks first sign-in
-        if (fbController.isFirstSignIn()) {
             // Creates anonymous user
             fbController.createAnonymousUser().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                 @Override
@@ -167,20 +169,19 @@ public class MainActivity extends AppCompatActivity {
                                 // If user addition is successful
                                 if (task.isSuccessful()) {
                                     // Logs success
-                                    Log.d(TAG, "User added successfully");
+                                    Log.d("Testing", "User added successfully");
                                 } else {
                                     // Logs error
-                                    Log.w(TAG, "Error adding user", task.getException());
+                                    Log.w("Testing", "Error adding user", task.getException());
                                 }
                             }
                         });
                     } else {
                         // Logs error
-                        Log.w(TAG, "Error creating anonymous user", task.getException());
+                        Log.w("Testing", "Error creating anonymous user", task.getException());
                     }
                 }
             });
-        }
     }
 //    public void testNewEvent(User user) {
 //        // Creates a new Event object

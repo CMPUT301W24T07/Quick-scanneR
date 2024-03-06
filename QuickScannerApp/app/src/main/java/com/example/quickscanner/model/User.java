@@ -5,22 +5,21 @@ import java.util.ArrayList;
 public class User {
     private Profile userProfile;
     private Boolean isAdmin;
-    private ArrayList<Event> organizedEvents;
-    private ArrayList<Event> attendingEvents;
+    private ArrayList<String> organizedEvents;
+    private ArrayList<String> attendingEvents;
     private String Uid;
-
     public User(String name, String email, String website, String imageUrl) {
         userProfile = new Profile(name, email, website, imageUrl);
         isAdmin = false;
-        organizedEvents = new ArrayList<Event>();
-        attendingEvents = new ArrayList<Event>();
+        organizedEvents = new ArrayList<String>();
+        attendingEvents = new ArrayList<String>();
     }
 
     public User() {
         userProfile = new Profile();
         isAdmin = false;
-        organizedEvents = new ArrayList<Event>();
-        attendingEvents = new ArrayList<Event>();
+        organizedEvents = new ArrayList<String>();
+        attendingEvents = new ArrayList<String>();
     }
 
     public void setAdmin() {
@@ -47,22 +46,22 @@ public class User {
         isAdmin = admin;
     }
 
-    public ArrayList<Event> getOrganizedEvents()
+    public ArrayList<String> getOrganizedEvents()
     {
         return organizedEvents;
     }
 
-    public void setOrganizedEvents(ArrayList<Event> organizedEvents)
+    public void setOrganizedEvents(ArrayList<String> organizedEvents)
     {
         this.organizedEvents = organizedEvents;
     }
 
-    public ArrayList<Event> getAttendingEvents()
+    public ArrayList<String> getAttendingEvents()
     {
         return attendingEvents;
     }
 
-    public void setAttendingEvents(ArrayList<Event> attendingEvents)
+    public void setAttendingEvents(ArrayList<String> attendingEvents)
     {
         this.attendingEvents = attendingEvents;
     }
