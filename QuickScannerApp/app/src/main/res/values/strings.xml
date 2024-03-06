@@ -15,4 +15,9 @@
     <string name="AddEvent_text">This is the Add Event Page</string>
     <string name="notifications">Notifications:</string>
     <string name="CreateEventInsideBtn">Create Event</string>
+    <string name="name">Name</string>
+    <string name="description">Description</string>
+    <string name="location">Location</string>
+    <string name="organizers">Organizers</string>
+    <string name="time">Time</string>
 </resources>

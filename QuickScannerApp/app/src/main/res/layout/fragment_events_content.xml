@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/EventFragment_Name_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="14dp"
+        android:text="@string/name"
+        android:textSize="14sp">
+    </TextView>
+
+    <TextView
+        android:id="@+id/EventFragment_Description_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_marginStart="20dp"
+        android:text="@string/description">
+    </TextView>
+
+    <TextView
+        android:id="@+id/EventFragment_Location_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_marginStart="20dp"
+        android:text="@string/location">
+    </TextView>
+
+    <TextView
+        android:id="@+id/EventFragment_Organizers_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_marginStart="20dp"
+        android:text="@string/organizers">
+    </TextView>
+
+    <TextView
+        android:id="@+id/EventFragment_Time_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:layout_marginStart="20dp"
+        android:text="@string/time">
+    </TextView>
+
+</LinearLayout>
