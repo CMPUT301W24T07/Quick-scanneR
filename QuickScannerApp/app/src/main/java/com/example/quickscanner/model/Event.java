@@ -3,17 +3,21 @@ package com.example.quickscanner.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Event implements Parcelable {
+import java.util.ArrayList;
+
+public class Event {
     public String name;
     public String description;
     public String imagePath;
-    public User organizer;
+    public User organizerUid;
+    private ArrayList<Event> checkedInEvents;
+    private ArrayList<Event> SignedUpEvents;
 
-    public Event(String name, String description, String imagePath, User organizer) {
+    public Event(String name, String description, String imagePath, User organizerUid) {
         this.name = name;
         this.description = description;
         this.imagePath = imagePath;
-        this.organizer = organizer;
+        this.organizerUid = organizerUid;
     }
 
     // Parcelable implementation

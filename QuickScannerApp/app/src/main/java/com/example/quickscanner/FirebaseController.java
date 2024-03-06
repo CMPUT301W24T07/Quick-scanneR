@@ -3,8 +3,11 @@ package com.example.quickscanner;
 import android.net.Uri;
 
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.Image;
 import com.example.quickscanner.model.User;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -18,6 +21,7 @@ import com.google.firebase.storage.UploadTask;
 public class FirebaseController {
     private FirebaseFirestore db;
     private FirebaseStorage idb;
+    private FirebaseAuth auth;
     private CollectionReference usersRef;
     private CollectionReference imagesRef;
     private CollectionReference eventsRef;
@@ -25,26 +29,33 @@ public class FirebaseController {
     public FirebaseController() {
         db = FirebaseFirestore.getInstance();
         idb = FirebaseStorage.getInstance();
+         auth = FirebaseAuth.getInstance();
         usersRef = db.collection("users");
         imagesRef = db.collection("images");
         eventsRef = db.collection("events");
     }
-    //used Tasks here as it allows us to put custom listeners on them, so we can
-    //adjust what happens when the task is complete if it fails or not.
-    //if we dont think we will need anything special i can change it from tasks.
+    //sign in operation
+    // Checks if it's the first sign in
+    public boolean isFirstSignIn() {
+        return auth.getCurrentUser() == null;
+    }
+
+    // Creates anonymous user
+    public Task<AuthResult> createAnonymousUser() {
+        return auth.signInAnonymously();
+    }
 
     // User operations
 
     // Adds new user to Firestore
     public Task<DocumentReference> addUser(User user) {
-
         return usersRef.add(user);
     }
 
     // Updates existing user in Firestore
-    public Task<Void> updateUser(String id, User user) {
+    public Task<Void> updateUser(User user) {
 
-        return usersRef.document(id).set(user);
+        return usersRef.document(user.getUid()).set(user);
     }
 
     // Deletes user from Firestore

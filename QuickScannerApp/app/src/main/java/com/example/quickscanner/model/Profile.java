@@ -14,7 +14,10 @@ public class Profile {
     }
 
     public Profile() {
-        // does auto generation stuff and sets is
+        this.name = "";
+        this.email = "";
+        this.website = "";
+        this.imageUrl = "";
     }
 
     public String getName() {

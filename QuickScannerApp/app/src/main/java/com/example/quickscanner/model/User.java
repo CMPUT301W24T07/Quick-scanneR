@@ -7,6 +7,7 @@ public class User {
     private Boolean isAdmin;
     private ArrayList<Event> organizedEvents;
     private ArrayList<Event> attendingEvents;
+    private String Uid;
 
     public User(String name, String email, String website, String imageUrl) {
         userProfile = new Profile(name, email, website, imageUrl);
@@ -24,5 +25,10 @@ public class User {
 
     public void setAdmin() {
         isAdmin = true;
+    }
+
+    public String getUid()
+    {
+        return Uid;
     }
 }

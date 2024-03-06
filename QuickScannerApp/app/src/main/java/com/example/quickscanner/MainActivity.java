@@ -34,6 +34,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.quickscanner.databinding.ActivityMainBinding;
 import com.google.firebase.Firebase;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.CollectionReference;
@@ -70,6 +71,22 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         fbController = new FirebaseController();
+        // Check user sign-in status
+        if (!fbController.isFirstSignIn()) {
+            // Create anonymous user if not signed in
+            fbController.createAnonymousUser().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "Anonymous sign in :success");
+                    } else {
+                        Log.w(TAG, "Anonymous sign in", task.getException());
+                        Toast.makeText(MainActivity.this, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
         // Create bottom menu for MainActivity.
         createBottomMenu();
 
