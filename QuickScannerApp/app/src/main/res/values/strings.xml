@@ -20,4 +20,6 @@
     <string name="location">Location</string>
     <string name="organizers">Organizers</string>
     <string name="time">Time</string>
+    <string name="activity_viewevent_textview">The event that was clicked is passed as a parameter to this activity. The Event Name is: </string>
+    <string name="LoremIpsum">"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi dolor leo, fringilla ut ipsum quis, aliquam molestie justo. Nullam at lacus elit. Praesent molestie arcu non fermentum fringilla. Nunc quis orci sed ipsum placerat iaculis in pharetra sapien. Morbi porta dictum nisi, id molestie enim semper ut. In hac habitasse platea dictumst. Ut finibus vitae quam nec tempor. Donec eu vehicula sem. Vivamus sit amet sodales enim. "</string>
 </resources>

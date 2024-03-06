@@ -6,18 +6,32 @@
     android:layout_height="match_parent"
     tools:context=".ui.announcements.AnnouncementsFragment">
 
+    <ListView
+        android:id="@+id/announcement_listview"
+        android:layout_width="406dp"
+        android:layout_height="337dp"
+        android:contextClickable="true"
+        android:textAlignment="viewEnd"
+        android:textFilterEnabled="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.4"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
     <TextView
         android:id="@+id/text_announcements"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:text="This is the Announcements Page"
         android:textAlignment="center"
         android:textSize="20sp"
-        android:text="This is the Announcements Page"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/announcement_listview"
+        app:layout_constraintVertical_bias="0.623" />
 </androidx.constraintlayout.widget.ConstraintLayout>

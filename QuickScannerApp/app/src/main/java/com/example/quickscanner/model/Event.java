@@ -2,6 +2,7 @@ package com.example.quickscanner.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import java.io.Serializable;
 
 public class Event implements Parcelable {
     public String name;

@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -20,10 +21,9 @@ import com.example.quickscanner.databinding.FragmentEventsBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
+import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -89,7 +89,7 @@ public class EventFragment extends Fragment {
         // Set the adapter to the ListView
         eventListView.setAdapter(eventAdapter);
 
-        testData(); // some test data TODO: delete before submitting
+        //addTestData(); // some test data TODO: delete before submitting
 
 
         // create listener for updates to the events list.
@@ -114,7 +114,7 @@ public class EventFragment extends Fragment {
 
 
 
-        // fob button (add event)
+        /*     Fob Button (add event) Click       */
         fobButton = view.findViewById(R.id.fob_createEvent);
         fobButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,7 +126,26 @@ public class EventFragment extends Fragment {
             }
 
         });
+
+        /*      Event ListView Click       */
+        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            // get the clicked event
+            Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
+            // move to new activity and pass the clicked event's unique ID.
+            Intent intent = new Intent(getContext(), ViewEventActivity.class);
+            Bundle bundle = new Bundle(1);
+            // Pass the Event Identifier to the New Activity
+            bundle.putString("Name", clickedEvent.getName());
+            intent.putExtras(bundle);
+            // Start new Activity
+            requireContext().startActivity(intent);
+        }
+    });
     }
+
+
 
 
     @Override
@@ -136,22 +155,37 @@ public class EventFragment extends Fragment {
     }
 
 
-    private void testData() {
+    private void addTestData() {
         // Lets add some test data.
-        User dylanUser = new User("Dylan", "dndu@ualberta.ca", "dndu@github.com", "imageURL");
-        Event eventDylan = new Event("Dylan's Event", "EventDescription",
-                "EventImagePath", dylanUser);
-        db.collection("Events").document(eventDylan.getName()).set(eventDylan);
-
         User aryanUser = new User("Aryan", "Aryan@ualberta.ca", "aryan@github.com", "imageURL");
         Event eventAryan = new Event("Aryan's Event", "EventDescription",
                 "EventImagePath", aryanUser);
-        db.collection("Events").document(eventAryan.getName()).set(eventAryan);
+        db.collection("Events").add(eventAryan);
 
         User sidUser = new User("Sid", "Sid@ualberta.ca", "Sid@github.com", "imageURL");
         Event eventSid = new Event("Sid's Event", "EventDescription",
                 "EventImagePath", sidUser);
-        db.collection("Events").document(eventSid.getName()).set(eventSid);
+        db.collection("Events").add(eventSid);
+
+        User CrystalUser = new User("Crystal", "Crystal@ualberta.ca", "Crystal@github.com", "imageURL");
+        Event eventCrystal = new Event("Crystal's Event", "EventDescription",
+                "EventImagePath", CrystalUser);
+        db.collection("Events").add(eventCrystal);
+
+        User AyaanUser = new User("Ayaan", "Ayaan@ualberta.ca", "Ayaan@github.com", "imageURL");
+        Event eventAyaan = new Event("Ayaan's Event", "EventDescription",
+                "EventImagePath", AyaanUser);
+        db.collection("Events").add(eventAyaan);
+
+        User JoeyUser = new User("Joey", "Joey@ualberta.ca", "Joey@github.com", "imageURL");
+        Event eventJoey = new Event("Joey's Event", "EventDescription",
+                "EventImagePath", JoeyUser);
+        db.collection("Events").add(eventJoey);
+
+        User dylanUser = new User("Dylan", "dndu@ualberta.ca", "dndu@github.com", "imageURL");
+        Event eventDylan = new Event("Dylan's Event", "EventDescription",
+                "EventImagePath", dylanUser);
+        db.collection("Events").add(eventDylan);
     }
 
 }
