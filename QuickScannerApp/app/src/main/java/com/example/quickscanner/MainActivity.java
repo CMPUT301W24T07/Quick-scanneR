@@ -18,10 +18,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -34,6 +37,8 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.quickscanner.databinding.ActivityMainBinding;
 import com.google.firebase.Firebase;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.CollectionReference;
@@ -55,8 +60,12 @@ public class MainActivity extends AppCompatActivity {
     private CollectionReference profileRef;
     private CollectionReference userEventsRef;
     private CollectionReference imagesRef;
-    private CollectionReference eventsRef;
 
+    // events fragment
+    private CollectionReference eventsRef;
+    private ListView eventsListView;
+    private ArrayList<Event> eventsDataList;
+    private FirebaseController fbController;
 
 
     @Override
@@ -65,14 +74,15 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        db = FirebaseFirestore.getInstance();
-        idb = FirebaseStorage.getInstance();
-        profileRef = db.collection("Profiles");
-        eventsRef = db.collection("Events");
-        imagesRef = db.collection("Images");
-
+        fbController = new FirebaseController();
+        // Check user sign-in status
+        if (!fbController.isFirstSignIn()) {
+            //creates an anonymous user if not signed in
+            createUserAndSignIn();
+        }
         // Create bottom menu for MainActivity.
         createBottomMenu();
+
 
     }
 
@@ -96,14 +106,14 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    /*         Inflate Handle Top Menu Options        */
+    /*            Handle Top Menu Options         */
     // Create the Top Menu bar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_nav_menu, menu);
         return true;
     }
-    /*    Handle click events for the Top Menu Bar    */
+    // Handle click events for the Top Menu Bar
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
@@ -122,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Events Clicked", Toast.LENGTH_SHORT).show();
             return true;
         } else if (itemId == R.id.navigation_settings) {
-            // Handle Settings click
+            // Handle Scanner click
             Toast.makeText(this, "Settings Clicked", Toast.LENGTH_SHORT).show();
             return true;
         } else if (itemId == R.id.menu_notifications) {
@@ -136,6 +146,69 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
+    public void createUserAndSignIn() {
+        // Checks first sign-in
+        if (fbController.isFirstSignIn()) {
+            // Creates anonymous user
+            fbController.createAnonymousUser().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    // If user creation is successful
+                    if (task.isSuccessful()) {
+                        User user = new User();
+                        String userId;
+                        userId = fbController.getCurrentUserUid();
+                        // Sets user UID
+                        user.setUid(userId);
+                        // Adds user to database
+                        fbController.addUser(user).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentReference> task) {
+                                // If user addition is successful
+                                if (task.isSuccessful()) {
+                                    // Logs success
+                                    Log.d(TAG, "User added successfully");
+                                } else {
+                                    // Logs error
+                                    Log.w(TAG, "Error adding user", task.getException());
+                                }
+                            }
+                        });
+                    } else {
+                        // Logs error
+                        Log.w(TAG, "Error creating anonymous user", task.getException());
+                    }
+                }
+            });
+        }
+    }
+    public void testNewEvent(User user) {
+        // Creates a new Event object
+        Event event = new Event();
 
+        // Sets the organizerUID of the event to the UID of the user
+        event.setOrganizerUid(user.getUid());
 
+        // Adds the event to Firestore
+        fbController.addEvent(event).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+            @Override
+            public void onSuccess(DocumentReference documentReference) {
+                // Gets the ID of the newly created document
+                String docId = documentReference.getId();
+
+                // Updates the document in Firestore to include the ID as a field
+                fbController.updateEvent(docId, event);
+
+                // Logs the ID of the newly created event
+                Log.d(TAG, "Event added with ID: " + docId);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                // Logs an error if the document could not be added
+                // This is important for understanding and resolving failures
+                Log.w(TAG, "Error adding document", e);
+            }
+        });
+    }
 }
