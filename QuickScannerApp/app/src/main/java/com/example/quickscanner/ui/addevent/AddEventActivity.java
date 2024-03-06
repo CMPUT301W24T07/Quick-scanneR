@@ -25,6 +25,8 @@ import com.example.quickscanner.R;
 import com.example.quickscanner.databinding.FragmentScanBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,8 @@ public class AddEventActivity extends AppCompatActivity {
     private String editedImagePath;
     private ArrayAdapter<Event> eventAdapter;
     private List<Event> eventDataList = new ArrayList<>();
+    private FirebaseFirestore db;
+    private CollectionReference eventsRef;
 
 
     @Override
@@ -58,6 +62,10 @@ public class AddEventActivity extends AppCompatActivity {
         // Initialize the event data list and ArrayAdapter
         eventDataList = new ArrayList<>();
         eventAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, eventDataList);
+
+        // Firebase references
+        db = FirebaseFirestore.getInstance();
+        eventsRef = db.collection("Events");
 
         // back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -115,13 +123,12 @@ public class AddEventActivity extends AppCompatActivity {
                     // Create an Event object with the edited values
                     Event newEvent = new Event(editedEventName, editedEventDescription, editedImagePath, testUser);
 
+                    // Add the event to the database
+                    addEventToFirestore(newEvent);
+
                     // Add the event to the list and update the ArrayAdapter
                     eventDataList.add(newEvent);
                     eventAdapter.notifyDataSetChanged();
-
-                    // Add the event to the database (You need to implement your database logic)
-                    // For example, assuming you have a method to add an event to the database:
-                    // DatabaseHelper.addEvent(newEvent);
 
                     // Pass the new event data back to the calling fragment
                     Intent resultIntent = new Intent();
@@ -133,6 +140,18 @@ public class AddEventActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void addEventToFirestore(Event event) {
+        eventsRef.add(event)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d("AddEventActivity", "Event added with ID: " + documentReference.getId());
+                    // additional actions if needed
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("AddEventActivity", "Error adding event", e);
+                    // Handle the error appropriately
+                });
     }
 
     // Handles The Top Bar menu clicks
