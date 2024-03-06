@@ -4,7 +4,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,7 +18,10 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -35,8 +42,6 @@ import java.util.Objects;
 
 
 public class AddEventActivity extends AppCompatActivity {
-
-    private FragmentScanBinding binding;
     private TextView eventDescriptionTextView;
     private TextView eventNameEditText;
     private ImageView eventImageView;
@@ -45,6 +50,7 @@ public class AddEventActivity extends AppCompatActivity {
     private String editedImagePath;
     private ArrayAdapter<Event> eventAdapter;
     private List<Event> eventDataList = new ArrayList<>();
+    private ActivityResultLauncher<Intent> resultLauncher;
     private FirebaseFirestore db;
     private CollectionReference eventsRef;
 
@@ -100,14 +106,10 @@ public class AddEventActivity extends AppCompatActivity {
             }
         });
 
-        // Edit Image Button
+        // Image Button
         ImageButton editImageButton = findViewById(R.id.editImageButton);
-        editImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                pickImage();
-            }
-        });
+        registerResult();
+        editImageButton.setOnClickListener(view -> pickImage());
 
 
         // Create Event Button
@@ -142,6 +144,7 @@ public class AddEventActivity extends AppCompatActivity {
         });
     }
 
+    // Add event to Firestore
     private void addEventToFirestore(Event event) {
         eventsRef.add(event)
                 .addOnSuccessListener(documentReference -> {
@@ -187,22 +190,51 @@ public class AddEventActivity extends AppCompatActivity {
                 .show();
     }
 
+    // To pick an image from the gallery
     private void pickImage() {
-        ActivityResultLauncher<String> pickMedia =
-                registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                    // Callback is invoked after the user selects a media item or closes the
-                    // photo picker.
-                    if (uri != null) {
-                        editedImagePath = uri.toString();
-                        Log.d("PhotoPicker", "Selected URI: " + editedImagePath);
-                    } else {
-                        Log.d("PhotoPicker", "No media selected");
-                    }
-                });
-
-        // Launch the photo picker
-        pickMedia.launch("image/*");
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        resultLauncher.launch(intent);
     }
 
+    // Register the result of the image picker
+    private void registerResult() {
+        resultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        try {
+                            Uri imageUri = result.getData().getData();
+                            String imageName = getFileName(imageUri);
+                            editedImagePath = imageUri.toString();
+                            eventImageView.setImageURI(imageUri);
+                            Log.d("PhotoPicker", "Selected Image: " + imageName);
+                        } catch (Exception e) {
+                            Toast.makeText(AddEventActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
 
+    // Helper method to get the file name from a Uri
+    private String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int displayNameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    if (displayNameIndex != -1) {
+                        result = cursor.getString(displayNameIndex);
+                    } else {
+                        // Handle the case where DISPLAY_NAME is not supported
+                        result = uri.getLastPathSegment();
+                    }
+                }
+            }
+        }
+        if (result == null) {
+            // Fallback to the last segment of the URI
+            result = uri.getLastPathSegment();
+        }
+        return result;
+    }
 }
