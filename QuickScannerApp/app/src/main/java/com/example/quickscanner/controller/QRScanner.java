@@ -1,6 +1,7 @@
 package com.example.quickscanner.controller;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
@@ -21,6 +22,10 @@ public class QRScanner {
 
     private Context context;
 
+    public interface QRCodeScanCallback {
+        void onQRCodeScanned(String qrCodeValue);
+    }
+
     public QRScanner(Context context) {
         this.context = context;
     }
@@ -33,33 +38,30 @@ public class QRScanner {
             .build();
 
 
-    public String scanQRCode(){
-        String rawValue;
-        AtomicReference<String> barcodeValue = new AtomicReference<>("");
+    public void scanQRCode(QRCodeScanCallback qrCodeScanCallback){
+        AtomicReference<String> barcodeValue = new AtomicReference<>("yeet");
         GmsBarcodeScanner scanner = GmsBarcodeScanning.getClient(context, options);
         scanner.startScan()
                 .addOnSuccessListener(
                         barcode -> {
                             // Task completed successfully
-                            barcodeValue.set(barcode.getRawValue());
+//                            barcodeValue.set(barcode.getRawValue());
+                            Log.d("TESTERRRR",barcodeValue.get());
+                            qrCodeScanCallback.onQRCodeScanned(barcode.getRawValue());
                         })
                 .addOnCanceledListener(
                         () -> {
                             // Task canceled
+                            qrCodeScanCallback.onQRCodeScanned("Task Canceled");
 
                         })
                 .addOnFailureListener(
                         e -> {
                             // Task failed with an exception
                             //produce dialog box to say that the task failed
+                            qrCodeScanCallback.onQRCodeScanned("Task Failed");
                         });
 
-        if (barcodeValue.get() != null) {
-            rawValue = barcodeValue.get();
-        } else {
-            rawValue = "Bad Return Value";
-        }
-        return rawValue;
 
     }
 }

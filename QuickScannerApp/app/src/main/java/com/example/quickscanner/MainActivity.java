@@ -81,8 +81,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-
     private void createBottomMenu(){
         /*
             Creates the bottom menu of our Main Activity

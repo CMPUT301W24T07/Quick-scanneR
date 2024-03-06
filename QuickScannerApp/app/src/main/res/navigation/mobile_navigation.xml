@@ -23,6 +23,4 @@
         android:label="@string/title_announcements"
         tools:layout="@layout/fragment_announcements" />
 
-
-
 </navigation>
