@@ -14,7 +14,13 @@ import android.util.Log;
 
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.transition.AutoTransition;
+import android.transition.TransitionManager;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+
 
 import androidx.annotation.Nullable;
 
@@ -31,17 +37,28 @@ import com.google.firebase.firestore.EventListener;
 import java.util.ArrayList;
 
 public class AnnouncementsFragment extends Fragment {
+
     private FragmentAnnouncementsBinding binding;
+
+    // DropDown click References
+    private LinearLayout fullRowLayout;  // the entire row including drop down
+    private LinearLayout dropDownLayout; // the layout you see when you click drop down
+    private RelativeLayout itemClicked;
+    private ImageView expandableArrow;
 
     // AnnouncementList References
     ListView announcementListView;
     ArrayList<Announcement> AnnouncementsDataList;
     ArrayAdapter<Announcement> announcementsAdapter;
 
+
+
+
     // Firestore References
     private FirebaseFirestore db;
     private CollectionReference eventsRef;
     private CollectionReference announcementsRef;
+
 
 
 
@@ -66,8 +83,9 @@ public class AnnouncementsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Store view references
+        // Store view References
         announcementListView = view.findViewById(R.id.announcement_listview);
+
 
         // Initialize the Announcement data list and ArrayAdapter
         AnnouncementsDataList = new ArrayList<Announcement>();
@@ -106,15 +124,27 @@ public class AnnouncementsFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 // get announcement
                 Announcement clickedAnnouncement = (Announcement) adapterView.getItemAtPosition(position);
-                // display fragment
 
+                // references again
+                dropDownLayout = view.findViewById(R.id.announcementsFragment_Extension);
+                expandableArrow = view.findViewById(R.id.announcementsFragment_DropDown);
+                itemClicked = view.findViewById(R.id.announcementsContent_itemClicked);
+                fullRowLayout = view.findViewById(R.id.announcementsContent_Row);
+
+                // display fragment
+                if (dropDownLayout.getVisibility() == View.GONE){
+                    TransitionManager.beginDelayedTransition(fullRowLayout, new AutoTransition().setDuration(100));
+                    dropDownLayout.setVisibility(View.VISIBLE);
+                    expandableArrow.setImageResource(R.drawable.ic_up_arrow);
+                } else {
+                    TransitionManager.beginDelayedTransition(fullRowLayout, new AutoTransition().setDuration(100));
+                    dropDownLayout.setVisibility(View.GONE);
+                    expandableArrow.setImageResource(R.drawable.ic_down_arrow);
+                }
 
             }
         });
     }
-
-
-
 
     @Override
     public void onDestroyView() {

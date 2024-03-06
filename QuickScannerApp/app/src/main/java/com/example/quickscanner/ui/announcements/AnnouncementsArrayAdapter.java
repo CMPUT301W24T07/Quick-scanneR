@@ -1,6 +1,9 @@
 package com.example.quickscanner.ui.announcements;
 
 
+import static java.lang.Math.max;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +16,6 @@ import java.util.ArrayList;
 
 import com.example.quickscanner.R;
 import com.example.quickscanner.model.*;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class AnnouncementsArrayAdapter extends ArrayAdapter<Announcement>{
     private ArrayList<Announcement> announcements;
@@ -25,6 +27,7 @@ public class AnnouncementsArrayAdapter extends ArrayAdapter<Announcement>{
         this.context = context;
     }
 
+    @SuppressLint("SetTextI18n")
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -43,13 +46,20 @@ public class AnnouncementsArrayAdapter extends ArrayAdapter<Announcement>{
         Announcement announcement = announcements.get(position);
 
         // Elements from the custom (*_context.xml) view
-        TextView eventName = view.findViewById(R.id.AnnouncementFragment_Event_text);
-        TextView announcementDescription = view.findViewById(R.id.AnnouncementFragment_Description_text);
+        TextView eventName = view.findViewById(R.id.announcementsContent_Title);
+        TextView announcementLongDescription = view.findViewById(R.id.announcementsFragment_LongDescription);
+        TextView announcementShortDescription = view.findViewById(R.id.announcementsContent_ShortDescription);
 
 
         // Set values of Elements from the custom (*_context.xml) view
-        eventName.setText(announcement.getName());
-        announcementDescription.setText(announcement.getDescription());
+        eventName.setText(announcement.getEventName());
+        String description = announcement.getMessage();
+        announcementLongDescription.setText(description);
+        // Short description formatting.
+        if (description.length() <= 20)
+            announcementShortDescription.setText(description);
+        else
+            announcementShortDescription.setText(description.substring(0, 20) + "...");
 
 
         /* Return the populated, custom view ( which is a row in listview).
