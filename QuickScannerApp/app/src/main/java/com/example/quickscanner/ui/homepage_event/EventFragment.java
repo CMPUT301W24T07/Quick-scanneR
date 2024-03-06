@@ -67,7 +67,7 @@ public class EventFragment extends Fragment {
         // Firebase references
         db = FirebaseFirestore.getInstance(); // non-image db references
         profileRef = db.collection("Profiles");
-        eventsRef = db.collection("CustomEvents");
+        eventsRef = db.collection("Events");
         imagesRef = db.collection("Images");
         idb = FirebaseStorage.getInstance(); // image db references
 
@@ -89,23 +89,10 @@ public class EventFragment extends Fragment {
         // Set the adapter to the ListView
         eventListView.setAdapter(eventAdapter);
 
-        // Lets add some test data.
-        User dylanUser = new User("Dylan", "dndu@ualberta.ca", "dndu@github.com", "imageURL");
-        Event eventDylan = new Event("Dylan's Event", "EventDescription",
-                "EventImagePath", dylanUser);
-        db.collection("CustomEvents").document(eventDylan.getName()).set(eventDylan);
+        testData(); // some test data TODO: delete before submitting
 
-        User aryanUser = new User("Aryan", "Aryan@ualberta.ca", "aryan@github.com", "imageURL");
-        Event eventAryan = new Event("Aryan's Event", "EventDescription",
-                "EventImagePath", aryanUser);
-        db.collection("CustomEvents").document(eventAryan.getName()).set(eventAryan);
 
-        User sidUser = new User("Sid", "Sid@ualberta.ca", "Sid@github.com", "imageURL");
-        Event eventSid = new Event("Sid's Event", "EventDescription",
-                "EventImagePath", sidUser);
-        db.collection("CustomEvents").document(eventSid.getName()).set(eventSid);
-
-        // listener continues to listen for updates to the database.
+        // create listener for updates to the events list.
         eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot querySnapshots,
@@ -149,5 +136,22 @@ public class EventFragment extends Fragment {
     }
 
 
+    private void testData() {
+        // Lets add some test data.
+        User dylanUser = new User("Dylan", "dndu@ualberta.ca", "dndu@github.com", "imageURL");
+        Event eventDylan = new Event("Dylan's Event", "EventDescription",
+                "EventImagePath", dylanUser);
+        db.collection("Events").document(eventDylan.getName()).set(eventDylan);
+
+        User aryanUser = new User("Aryan", "Aryan@ualberta.ca", "aryan@github.com", "imageURL");
+        Event eventAryan = new Event("Aryan's Event", "EventDescription",
+                "EventImagePath", aryanUser);
+        db.collection("Events").document(eventAryan.getName()).set(eventAryan);
+
+        User sidUser = new User("Sid", "Sid@ualberta.ca", "Sid@github.com", "imageURL");
+        Event eventSid = new Event("Sid's Event", "EventDescription",
+                "EventImagePath", sidUser);
+        db.collection("Events").document(eventSid.getName()).set(eventSid);
+    }
 
 }
