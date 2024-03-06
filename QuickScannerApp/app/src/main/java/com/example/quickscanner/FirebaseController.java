@@ -8,6 +8,7 @@ import com.example.quickscanner.model.User;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -17,6 +18,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import java.util.Objects;
 
 public class FirebaseController {
     private FirebaseFirestore db;
@@ -38,6 +41,9 @@ public class FirebaseController {
     // Checks if it's the first sign in
     public boolean isFirstSignIn() {
         return auth.getCurrentUser() == null;
+    }
+    public String getCurrentUserUid() {
+        return Objects.requireNonNull(auth.getCurrentUser()).getUid();
     }
 
     // Creates anonymous user
