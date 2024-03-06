@@ -25,4 +25,9 @@ public class User {
     public void setAdmin() {
         isAdmin = true;
     }
+
+    public Profile getUserProfile() {return userProfile;}
+    public Boolean getAdmin() {return isAdmin;}
+    public ArrayList<Event> getOrganizedEvents() {return organizedEvents;}
+    public ArrayList<Event> getAttendingEvents() {return attendingEvents;}
 }

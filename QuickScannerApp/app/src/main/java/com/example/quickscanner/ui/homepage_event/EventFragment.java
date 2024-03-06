@@ -4,11 +4,14 @@ import com.example.quickscanner.R;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,8 +19,18 @@ import androidx.fragment.app.Fragment;
 
 import com.example.quickscanner.databinding.FragmentEventsBinding;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
+import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.firestore.EventListener;
 
 import java.util.ArrayList;
 
@@ -25,12 +38,22 @@ public class EventFragment extends Fragment {
 
     private FragmentEventsBinding binding;
 
-    // EventList Data
-    ListView eventList;
-    ArrayList<Event> eventDataList;
+    // EventList References
+    ListView eventListView;
+    ArrayList<Event> eventsDataList;
     ArrayAdapter<Event> eventAdapter;
-    // button
+
+    // Button References
     FloatingActionButton fobButton;
+
+    // Firestore References
+    private FirebaseFirestore db;
+    private FirebaseStorage idb;
+    private StorageReference storeRef;
+    private CollectionReference profileRef;
+    private CollectionReference eventsRef;
+    private CollectionReference imagesRef;
+
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -38,8 +61,17 @@ public class EventFragment extends Fragment {
 
         // inflate fragment to MainActivity
         binding = FragmentEventsBinding.inflate(inflater, container, false);
-        // idk why we return view
+        // return view for MainActivity
         View root = binding.getRoot();
+
+        // Firebase references
+        db = FirebaseFirestore.getInstance(); // non-image db references
+        profileRef = db.collection("Profiles");
+        eventsRef = db.collection("Events");
+        imagesRef = db.collection("Images");
+        idb = FirebaseStorage.getInstance(); // image db references
+
+
         return root;
 
     }
@@ -48,27 +80,72 @@ public class EventFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Store view references
+        eventListView = view.findViewById(R.id.event_listview);
+
         // Initialize the event data list and ArrayAdapter
-        eventDataList = new ArrayList<>();
-        eventAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, eventDataList);
-
+        eventsDataList = new ArrayList<Event>();
+        eventAdapter = new EventArrayAdapter(getContext(), eventsDataList);
         // Set the adapter to the ListView
-        eventList = view.findViewById(R.id.event_listview);
-        eventList.setAdapter(eventAdapter);
+        eventListView.setAdapter(eventAdapter);
 
-        // fob button (add event)
+        //addTestData(); // some test data TODO: delete before submitting
+
+
+        // create listener for updates to the events list.
+        eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot querySnapshots,
+                                @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.e("Firestore", error.toString());
+                    return;
+                }
+                if (querySnapshots != null) {
+                    eventsDataList.clear();  // removes current data
+                    for (QueryDocumentSnapshot doc : querySnapshots) { // set of documents
+                        Event qryEvent = doc.toObject(Event.class);
+                        eventsDataList.add((qryEvent)); // adds new data from db
+                    }
+                }
+                eventAdapter.notifyDataSetChanged();
+            }
+        });
+
+
+
+        /*     Fob Button (add event) Click       */
         fobButton = view.findViewById(R.id.fob_createEvent);
         fobButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // start new create event activity
                 Intent intent = new Intent(requireContext(), AddEventActivity.class);
-                intent.putExtra("eventAdapter", eventDataList);
+                intent.putExtra("eventAdapter", eventsDataList);
                 startActivity(intent);
             }
 
         });
+
+        /*      Event ListView Click       */
+        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            // get the clicked event
+            Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
+            // move to new activity and pass the clicked event's unique ID.
+            Intent intent = new Intent(getContext(), ViewEventActivity.class);
+            Bundle bundle = new Bundle(1);
+            // Pass the Event Identifier to the New Activity
+            bundle.putString("Name", clickedEvent.getName());
+            intent.putExtras(bundle);
+            // Start new Activity
+            requireContext().startActivity(intent);
+        }
+    });
     }
+
+
 
 
     @Override
@@ -76,4 +153,39 @@ public class EventFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+
+    private void addTestData() {
+        // Lets add some test data.
+        User aryanUser = new User("Aryan", "Aryan@ualberta.ca", "aryan@github.com", "imageURL");
+        Event eventAryan = new Event("Aryan's Event", "EventDescription",
+                "EventImagePath", aryanUser);
+        db.collection("Events").add(eventAryan);
+
+        User sidUser = new User("Sid", "Sid@ualberta.ca", "Sid@github.com", "imageURL");
+        Event eventSid = new Event("Sid's Event", "EventDescription",
+                "EventImagePath", sidUser);
+        db.collection("Events").add(eventSid);
+
+        User CrystalUser = new User("Crystal", "Crystal@ualberta.ca", "Crystal@github.com", "imageURL");
+        Event eventCrystal = new Event("Crystal's Event", "EventDescription",
+                "EventImagePath", CrystalUser);
+        db.collection("Events").add(eventCrystal);
+
+        User AyaanUser = new User("Ayaan", "Ayaan@ualberta.ca", "Ayaan@github.com", "imageURL");
+        Event eventAyaan = new Event("Ayaan's Event", "EventDescription",
+                "EventImagePath", AyaanUser);
+        db.collection("Events").add(eventAyaan);
+
+        User JoeyUser = new User("Joey", "Joey@ualberta.ca", "Joey@github.com", "imageURL");
+        Event eventJoey = new Event("Joey's Event", "EventDescription",
+                "EventImagePath", JoeyUser);
+        db.collection("Events").add(eventJoey);
+
+        User dylanUser = new User("Dylan", "dndu@ualberta.ca", "dndu@github.com", "imageURL");
+        Event eventDylan = new Event("Dylan's Event", "EventDescription",
+                "EventImagePath", dylanUser);
+        db.collection("Events").add(eventDylan);
+    }
+
 }

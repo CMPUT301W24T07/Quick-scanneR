@@ -55,11 +55,8 @@ public class MainActivity extends AppCompatActivity {
     private CollectionReference profileRef;
     private CollectionReference userEventsRef;
     private CollectionReference imagesRef;
-
-    // events fragment
     private CollectionReference eventsRef;
-    private ListView eventsListView;
-    private ArrayList<Event> eventsDataList;
+
 
 
 
