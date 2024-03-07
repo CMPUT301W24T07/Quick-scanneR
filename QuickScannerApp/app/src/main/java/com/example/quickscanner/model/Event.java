@@ -10,12 +10,11 @@ public class Event implements Parcelable {
     public String imagePath;
     public User organizer;
 
-
     //todo: event class needs a UID. integrate with firestore.
-
     // TODO we have these attributes in firestore
     public String time;
     public String location;
+
 
     public Event(String name, String description, String imagePath, User organizer) {
         this.name = name;
