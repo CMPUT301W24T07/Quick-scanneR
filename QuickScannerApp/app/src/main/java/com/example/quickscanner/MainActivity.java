@@ -18,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.Profile;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
@@ -39,6 +40,7 @@ import com.example.quickscanner.databinding.ActivityMainBinding;
 import com.google.firebase.Firebase;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.CollectionReference;
@@ -127,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
             startActivity(intent);
             return true;
+
         } else if (itemId == R.id.navigation_adminPage) {
             // Handle Admin Page Click
             Intent intent = new Intent(MainActivity.this, AdminActivity.class);
