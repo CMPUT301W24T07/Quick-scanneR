@@ -18,10 +18,14 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.Profile;
+import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -34,6 +38,9 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.quickscanner.databinding.ActivityMainBinding;
 import com.google.firebase.Firebase;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.CollectionReference;
@@ -56,25 +63,33 @@ public class MainActivity extends AppCompatActivity {
     private CollectionReference userEventsRef;
     private CollectionReference imagesRef;
     private CollectionReference eventsRef;
-
-
+    private ListView eventsListView;
+    private ArrayList<Event> eventsDataList;
+    private FirebaseController fbController;
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e("Testing", "in onCreate");
+        Toast.makeText(this, "First sign in detected", Toast.LENGTH_SHORT).show();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        db = FirebaseFirestore.getInstance();
-        idb = FirebaseStorage.getInstance();
-        profileRef = db.collection("Profiles");
-        eventsRef = db.collection("Events");
-        imagesRef = db.collection("Images");
-
+        fbController = new FirebaseController();
+        // Check user sign-in status
+        Log.e("Testing", "outside the if statement");
+        if (fbController.isFirstSignIn()) {
+            Log.e("Testing", "Entered the if statement");
+            //creates an anonymous user if not signed in
+            createUserAndSignIn();
+        } else {
+            Log.w("Testing", "first signin not detected");
+        }
         // Create bottom menu for MainActivity.
         createBottomMenu();
+
 
     }
 
@@ -113,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
             startActivity(intent);
             return true;
+
         } else if (itemId == R.id.navigation_adminPage) {
             // Handle Admin Page Click
             Intent intent = new Intent(MainActivity.this, AdminActivity.class);
@@ -125,17 +141,67 @@ public class MainActivity extends AppCompatActivity {
             // Handle Settings click
             Toast.makeText(this, "Settings Clicked", Toast.LENGTH_SHORT).show();
             return true;
-        } else if (itemId == R.id.menu_notifications) {
-            // Handle Notification Bell Click
-            Dialog dialog = new Dialog(MainActivity.this);
-            dialog.setContentView(R.layout.custom_notificationlist);
-            ListView lv = (ListView ) dialog.findViewById(R.id.lv);
-            dialog.setCancelable(true);
-            dialog.setTitle("ListView");
-            dialog.show();
         }
         return false;
     }
-
-
+    public void createUserAndSignIn() {
+            // Creates anonymous user
+            fbController.createAnonymousUser().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    // If user creation is successful
+                    if (task.isSuccessful()) {
+                        User user = new User();
+                        String userId;
+                        userId = fbController.getCurrentUserUid();
+                        // Sets user UID
+                        user.setUid(userId);
+                        // Adds user to database
+                        fbController.addUser(user).addOnCompleteListener(task1 -> {
+                            // If user addition is successful
+                            if (task1.isSuccessful()) {
+                                // Logs success
+                                Log.d("Testing", "User added successfully");
+                            } else {
+                                // Logs error
+                                Log.w("Testing", "Error adding user", task1.getException());
+                            }
+                        });
+                    } else {
+                        // Logs error
+                        Log.w("Testing", "Error creating anonymous user", task.getException());
+                    }
+                }
+            });
+    }
+//    public void testNewEvent(User user) {
+//        // Creates a new Event object
+//        Event event = new Event();
+//
+//        // Sets the organizerUID of the event to the UID of the user
+//        event.setOrganizerUid(user.getUid());
+//
+//        // Adds the event to Firestore
+//        fbController.addEvent(event).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//            @Override
+//            public void onSuccess(DocumentReference documentReference) {
+//                // Gets the ID of the newly created document
+//                String docId = documentReference.getId();
+//                // Adds the ID to the event object
+//                event.setEventID(docId);
+//                // Updates the document in Firestore to include the ID as a field
+//                fbController.updateEvent(docId, event);
+//
+//                // Logs the ID of the newly created event
+//                Log.d(TAG, "Event added with ID: " + docId);
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                // Logs an error if the document could not be added
+//                // This is important for understanding and resolving failures
+//                Log.w(TAG, "Error adding document", e);
+//            }
+//        });
+//    }
 }

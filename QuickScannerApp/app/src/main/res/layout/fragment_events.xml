@@ -9,31 +9,28 @@
 
     <ListView
         android:id="@+id/event_listview"
-        android:layout_width="406dp"
-        android:layout_height="337dp"
+        android:layout_width="404dp"
+        android:layout_height="587dp"
         android:contextClickable="true"
         android:textAlignment="viewEnd"
         android:textFilterEnabled="false"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.333"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fob_createEvent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
+        android:layout_marginEnd="16dp"
         android:clickable="true"
         android:src="@drawable/baseline_add_24"
         app:backgroundTint="@color/purple_200"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.954"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/announcement_listview"
-        app:layout_constraintVertical_bias="0.942" />
-
+        app:layout_constraintTop_toBottomOf="@+id/event_listview" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

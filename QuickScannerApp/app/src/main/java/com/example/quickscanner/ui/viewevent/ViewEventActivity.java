@@ -14,7 +14,7 @@ import com.example.quickscanner.R;
 import java.util.Objects;
 
 public class ViewEventActivity extends AppCompatActivity {
-    String eventName;
+    String eventID;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -28,9 +28,8 @@ public class ViewEventActivity extends AppCompatActivity {
         // Grab any Intent bundle/parameters
         Bundle inputBundle = getIntent().getExtras();
         if (inputBundle != null) {
-            eventName = inputBundle.getString("Name");
+            eventID = inputBundle.getString("eventID");
         }
-
 
     }
 
