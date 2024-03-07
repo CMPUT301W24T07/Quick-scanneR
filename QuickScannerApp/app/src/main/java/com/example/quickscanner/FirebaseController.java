@@ -88,9 +88,9 @@ public class FirebaseController {
     }
 
     // Updates existing event in Firestore
-    public Task<Void> updateEvent(Event event) {
-        return eventsRef.document(event.getEventID()).set(event);
-    }
+    // public Task<Void> updateEvent(Event event) {
+    //    return eventsRef.document(event.getEventID()).set(event);
+    //}
 
     // Deletes event from Firestore
     public Task<Void> deleteEvent(String eventId) {
