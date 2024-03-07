@@ -31,9 +31,6 @@ public class ViewEventActivity extends AppCompatActivity {
             eventID = inputBundle.getString("eventID");
         }
 
-        TextView textview = findViewById(R.id.text_viewevent);
-        textview.setText("The eventID that was clicked is passed as a parameter to this activity. The EventID is: " + eventID);
-
     }
 
 
