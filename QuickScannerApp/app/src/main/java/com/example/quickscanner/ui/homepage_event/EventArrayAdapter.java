@@ -18,6 +18,14 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
     private ArrayList<Event> events;
     private Context context;
 
+    // TextView References
+    TextView eventName;
+    TextView eventDescription;
+    TextView eventLocation;
+    TextView eventOrganizers;
+    TextView eventTime;
+
+
     public EventArrayAdapter(Context context, ArrayList<Event> events){
         super(context,0, events);
         this.events = events;
@@ -43,17 +51,17 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
         Event event = events.get(position);
 
         // Elements from the custom (*_context.xml) view
-        TextView eventName = view.findViewById(R.id.EventFragment_Name_text);
-        TextView eventDescription = view.findViewById(R.id.EventFragment_Description_text);
-        TextView eventLocation = view.findViewById(R.id.EventFragment_Location_text);
-        TextView eventOrganizers = view.findViewById(R.id.EventFragment_Organizers_text);
-        TextView eventTime = view.findViewById(R.id.EventFragment_Time_text);
+        eventName = view.findViewById(R.id.EventFragment_Name_text);
+        eventDescription = view.findViewById(R.id.EventFragment_LongDescription);
+        eventLocation = view.findViewById(R.id.EventFragment_Location);
+        // eventOrganizers = view.findViewById(R.id.EventFragment_Organizers_text);
+        eventTime = view.findViewById(R.id.EventFragment_Time);
 
         // Set values of Elements from the custom (*_context.xml) view
         eventName.setText(event.getName());
         eventDescription.setText(event.getDescription());
         eventLocation.setText(event.getLocation());
-        eventOrganizers.setText(event.getOrganizer().getUserProfile().getName());
+        // eventOrganizers.setText(event.getOrganizer().getUserProfile().getName());
         eventTime.setText(event.getTime());
 
         /* Return the populated, custom view ( which is a row in listview).

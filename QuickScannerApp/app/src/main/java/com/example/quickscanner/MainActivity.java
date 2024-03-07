@@ -141,14 +141,6 @@ public class MainActivity extends AppCompatActivity {
             // Handle Settings click
             Toast.makeText(this, "Settings Clicked", Toast.LENGTH_SHORT).show();
             return true;
-        } else if (itemId == R.id.menu_notifications) {
-            // Handle Notification Bell Click
-            Dialog dialog = new Dialog(MainActivity.this);
-            dialog.setContentView(R.layout.custom_notificationlist);
-            ListView lv = (ListView ) dialog.findViewById(R.id.lv);
-            dialog.setCancelable(true);
-            dialog.setTitle("ListView");
-            dialog.show();
         }
         return false;
     }

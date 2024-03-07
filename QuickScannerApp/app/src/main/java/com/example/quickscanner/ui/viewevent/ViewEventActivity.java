@@ -14,7 +14,7 @@ import com.example.quickscanner.R;
 import java.util.Objects;
 
 public class ViewEventActivity extends AppCompatActivity {
-    String eventName;
+    String eventID;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -28,12 +28,11 @@ public class ViewEventActivity extends AppCompatActivity {
         // Grab any Intent bundle/parameters
         Bundle inputBundle = getIntent().getExtras();
         if (inputBundle != null) {
-            eventName = inputBundle.getString("Name");
+            eventID = inputBundle.getString("eventID");
         }
 
         TextView textview = findViewById(R.id.text_viewevent);
-        textview.setText("The event that was clicked is passed as a parameter to this activity. The Event Name is: " + eventName);
-
+        textview.setText("The eventID that was clicked is passed as a parameter to this activity. The EventID is: " + eventID);
 
     }
 
