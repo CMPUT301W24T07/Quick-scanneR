@@ -195,7 +195,8 @@ public class MainActivity extends AppCompatActivity {
 //            public void onSuccess(DocumentReference documentReference) {
 //                // Gets the ID of the newly created document
 //                String docId = documentReference.getId();
-//
+//                // Adds the ID to the event object
+//                event.setEventID(docId);
 //                // Updates the document in Firestore to include the ID as a field
 //                fbController.updateEvent(docId, event);
 //
