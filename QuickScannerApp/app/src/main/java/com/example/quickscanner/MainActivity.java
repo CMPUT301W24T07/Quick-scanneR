@@ -85,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
             Log.e("Testing", "Entered the if statement");
             //creates an anonymous user if not signed in
             createUserAndSignIn();
+        } else {
+            Log.w("Testing", "first signin not detected");
         }
         // Create bottom menu for MainActivity.
         createBottomMenu();
@@ -166,17 +168,14 @@ public class MainActivity extends AppCompatActivity {
                         // Sets user UID
                         user.setUid(userId);
                         // Adds user to database
-                        fbController.addUser(user).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                            @Override
-                            public void onComplete(@NonNull Task<DocumentReference> task) {
-                                // If user addition is successful
-                                if (task.isSuccessful()) {
-                                    // Logs success
-                                    Log.d("Testing", "User added successfully");
-                                } else {
-                                    // Logs error
-                                    Log.w("Testing", "Error adding user", task.getException());
-                                }
+                        fbController.addUser(user).addOnCompleteListener(task1 -> {
+                            // If user addition is successful
+                            if (task1.isSuccessful()) {
+                                // Logs success
+                                Log.d("Testing", "User added successfully");
+                            } else {
+                                // Logs error
+                                Log.w("Testing", "Error adding user", task1.getException());
                             }
                         });
                     } else {

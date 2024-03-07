@@ -53,8 +53,9 @@ public class FirebaseController {
     // User operations
 
     // Adds new user to Firestore
-    public Task<DocumentReference> addUser(User user) {
-        return usersRef.add(user);
+    public Task<Void> addUser(User user) {
+        DocumentReference ref = usersRef.document(user.getUid());
+        return ref.set(user);
     }
 
     // Updates existing user in Firestore
