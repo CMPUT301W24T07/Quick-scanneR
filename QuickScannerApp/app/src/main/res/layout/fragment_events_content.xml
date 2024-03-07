@@ -55,9 +55,10 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/ic_down_arrow"
-            android:contentDescription="@string/expandable_arrow" />
+            android:layout_marginEnd="3dp"
+            android:visibility="invisible"
+            android:contentDescription="@string/expandable_arrow"
+            android:src="@drawable/baseline_catching_pokemon_24" />
 
     </RelativeLayout>
 

@@ -16,6 +16,9 @@ public class Event implements Parcelable {
     // TODO we have these attributes in firestore
     public String time;
     public String location;
+    public String eventID;
+    public String organizerID;
+
 
     public Event(String name, String description, String imagePath, User organizer) {
         this.name = name;
@@ -66,6 +69,8 @@ public class Event implements Parcelable {
     public User getOrganizer() {return organizer;}
     public String getTime() {return time;}
     public String getLocation() {return location;}
+    public String getEventID() {return eventID;}
+    public String getOrganizerID() {return organizerID;}
 
     // Setters
     public void setName(String name) {this.name = name;}
@@ -74,4 +79,6 @@ public class Event implements Parcelable {
     public void setOrganizer(User organizer) {this.organizer = organizer;}
     public void setTime(String time) {this.time = time;}
     public void setLocation(String location) {this.location = location;}
+    public void setEventID(String eventID) {this.eventID = eventID;}
+    public void setOrganizerID(String organizerID) {this.organizerID = organizerID;}
 }

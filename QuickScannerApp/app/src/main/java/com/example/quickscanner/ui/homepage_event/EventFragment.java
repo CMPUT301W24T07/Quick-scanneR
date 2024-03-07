@@ -150,42 +150,13 @@ public class EventFragment extends Fragment {
             Intent intent = new Intent(getContext(), ViewEventActivity.class);
             Bundle bundle = new Bundle(1);
             // Pass the Event Identifier to the New Activity
-            bundle.putString("Name", clickedEvent.getName());
+            bundle.putString("eventID", clickedEvent.getEventID());
             intent.putExtras(bundle);
             // Start new Activity
             requireContext().startActivity(intent);
         }
     });
 
-
-
-
-    //        /*      Event ListView Click       */
-    //        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-    //            @Override
-    //            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-    //                // get Event
-    //                Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
-    //
-    //                // references again
-    //                dropDownLayout = view.findViewById(R.id.EventFragment_Extension);
-    //                expandableArrow = view.findViewById(R.id.EventFragment_DropDown);
-    //                itemClicked = view.findViewById(R.id.EventFragmentContent_itemClicked);
-    //                fullRowLayout = view.findViewById(R.id.EventFragmentContent_Row);
-    //
-    //                // display fragment
-    //                if (dropDownLayout.getVisibility() == View.GONE){
-    //                    TransitionManager.beginDelayedTransition(fullRowLayout, new AutoTransition().setDuration(100));
-    //                    dropDownLayout.setVisibility(View.VISIBLE);
-    //                    expandableArrow.setImageResource(R.drawable.ic_up_arrow);
-    //                } else {
-    //                    TransitionManager.beginDelayedTransition(fullRowLayout, new AutoTransition().setDuration(100));
-    //                    dropDownLayout.setVisibility(View.GONE);
-    //                    expandableArrow.setImageResource(R.drawable.ic_down_arrow);
-    //                }
-    //
-    //            }
-    //        });
 
     }
 
