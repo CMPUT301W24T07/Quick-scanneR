@@ -54,8 +54,7 @@ public class FirebaseController {
 
     // Adds new user to Firestore
     public Task<Void> addUser(User user) {
-        DocumentReference ref = usersRef.document(user.getUid());
-        return ref.set(user);
+        return usersRef.document(user.getUid()).set(user);
     }
 
     // Updates existing user in Firestore
@@ -65,8 +64,8 @@ public class FirebaseController {
     }
 
     // Deletes user from Firestore
-    public Task<Void> deleteUser(String id) {
-        return usersRef.document(id).delete();
+    public Task<Void> deleteUser(String userId) {
+        return usersRef.document(userId).delete();
     }
 
     // Retrieves all users from Firestore
@@ -75,8 +74,8 @@ public class FirebaseController {
     }
 
     // Retrieves specific user from Firestore
-    public Task<DocumentSnapshot> getUser(String id) {
-        return usersRef.document(id).get();
+    public Task<DocumentSnapshot> getUser(String userId) {
+        return usersRef.document(userId).get();
     }
 
 
@@ -89,13 +88,13 @@ public class FirebaseController {
     }
 
     // Updates existing event in Firestore
-    public Task<Void> updateEvent(String id, Event event) {
-        return eventsRef.document(id).set(event);
+    public Task<Void> updateEvent(Event event) {
+        return eventsRef.document(event.getEventID()).set(event);
     }
 
     // Deletes event from Firestore
-    public Task<Void> deleteEvent(String id) {
-        return eventsRef.document(id).delete();
+    public Task<Void> deleteEvent(String eventId) {
+        return eventsRef.document(eventId).delete();
     }
 
     // Retrieves all events from Firestore
@@ -104,8 +103,8 @@ public class FirebaseController {
     }
 
     // Retrieves specific event from Firestore
-    public Task<DocumentSnapshot> getEvent(String id) {
-        return eventsRef.document(id).get();
+    public Task<DocumentSnapshot> getEvent(String eventId) {
+        return eventsRef.document(eventId).get();
     }
 
     public void signUp(String eventId, String userId) {
@@ -125,13 +124,13 @@ public class FirebaseController {
     }
 
     // Updates existing image in Firestore
-    public Task<Void> updateImage(String id, Image image) {
-        return imagesRef.document(id).set(image);
+    public Task<Void> updateImage(String imageId, Image image) {
+        return imagesRef.document(imageId).set(image);
     }
 
     // Deletes image from Firestore
-    public Task<Void> deleteImage(String id) {
-        return imagesRef.document(id).delete();
+    public Task<Void> deleteImage(String imageId) {
+        return imagesRef.document(imageId).delete();
     }
 
     // Retrieves all images from Firestore
@@ -140,8 +139,8 @@ public class FirebaseController {
     }
 
     // Retrieves specific image from Firestore
-    public Task<DocumentSnapshot> getImage(String id) {
-        return imagesRef.document(id).get();
+    public Task<DocumentSnapshot> getImage(String imageId) {
+        return imagesRef.document(imageId).get();
     }
 
     //Image Firebase Storage operations
