@@ -31,9 +31,6 @@ public class ViewEventActivity extends AppCompatActivity {
             eventName = inputBundle.getString("Name");
         }
 
-        TextView textview = findViewById(R.id.text_viewevent);
-        textview.setText("The event that was clicked is passed as a parameter to this activity. The Event Name is: " + eventName);
-
 
     }
 
