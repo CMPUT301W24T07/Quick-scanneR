@@ -62,12 +62,11 @@ public class MainActivity extends AppCompatActivity {
     private CollectionReference profileRef;
     private CollectionReference userEventsRef;
     private CollectionReference imagesRef;
-
-    // events fragment
     private CollectionReference eventsRef;
     private ListView eventsListView;
     private ArrayList<Event> eventsDataList;
     private FirebaseController fbController;
+
 
 
     @Override
@@ -94,8 +93,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-
     private void createBottomMenu(){
         /*
             Creates the bottom menu of our Main Activity
@@ -114,14 +111,14 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    /*            Handle Top Menu Options         */
+    /*         Inflate Handle Top Menu Options        */
     // Create the Top Menu bar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_nav_menu, menu);
         return true;
     }
-    // Handle click events for the Top Menu Bar
+    /*    Handle click events for the Top Menu Bar    */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
@@ -141,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Events Clicked", Toast.LENGTH_SHORT).show();
             return true;
         } else if (itemId == R.id.navigation_settings) {
-            // Handle Scanner click
+            // Handle Settings click
             Toast.makeText(this, "Settings Clicked", Toast.LENGTH_SHORT).show();
             return true;
         } else if (itemId == R.id.menu_notifications) {
