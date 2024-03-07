@@ -89,10 +89,8 @@ public class EventFragment extends Fragment {
         // Set the adapter to the ListView
         eventListView.setAdapter(eventAdapter);
 
-        //addTestData(); // some test data TODO: delete before submitting
 
-
-        // create listener for updates to the events list.
+        // Create FireStore Listener for Updates to the Events List.
         eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot querySnapshots,
@@ -147,45 +145,11 @@ public class EventFragment extends Fragment {
 
 
 
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
     }
 
-
-    private void addTestData() {
-        // Lets add some test data.
-        User aryanUser = new User("Aryan", "Aryan@ualberta.ca", "aryan@github.com", "imageURL");
-        Event eventAryan = new Event("Aryan's Event", "EventDescription",
-                "EventImagePath", aryanUser);
-        db.collection("Events").add(eventAryan);
-
-        User sidUser = new User("Sid", "Sid@ualberta.ca", "Sid@github.com", "imageURL");
-        Event eventSid = new Event("Sid's Event", "EventDescription",
-                "EventImagePath", sidUser);
-        db.collection("Events").add(eventSid);
-
-        User CrystalUser = new User("Crystal", "Crystal@ualberta.ca", "Crystal@github.com", "imageURL");
-        Event eventCrystal = new Event("Crystal's Event", "EventDescription",
-                "EventImagePath", CrystalUser);
-        db.collection("Events").add(eventCrystal);
-
-        User AyaanUser = new User("Ayaan", "Ayaan@ualberta.ca", "Ayaan@github.com", "imageURL");
-        Event eventAyaan = new Event("Ayaan's Event", "EventDescription",
-                "EventImagePath", AyaanUser);
-        db.collection("Events").add(eventAyaan);
-
-        User JoeyUser = new User("Joey", "Joey@ualberta.ca", "Joey@github.com", "imageURL");
-        Event eventJoey = new Event("Joey's Event", "EventDescription",
-                "EventImagePath", JoeyUser);
-        db.collection("Events").add(eventJoey);
-
-        User dylanUser = new User("Dylan", "dndu@ualberta.ca", "dndu@github.com", "imageURL");
-        Event eventDylan = new Event("Dylan's Event", "EventDescription",
-                "EventImagePath", dylanUser);
-        db.collection("Events").add(eventDylan);
-    }
 
 }

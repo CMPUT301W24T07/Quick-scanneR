@@ -153,20 +153,6 @@ public class AnnouncementsFragment extends Fragment {
     }
 
 
-    private void addTestData() {
-        // Lets add some test data.
-        Announcement announcementAryan = new Announcement("Announcement message testing", "Dylan's Event");
-        db.collection("Announcements").add(announcementAryan);
 
-        Announcement announcement2 = new Announcement("Event Extended!", "Dylan's Event");
-        db.collection("Announcements").add(announcement2);
-
-        Announcement announcement3 = new Announcement(getString(R.string.LoremIpsum), "Dylan's Event");
-        db.collection("Announcements").add(announcement3);
-
-        Announcement announcement4 = new Announcement("Announcement message" + getString(R.string.LoremIpsum), "Joey's Event");
-        db.collection("Announcements").add(announcement4);
-
-    }
 
 }
