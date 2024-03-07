@@ -118,6 +118,10 @@ public class EventFragment extends Fragment {
                     eventsDataList.clear();  // removes current data
                     for (QueryDocumentSnapshot doc : querySnapshots) { // set of documents
                         Event qryEvent = doc.toObject(Event.class);
+
+                        //associate event ID with the retrieved event
+                        qryEvent.setEventID(doc.getId());
+
                         eventsDataList.add((qryEvent)); // adds new data from db
                     }
                 }

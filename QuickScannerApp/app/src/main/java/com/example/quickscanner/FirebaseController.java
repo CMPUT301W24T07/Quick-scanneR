@@ -103,8 +103,12 @@ public class FirebaseController {
     }
 
     // Retrieves specific event from Firestore
+    //This method was implemented poorly before, but now it correctly returns the event.
     public Task<DocumentSnapshot> getEvent(String eventId) {
-        return eventsRef.document(eventId).get();
+        return FirebaseFirestore.getInstance()
+                .collection("Events")
+                .document(eventId)
+                .get();
     }
 
     public void signUp(String eventId, String userId) {
@@ -162,4 +166,5 @@ public class FirebaseController {
         StorageReference imageRef = idb.getReference().child(path);
         return imageRef.delete();
     }
+
 }
