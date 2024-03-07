@@ -26,4 +26,6 @@
     <string name="long_description">Long Description</string>
     <string name="expandable_arrow">Expandable Arrow</string>
     <string name="short_description">Short Description</string>
+    <string name="options">options</string>
+    <string name="event_name">Event Name</string>
 </resources>

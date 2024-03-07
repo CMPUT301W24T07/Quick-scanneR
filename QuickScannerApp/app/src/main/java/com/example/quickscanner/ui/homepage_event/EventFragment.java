@@ -4,13 +4,18 @@ import com.example.quickscanner.R;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.transition.AutoTransition;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 
 import androidx.annotation.NonNull;
@@ -18,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.quickscanner.databinding.FragmentEventsBinding;
+import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
@@ -40,11 +46,19 @@ public class EventFragment extends Fragment {
 
     // EventList References
     ListView eventListView;
+    LinearLayout eventLinearLayout;
     ArrayList<Event> eventsDataList;
     ArrayAdapter<Event> eventAdapter;
 
+
     // Button References
     FloatingActionButton fobButton;
+
+    // DropDown click References
+    private LinearLayout fullRowLayout;  // the entire row including drop down
+    private LinearLayout dropDownLayout; // the layout you see when you click drop down
+    private RelativeLayout itemClicked;
+    private ImageView expandableArrow;
 
     // Firestore References
     private FirebaseFirestore db;
@@ -82,6 +96,7 @@ public class EventFragment extends Fragment {
 
         // Store view references
         eventListView = view.findViewById(R.id.event_listview);
+        eventLinearLayout = view.findViewById(R.id.EventFragmentContent_Layout);
 
         // Initialize the event data list and ArrayAdapter
         eventsDataList = new ArrayList<Event>();
@@ -141,6 +156,37 @@ public class EventFragment extends Fragment {
             requireContext().startActivity(intent);
         }
     });
+
+
+
+
+    //        /*      Event ListView Click       */
+    //        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    //            @Override
+    //            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+    //                // get Event
+    //                Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
+    //
+    //                // references again
+    //                dropDownLayout = view.findViewById(R.id.EventFragment_Extension);
+    //                expandableArrow = view.findViewById(R.id.EventFragment_DropDown);
+    //                itemClicked = view.findViewById(R.id.EventFragmentContent_itemClicked);
+    //                fullRowLayout = view.findViewById(R.id.EventFragmentContent_Row);
+    //
+    //                // display fragment
+    //                if (dropDownLayout.getVisibility() == View.GONE){
+    //                    TransitionManager.beginDelayedTransition(fullRowLayout, new AutoTransition().setDuration(100));
+    //                    dropDownLayout.setVisibility(View.VISIBLE);
+    //                    expandableArrow.setImageResource(R.drawable.ic_up_arrow);
+    //                } else {
+    //                    TransitionManager.beginDelayedTransition(fullRowLayout, new AutoTransition().setDuration(100));
+    //                    dropDownLayout.setVisibility(View.GONE);
+    //                    expandableArrow.setImageResource(R.drawable.ic_down_arrow);
+    //                }
+    //
+    //            }
+    //        });
+
     }
 
 
