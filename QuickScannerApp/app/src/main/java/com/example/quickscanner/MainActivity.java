@@ -1,5 +1,9 @@
 package com.example.quickscanner;
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
+import android.app.Activity;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu; // Import Menu class
@@ -7,6 +11,10 @@ import android.view.MenuItem; // Import Menu class
 import android.widget.ListView;
 import android.widget.Toast;
 import android.content.Intent;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 
 import com.example.quickscanner.model.Event;
@@ -16,9 +24,12 @@ import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -26,9 +37,16 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.quickscanner.databinding.ActivityMainBinding;
+import com.google.firebase.Firebase;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 

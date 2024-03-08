@@ -42,8 +42,6 @@ dependencies {
     implementation ("com.google.android.gms:play-services-code-scanner:16.1.0")
 
     implementation ("com.google.zxing:core:3.4.1")
-    implementation ("com.journeyapps:zxing-android-embedded:4.2.0")
-
 
 
     implementation("androidx.appcompat:appcompat:1.6.1")
