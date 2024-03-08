@@ -10,8 +10,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
-        >
+        android:fillViewport="true">
 
         <androidx.constraintlayout.widget.ConstraintLayout
 
@@ -82,18 +81,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:layout_marginEnd="16dp"
                 android:paddingLeft="10dp"
                 android:paddingTop="20dp"
                 android:paddingEnd="10dp"
                 android:text="Organiser Name"
                 android:textSize="18sp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.052"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/eventTime_text" />
+                app:layout_constraintHorizontal_bias="0.537"
+                app:layout_constraintStart_toEndOf="@+id/eventTime_text"
+                app:layout_constraintTop_toBottomOf="@+id/eventDescription_text" />
 
             <TextView
-                android:id="@+id/location_text"
+                android:id="@+id/location_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
@@ -122,11 +122,27 @@
                 app:layout_constraintHorizontal_bias="0.498"
                 app:layout_constraintStart_toStartOf="parent"
 
-                app:layout_constraintTop_toBottomOf="@+id/location_text" />
+                app:layout_constraintTop_toBottomOf="@+id/location_textview" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/share_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/announcement_button"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:layout_marginEnd="339dp"
+        android:layout_marginBottom="587dp"
+        android:contentDescription="shareButton"
+        android:src="@android:drawable/ic_menu_share"
+        app:layout_constraintBottom_toTopOf="@id/announcement_button"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/announcement_button"

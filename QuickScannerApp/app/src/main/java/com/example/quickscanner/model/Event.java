@@ -24,6 +24,15 @@ public class Event implements Parcelable {
         this.organizer = organizer;
     }
 
+    public Event(String name, String description, String imagePath, User organizer, String time, String location) {
+        this.name = name;
+        this.description = description;
+        this.imagePath = imagePath;
+        this.organizer = organizer;
+        this.time = time;
+        this.location = location;
+    }
+
     public Event() {
     }
 
