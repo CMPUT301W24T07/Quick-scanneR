@@ -196,6 +196,7 @@ public class FirebaseController
     public Task<DocumentSnapshot> getEvent(String eventId)
     {
         return eventsRef.document(eventId).get();
+
     }
 
 
@@ -364,4 +365,5 @@ public class FirebaseController
         StorageReference imageRef = idb.getReference().child(path);
         return imageRef.delete();
     }
+
 }

@@ -93,8 +93,6 @@ public class AnnouncementsFragment extends Fragment {
         // Set the adapter to the ListView
         announcementListView.setAdapter(announcementsAdapter);
 
-        //addTestData(); // some test data TODO: delete before submitting
-
 
         // create listener for updates to the Announcements list.
         announcementsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -152,21 +150,5 @@ public class AnnouncementsFragment extends Fragment {
         binding = null;
     }
 
-
-    private void addTestData() {
-        // Lets add some test data.
-        Announcement announcementAryan = new Announcement("Announcement message testing", "Dylan's Event");
-        db.collection("Announcements").add(announcementAryan);
-
-        Announcement announcement2 = new Announcement("Event Extended!", "Dylan's Event");
-        db.collection("Announcements").add(announcement2);
-
-        Announcement announcement3 = new Announcement(getString(R.string.LoremIpsum), "Dylan's Event");
-        db.collection("Announcements").add(announcement3);
-
-        Announcement announcement4 = new Announcement("Announcement message" + getString(R.string.LoremIpsum), "Joey's Event");
-        db.collection("Announcements").add(announcement4);
-
-    }
 
 }

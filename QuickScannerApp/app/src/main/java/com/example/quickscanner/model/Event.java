@@ -11,10 +11,11 @@ public class Event implements Parcelable {
     public String imagePath;
     public User organizer;
 
-    //todo: event class needs a UID. integrate with firestore.
-    // TODO we have these attributes in firestore
     public String time;
     public String location;
+    public String eventID;
+    public String organizerID;
+
 
     public String eventID;
     public String organizerID;
@@ -74,6 +75,8 @@ public class Event implements Parcelable {
     public String getOrganizerID() {return organizerID;}
     public String getTime() {return time;}
     public String getLocation() {return location;}
+    public String getEventID() {return eventID;}
+    public String getOrganizerID() {return organizerID;}
 
     public ArrayList<String> getSignUps() {return signUps;}
 
@@ -92,4 +95,5 @@ public class Event implements Parcelable {
     public void setSignUps(ArrayList<String> signUps) {this.signUps = signUps;}
 
     public void setCheckIns(ArrayList<String> checkIns) {this.checkIns = checkIns;}
+
 }

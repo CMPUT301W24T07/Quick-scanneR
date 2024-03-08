@@ -4,13 +4,18 @@ import com.example.quickscanner.R;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.transition.AutoTransition;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 
 import androidx.annotation.NonNull;
@@ -18,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.quickscanner.databinding.FragmentEventsBinding;
+import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
@@ -40,11 +46,19 @@ public class EventFragment extends Fragment {
 
     // EventList References
     ListView eventListView;
+    LinearLayout eventLinearLayout;
     ArrayList<Event> eventsDataList;
     ArrayAdapter<Event> eventAdapter;
 
+
     // Button References
     FloatingActionButton fobButton;
+
+    // DropDown click References
+    private LinearLayout fullRowLayout;  // the entire row including drop down
+    private LinearLayout dropDownLayout; // the layout you see when you click drop down
+    private RelativeLayout itemClicked;
+    private ImageView expandableArrow;
 
     // Firestore References
     private FirebaseFirestore db;
@@ -82,6 +96,7 @@ public class EventFragment extends Fragment {
 
         // Store view references
         eventListView = view.findViewById(R.id.event_listview);
+        eventLinearLayout = view.findViewById(R.id.EventFragmentContent_Layout);
 
         // Initialize the event data list and ArrayAdapter
         eventsDataList = new ArrayList<Event>();
@@ -89,10 +104,8 @@ public class EventFragment extends Fragment {
         // Set the adapter to the ListView
         eventListView.setAdapter(eventAdapter);
 
-        //addTestData(); // some test data TODO: delete before submitting
 
-
-        // create listener for updates to the events list.
+        // Create FireStore Listener for Updates to the Events List.
         eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot querySnapshots,
@@ -105,6 +118,10 @@ public class EventFragment extends Fragment {
                     eventsDataList.clear();  // removes current data
                     for (QueryDocumentSnapshot doc : querySnapshots) { // set of documents
                         Event qryEvent = doc.toObject(Event.class);
+
+                        //associate event ID with the retrieved event
+                        qryEvent.setEventID(doc.getId());
+
                         eventsDataList.add((qryEvent)); // adds new data from db
                     }
                 }
@@ -137,14 +154,15 @@ public class EventFragment extends Fragment {
             Intent intent = new Intent(getContext(), ViewEventActivity.class);
             Bundle bundle = new Bundle(1);
             // Pass the Event Identifier to the New Activity
-            bundle.putString("Name", clickedEvent.getName());
+            bundle.putString("eventID", clickedEvent.getEventID());
             intent.putExtras(bundle);
             // Start new Activity
             requireContext().startActivity(intent);
         }
     });
-    }
 
+
+    }
 
 
 
@@ -154,38 +172,5 @@ public class EventFragment extends Fragment {
         binding = null;
     }
 
-
-    private void addTestData() {
-        // Lets add some test data.
-        User aryanUser = new User("Aryan", "Aryan@ualberta.ca", "aryan@github.com", "imageURL");
-        Event eventAryan = new Event("Aryan's Event", "EventDescription",
-                "EventImagePath", aryanUser);
-        db.collection("Events").add(eventAryan);
-
-        User sidUser = new User("Sid", "Sid@ualberta.ca", "Sid@github.com", "imageURL");
-        Event eventSid = new Event("Sid's Event", "EventDescription",
-                "EventImagePath", sidUser);
-        db.collection("Events").add(eventSid);
-
-        User CrystalUser = new User("Crystal", "Crystal@ualberta.ca", "Crystal@github.com", "imageURL");
-        Event eventCrystal = new Event("Crystal's Event", "EventDescription",
-                "EventImagePath", CrystalUser);
-        db.collection("Events").add(eventCrystal);
-
-        User AyaanUser = new User("Ayaan", "Ayaan@ualberta.ca", "Ayaan@github.com", "imageURL");
-        Event eventAyaan = new Event("Ayaan's Event", "EventDescription",
-                "EventImagePath", AyaanUser);
-        db.collection("Events").add(eventAyaan);
-
-        User JoeyUser = new User("Joey", "Joey@ualberta.ca", "Joey@github.com", "imageURL");
-        Event eventJoey = new Event("Joey's Event", "EventDescription",
-                "EventImagePath", JoeyUser);
-        db.collection("Events").add(eventJoey);
-
-        User dylanUser = new User("Dylan", "dndu@ualberta.ca", "dndu@github.com", "imageURL");
-        Event eventDylan = new Event("Dylan's Event", "EventDescription",
-                "EventImagePath", dylanUser);
-        db.collection("Events").add(eventDylan);
-    }
 
 }
