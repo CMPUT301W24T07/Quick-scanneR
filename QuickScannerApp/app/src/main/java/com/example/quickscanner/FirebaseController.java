@@ -44,8 +44,8 @@ public class FirebaseController
         idb = FirebaseStorage.getInstance();
         auth = FirebaseAuth.getInstance();
         usersRef = db.collection("users");
-        imagesRef = db.collection("images");
-        eventsRef = db.collection("events");
+        imagesRef = db.collection("Images");
+        eventsRef = db.collection("Events");
     }
 
     /**
