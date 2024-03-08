@@ -16,9 +16,6 @@ public class Event implements Parcelable {
     public String eventID;
     public String organizerID;
 
-
-    public String eventID;
-    public String organizerID;
     public ArrayList<String> signUps;
     public ArrayList<String> checkIns;
 
@@ -71,8 +68,6 @@ public class Event implements Parcelable {
     public String getDescription() {return description;}
     public String getImagePath() {return imagePath;}
     public User getOrganizer() {return organizer;}
-    public String getEventID() {return eventID;}
-    public String getOrganizerID() {return organizerID;}
     public String getTime() {return time;}
     public String getLocation() {return location;}
     public String getEventID() {return eventID;}
