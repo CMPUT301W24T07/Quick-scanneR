@@ -76,4 +76,12 @@ public class User {
         Uid = uid;
     }
 
+    public int getOrganizedEventsSize() {
+        return organizedEvents.size();
+    }
+
+    public int getAttendingEventsSize() {
+        return attendingEvents.size();
+    }
+
 }

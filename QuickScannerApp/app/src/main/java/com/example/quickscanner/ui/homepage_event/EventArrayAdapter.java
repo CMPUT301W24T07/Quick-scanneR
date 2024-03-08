@@ -15,6 +15,10 @@ import com.example.quickscanner.model.*;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class EventArrayAdapter extends ArrayAdapter<Event> {
+    /*
+        This Array Adapter customizes the presentation of the Events list
+    */
+
     private ArrayList<Event> events;
     private Context context;
 

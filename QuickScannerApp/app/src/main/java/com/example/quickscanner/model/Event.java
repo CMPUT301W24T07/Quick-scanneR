@@ -16,8 +16,8 @@ public class Event implements Parcelable {
     public String eventID;
     public String organizerID;
 
-    public ArrayList<String> signUps;
-    public ArrayList<String> checkIns;
+    public ArrayList<String> signUps = new ArrayList<>();
+    public ArrayList<String> checkIns = new ArrayList<>();
 
 
 
