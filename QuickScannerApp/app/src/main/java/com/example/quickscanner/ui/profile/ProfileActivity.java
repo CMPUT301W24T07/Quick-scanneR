@@ -3,9 +3,18 @@ package com.example.quickscanner.ui.profile;
 import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_NULL;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem; // Import Menu class
 import androidx.annotation.NonNull;
@@ -13,6 +22,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.quickscanner.FirebaseController;
@@ -24,7 +34,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Objects;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -33,6 +46,8 @@ public class ProfileActivity extends AppCompatActivity {
     EditText nameEdit;
     EditText emailEdit;
     EditText linkedinEdit;
+    ImageView profileImage;
+    Bitmap profileBitMap;
     boolean editMode;
 
     User myUser;
@@ -45,6 +60,21 @@ public class ProfileActivity extends AppCompatActivity {
         fbController = new FirebaseController();
         Log.w("error", fbController.getCurrentUserUid());
         Log.w("error", "weird p1");
+
+        ActivityResultLauncher<Intent> activityResultLauncher =
+                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        Uri uri = data.getData();
+                        try {
+                            profileBitMap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                            profileImage.setImageBitmap(profileBitMap);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+
         fbController.getUser(fbController.getCurrentUserUid()).addOnCompleteListener(task -> {
             Log.w("error", "pleasepleasepleasepleaseplease");
             if (task.isSuccessful()) {
@@ -58,32 +88,51 @@ public class ProfileActivity extends AppCompatActivity {
                     nameEdit  = findViewById(R.id.nameEdit);
                     emailEdit = findViewById(R.id.emailEdit);
                     linkedinEdit  = findViewById(R.id.socialEdit);
+                    profileImage = findViewById(R.id.profileImage);
 
                     nameEdit.setText(myProfile.getName());
                     emailEdit.setText(myProfile.getEmail());
                     linkedinEdit.setText(myProfile.getWebsite());
+                    fbController.downloadImage(myProfile.getImageUrl()).addOnCompleteListener(task1 -> {
+                        String url = String.valueOf(task1.getResult());
+                        Picasso.get().load(url).into(profileImage);
+                    });
 
-                    editButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if (!editMode) {
-                                nameEdit.setInputType(TYPE_CLASS_TEXT);
-                                emailEdit.setInputType(TYPE_CLASS_TEXT);
-                                linkedinEdit.setInputType(TYPE_CLASS_TEXT);
-                                editMode = !editMode;
-                                editButton.setText("Save");
-                            } else {
-                                myProfile.setName(String.valueOf(nameEdit.getText()));
-                                myProfile.setEmail(String.valueOf(emailEdit.getText()));
-                                myProfile.setWebsite(String.valueOf(linkedinEdit.getText()));
-                                myUser.setUserProfile(myProfile);
-                                fbController.updateUser(myUser);
-                                nameEdit.setInputType(TYPE_NULL);
-                                emailEdit.setInputType(TYPE_NULL);
-                                linkedinEdit.setInputType(TYPE_NULL);
-                                editMode = !editMode;
-                                editButton.setText("Edit");
+
+                    profileImage.setOnClickListener(v -> {
+                        if (editMode) {
+                            Intent galleryIntent = new Intent(Intent.ACTION_PICK);
+                            galleryIntent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            activityResultLauncher.launch(galleryIntent);
+                        }
+                    });
+
+                    editButton.setOnClickListener(v -> {
+                        if (!editMode) {
+                            nameEdit.setInputType(TYPE_CLASS_TEXT);
+                            emailEdit.setInputType(TYPE_CLASS_TEXT);
+                            linkedinEdit.setInputType(TYPE_CLASS_TEXT);
+                            editMode = !editMode;
+                            editButton.setText("Save");
+                        } else {
+                            myProfile.setName(String.valueOf(nameEdit.getText()));
+                            myProfile.setEmail(String.valueOf(emailEdit.getText()));
+                            myProfile.setWebsite(String.valueOf(linkedinEdit.getText()));
+                            if (profileBitMap != null) {
+                                myProfile.setImageUrl(myUser.getUid());
+                                ByteArrayOutputStream boas = new ByteArrayOutputStream();
+                                profileBitMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
+                                byte[] imageData = boas.toByteArray();
+                                fbController.uploadImage(myUser.getUid(), imageData);
                             }
+
+                            myUser.setUserProfile(myProfile);
+                            fbController.updateUser(myUser);
+                            nameEdit.setInputType(TYPE_NULL);
+                            emailEdit.setInputType(TYPE_NULL);
+                            linkedinEdit.setInputType(TYPE_NULL);
+                            editMode = !editMode;
+                            editButton.setText("Edit");
                         }
                     });
                 } else {

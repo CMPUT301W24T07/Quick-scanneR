@@ -21,11 +21,11 @@ public class Event implements Parcelable {
 
 
 
-    public Event(String name, String description, String imagePath, User organizer) {
+    public Event(String name, String description, User organizer) {
         this.name = name;
         this.description = description;
-        this.imagePath = imagePath;
         this.organizer = organizer;
+        imagePath = "default.jpeg";
     }
 
     public Event() {
