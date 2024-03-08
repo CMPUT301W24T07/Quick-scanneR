@@ -1,14 +1,24 @@
 package com.example.quickscanner.ui.viewevent;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem; // Import Menu class
 
 import androidx.annotation.NonNull;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 
@@ -19,8 +29,16 @@ import com.example.quickscanner.model.Event;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+
 import com.squareup.picasso.Picasso;
+ 
 
 import java.util.Objects;
 
@@ -56,6 +74,62 @@ public class ViewEventActivity extends AppCompatActivity {
         }
         fetchEventData();
 
+        // Get a reference to the announcement button
+        FloatingActionButton announcementButton = findViewById(R.id.announcement_button);
+
+        // Set an OnClickListener to the button
+        announcementButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create an EditText for the user to input their announcement
+                final EditText input = new EditText(ViewEventActivity.this);
+
+                // Create an AlertDialog
+                new AlertDialog.Builder(ViewEventActivity.this)
+                        .setTitle("Announcement")
+                        .setMessage("What do you wish to announce?")
+                        .setView(input)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                // Get the user's input
+                                String announcement = input.getText().toString();
+
+                                // TODO: Handle the announcement (e.g., send it to Firebase)
+
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            }
+        });
+
+        Bitmap qrCodeBitmap = generateQRCode(eventID);
+
+
+        // Get a reference to the share button
+        FloatingActionButton shareButton = findViewById(R.id.share_button);
+
+        // Set an OnClickListener to the button
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Convert the QR code Bitmap to a Uri
+                String path = MediaStore.Images.Media.insertImage(getContentResolver(), qrCodeBitmap, "QR Code", null);
+                Uri qrCodeUri = Uri.parse(path);
+
+                // Create an Intent with ACTION_SEND action
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+
+                // Put the Uri of the image and the text you want to share in the Intent
+                shareIntent.putExtra(Intent.EXTRA_STREAM, qrCodeUri);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "Join my event titled " + event.getName()+" using this QR code" );
+                shareIntent.setType("image/jpeg");
+
+                // Start the Intent
+                startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
+            }
+        });
+
     }
 
     // Fetches the event data from Firestore
@@ -76,18 +150,24 @@ public class ViewEventActivity extends AppCompatActivity {
                 //use event object to update all the views
                 binding.eventTitleText.setText(event.getName());
                 binding.eventDescriptionText.setText(event.getDescription());
-                binding.locationText.setText(event.getLocation());
+                binding.locationTextview.setText(event.getLocation());
                 binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
                 binding.eventTimeText.setText(event.getTime());
                 // Set up click listener for the "Generate QR Code" button
                 binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
 
+                Bitmap qrCodeBitmap = generateQRCode(eventID);
+                if (qrCodeBitmap != null) {
+                    binding.QRCodeImage.setImageBitmap(qrCodeBitmap);
+                }
                 //just generate the qr code from the event id and set it to the qr code image view
                 //and get the image from the firebase storage and set it to the image view
+
                 fbController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
                     String url = String.valueOf(task1.getResult());
                     Picasso.get().load(url).into(binding.eventImageImage);
                 });
+
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -117,4 +197,23 @@ public class ViewEventActivity extends AppCompatActivity {
 
     }
 
+    //generates QR code
+    private Bitmap generateQRCode(String text) {
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        try {
+            BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
+            int width = bitMatrix.getWidth();
+            int height = bitMatrix.getHeight();
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                }
+            }
+            return bitmap;
+        } catch (WriterException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
