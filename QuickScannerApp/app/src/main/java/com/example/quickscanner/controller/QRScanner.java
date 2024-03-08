@@ -1,6 +1,7 @@
 package com.example.quickscanner.controller;
 
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
 
 import com.google.mlkit.vision.barcode.common.Barcode;
@@ -21,6 +22,16 @@ import java.util.concurrent.atomic.AtomicReference;
 public class QRScanner {
 
     private Context context;
+
+    //nonfunctional for now. will handle this later.
+    public void scanQRCodeFromGallery(Uri uri, QRCodeScanCallback qrCodeScanCallback) {
+        //decode the QR code from the gallery using ZXing
+        //return the value of the QR code
+        String decoded = "";
+
+        qrCodeScanCallback.onQRCodeScanned(decoded);
+
+    }
 
     public interface QRCodeScanCallback {
         void onQRCodeScanned(String qrCodeValue);
@@ -61,7 +72,5 @@ public class QRScanner {
                             //produce dialog box to say that the task failed
                             qrCodeScanCallback.onQRCodeScanned("Task Failed");
                         });
-
-
     }
 }

@@ -55,6 +55,10 @@ public class AddEventActivity extends AppCompatActivity {
     private ImageView eventImageView;
     private String editedEventName;
     private String editedEventDescription;
+    private String editedImagePath;
+    private EditText locationEditText;
+    private EditText timeEditText;
+
     private ArrayAdapter<Event> eventAdapter;
     private List<Event> eventDataList = new ArrayList<>();
     private ActivityResultLauncher<Intent> resultLauncher;
@@ -74,6 +78,9 @@ public class AddEventActivity extends AppCompatActivity {
         eventDescriptionTextView = findViewById(R.id.EventDescription);
         eventNameEditText = findViewById(R.id.EventName);
         eventImageView = findViewById(R.id.imageView);
+
+        locationEditText = findViewById(R.id.location_textview);
+        timeEditText = findViewById(R.id.time_textview);
 
         // Initialize the event data list and ArrayAdapter
         eventDataList = new ArrayList<>();
@@ -135,8 +142,13 @@ public class AddEventActivity extends AppCompatActivity {
             if (editedEventName != null && !editedEventName.isEmpty() &&
                     editedEventDescription != null && !editedEventDescription.isEmpty()) {
 
+                // Retrieve the text from the EditText fields
+                String location = locationEditText.getText().toString();
+                String time = timeEditText.getText().toString();
+
                 // Create an Event object with the edited values
-                Event newEvent = new Event(editedEventName, editedEventDescription, testUser);
+                Event newEvent = new Event(editedEventName, editedEventDescription, editedImagePath, testUser, time, location);
+
                 // Add the event to the database
                 addEventToFirestore(newEvent);
 
