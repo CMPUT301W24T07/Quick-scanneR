@@ -5,12 +5,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,26 +20,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.quickscanner.FirebaseController;
+import com.example.quickscanner.controller.FirebaseController;
 import com.example.quickscanner.R;
-import com.example.quickscanner.databinding.FragmentScanBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.MultiFormatWriter;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -129,11 +118,11 @@ public class AddEventActivity extends AppCompatActivity {
         registerResult();
         editImageButton.setOnClickListener(view -> pickImage());
 
-        // QR code generation
-        ImageButton generateQRbtn = findViewById(R.id.generateQRbtn);
-        generateQRbtn.setOnClickListener(v -> {
-            QRCodeDialogFragment.newInstance(null).show(getSupportFragmentManager(), "QRCodeDialogFragment");
-        });
+//        // QR code generation
+//        ImageButton generateQRbtn = findViewById(R.id.generateQRbtn);
+//        generateQRbtn.setOnClickListener(v -> {
+//            QRCodeDialogFragment.newInstance(null).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+//        });
 
         // Create Event Button
         Button createEventInsideBtn = findViewById(R.id.CreateEventInsideBtn);

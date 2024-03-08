@@ -9,8 +9,8 @@ import android.widget.Toast;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 
+import com.example.quickscanner.controller.FirebaseController;
 import com.example.quickscanner.model.Event;
-import com.example.quickscanner.model.Profile;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;

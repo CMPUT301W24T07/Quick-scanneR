@@ -17,12 +17,10 @@ import androidx.annotation.NonNull;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 
-import com.example.quickscanner.FirebaseController;
+import com.example.quickscanner.controller.FirebaseController;
 import com.example.quickscanner.R;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
