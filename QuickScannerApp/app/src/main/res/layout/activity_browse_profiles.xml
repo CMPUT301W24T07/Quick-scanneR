@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/browse_profiles_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#BCBCBC">
+
+        <TextView
+            android:id="@+id/BrowseProfilesTitle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Browse Profiles"
+            android:textAllCaps="false"
+            android:textSize="40dp"
+            android:textAlignment="center"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="30dp"
+            android:textColor="@color/black"
+            />
+
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/select_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/browse_profiles_fragment"
+        android:text="Select"
+        android:textSize="15dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="16dp"
+        android:textColor="#202020"
+        android:textStyle="bold"
+        />
+
+    <TextView
+        android:id="@+id/name_text_view"
+        android:layout_toRightOf="@+id/select_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/browse_profiles_fragment"
+        android:text="Name"
+        android:textSize="15dp"
+        android:layout_marginStart="35dp"
+        android:layout_marginTop="16dp"
+        android:textColor="#202020"
+        android:textStyle="bold"
+        />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="40dp"
+        android:layout_below="@+id/select_text_view"
+        android:layout_marginTop="16dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="85dp">
+
+            <ListView
+                android:id="@+id/BrowseProfilesListView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            </ListView>
+
+        </RelativeLayout>
+
+
+
+    </RelativeLayout>
+
+</RelativeLayout>
