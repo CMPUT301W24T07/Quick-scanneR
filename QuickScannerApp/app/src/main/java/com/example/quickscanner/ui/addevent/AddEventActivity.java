@@ -128,11 +128,11 @@ public class AddEventActivity extends AppCompatActivity {
         registerResult();
         editImageButton.setOnClickListener(view -> pickImage());
 
-        // QR code generation
-        ImageButton generateQRbtn = findViewById(R.id.generateQRbtn);
-        generateQRbtn.setOnClickListener(v -> {
-            QRCodeDialogFragment.newInstance(null).show(getSupportFragmentManager(), "QRCodeDialogFragment");
-        });
+//        // QR code generation
+//        ImageButton generateQRbtn = findViewById(R.id.generateQRbtn);
+//        generateQRbtn.setOnClickListener(v -> {
+//            QRCodeDialogFragment.newInstance(null).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+//        });
 
         // Create Event Button
         Button createEventInsideBtn = findViewById(R.id.CreateEventInsideBtn);
