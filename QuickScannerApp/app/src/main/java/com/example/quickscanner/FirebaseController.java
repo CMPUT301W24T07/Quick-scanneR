@@ -1,6 +1,7 @@
 package com.example.quickscanner;
 
 import android.net.Uri;
+import android.util.Log;
 
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.Image;
@@ -352,6 +353,7 @@ public class FirebaseController
      */
     public Task<Uri> downloadImage(String path)
     {
+        Log.d("plshalp", "downloadImage: " + path);
         StorageReference imageRef = idb.getReference().child(path);
         return imageRef.getDownloadUrl();
     }
