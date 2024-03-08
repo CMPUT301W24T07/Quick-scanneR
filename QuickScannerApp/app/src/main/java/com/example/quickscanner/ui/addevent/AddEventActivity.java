@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -28,13 +29,20 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.quickscanner.FirebaseController;
 import com.example.quickscanner.R;
 import com.example.quickscanner.databinding.FragmentScanBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -47,18 +55,20 @@ public class AddEventActivity extends AppCompatActivity {
     private ImageView eventImageView;
     private String editedEventName;
     private String editedEventDescription;
-    private String editedImagePath;
     private ArrayAdapter<Event> eventAdapter;
     private List<Event> eventDataList = new ArrayList<>();
     private ActivityResultLauncher<Intent> resultLauncher;
     private FirebaseFirestore db;
+    private FirebaseController fbController;
     private CollectionReference eventsRef;
+    private Bitmap eventImageMap;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_addevent);
+        fbController = new FirebaseController();
 
         // Initialize views
         eventDescriptionTextView = findViewById(R.id.EventDescription);
@@ -111,35 +121,43 @@ public class AddEventActivity extends AppCompatActivity {
         registerResult();
         editImageButton.setOnClickListener(view -> pickImage());
 
+        // QR code generation
+        ImageButton generateQRbtn = findViewById(R.id.generateQRbtn);
+        generateQRbtn.setOnClickListener(v -> {
+            QRCodeDialogFragment.newInstance(null).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+        });
 
         // Create Event Button
         Button createEventInsideBtn = findViewById(R.id.CreateEventInsideBtn);
         User testUser = new User();
-        createEventInsideBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Check if necessary fields are filled
-                if (editedEventName != null && !editedEventName.isEmpty() &&
-                        editedEventDescription != null && !editedEventDescription.isEmpty()) {
+        createEventInsideBtn.setOnClickListener(v -> {
+            // Check if necessary fields are filled
+            if (editedEventName != null && !editedEventName.isEmpty() &&
+                    editedEventDescription != null && !editedEventDescription.isEmpty()) {
 
-                    // Create an Event object with the edited values
-                    Event newEvent = new Event(editedEventName, editedEventDescription, editedImagePath, testUser);
+                // Create an Event object with the edited values
+                Event newEvent = new Event(editedEventName, editedEventDescription, testUser);
+                // Add the event to the database
+                addEventToFirestore(newEvent);
 
-                    // Add the event to the database
-                    addEventToFirestore(newEvent);
+                // Add the event to the list and update the ArrayAdapter
+                eventDataList.add(newEvent);
+                eventAdapter.notifyDataSetChanged();
 
-                    // Add the event to the list and update the ArrayAdapter
-                    eventDataList.add(newEvent);
-                    eventAdapter.notifyDataSetChanged();
+                // Assign the eventId here
+                String eventId = newEvent.getEventID();
 
-                    // Pass the new event data back to the calling fragment
-                    Intent resultIntent = new Intent();
-                    resultIntent.putExtra("newEvent", newEvent);
-                    setResult(Activity.RESULT_OK, resultIntent);
+                // Update the QR code with the eventId and show the dialog
+                QRCodeDialogFragment.newInstance(eventId).show(getSupportFragmentManager(), "QRCodeDialogFragment");
 
-                    // finish the activity or perform other actions
-                    finish();
-                }
+
+                // Pass the new event data back to the calling fragment
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("newEvent", newEvent);
+                setResult(Activity.RESULT_OK, resultIntent);
+
+                // finish the activity or perform other actions
+                finish();
             }
         });
     }
@@ -150,6 +168,16 @@ public class AddEventActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentReference -> {
                     Log.d("AddEventActivity", "Event added with ID: " + documentReference.getId());
                     // additional actions if needed
+                    event.setEventID(documentReference.getId());
+
+                    if (eventImageMap != null) {
+                        event.setImagePath(event.getEventID() + "primary");
+                        ByteArrayOutputStream boas = new ByteArrayOutputStream();
+                        eventImageMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
+                        byte[] imageData = boas.toByteArray();
+                        fbController.uploadImage(event.getImagePath(), imageData);
+                        fbController.updateEvent(event);
+                    }
                 })
                 .addOnFailureListener(e -> {
                     Log.e("AddEventActivity", "Error adding event", e);
@@ -202,39 +230,15 @@ public class AddEventActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        Uri imageUri = data.getData();
                         try {
-                            Uri imageUri = result.getData().getData();
-                            String imageName = getFileName(imageUri);
-                            editedImagePath = imageUri.toString();
-                            eventImageView.setImageURI(imageUri);
-                            Log.d("PhotoPicker", "Selected Image: " + imageName);
+                            eventImageMap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                            eventImageView.setImageBitmap(eventImageMap);
                         } catch (Exception e) {
                             Toast.makeText(AddEventActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
-    }
-
-    // Helper method to get the file name from a Uri
-    private String getFileName(Uri uri) {
-        String result = null;
-        if (uri.getScheme().equals("content")) {
-            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    int displayNameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    if (displayNameIndex != -1) {
-                        result = cursor.getString(displayNameIndex);
-                    } else {
-                        // Handle the case where DISPLAY_NAME is not supported
-                        result = uri.getLastPathSegment();
-                    }
-                }
-            }
-        }
-        if (result == null) {
-            // Fallback to the last segment of the URI
-            result = uri.getLastPathSegment();
-        }
-        return result;
     }
 }

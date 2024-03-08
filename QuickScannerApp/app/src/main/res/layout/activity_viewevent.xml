@@ -107,22 +107,17 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/organiser_text" />
 
-            <ImageView
-                android:id="@+id/QRCode_image"
-                android:layout_width="221dp"
-                android:layout_height="245dp"
-                android:layout_marginTop="12dp"
-                android:paddingLeft="10dp"
-                android:paddingTop="20dp"
-                android:paddingEnd="10dp"
-                android:paddingBottom="20dp"
-                android:src="@drawable/ic_launcher_background"
+            <ImageButton
+                android:id="@+id/generateQRbtn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.498"
                 app:layout_constraintStart_toStartOf="parent"
-
-                app:layout_constraintTop_toBottomOf="@+id/location_text" />
+                app:layout_constraintTop_toBottomOf="@+id/location_text"
+                app:srcCompat="@drawable/ic_qr_code_scanner_24" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -135,7 +130,10 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_gravity="end|bottom"
-        android:layout_margin="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
         android:contentDescription="makeAnnouncementButton"
         android:src="@android:drawable/ic_popup_reminder" />
 

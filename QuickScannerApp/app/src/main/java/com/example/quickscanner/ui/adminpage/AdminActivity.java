@@ -1,9 +1,7 @@
 package com.example.quickscanner.ui.adminpage;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,22 +20,8 @@ public class AdminActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
 
-        Button browseEventsButton = findViewById(R.id.BrowseEventsButton);
-        Button browseProfilesButton = findViewById(R.id.BrowseProfilesButton);
-
         // back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-
-        browseEventsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(AdminActivity.this, BrowseEventsActivity.class);
-            startActivity(intent);
-        });
-
-        browseProfilesButton.setOnClickListener(v -> {
-            Intent intent = new Intent(AdminActivity.this, BrowseProfilesActivity.class);
-            startActivity(intent);
-        });
-
     }
 
     // Handles The Top Bar menu clicks
