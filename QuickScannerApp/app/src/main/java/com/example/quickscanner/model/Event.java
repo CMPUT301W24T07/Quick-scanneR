@@ -3,6 +3,7 @@ package com.example.quickscanner.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class Event implements Parcelable {
     public String name;
@@ -14,6 +15,12 @@ public class Event implements Parcelable {
     // TODO we have these attributes in firestore
     public String time;
     public String location;
+
+    public String eventID;
+    public String organizerID;
+    public ArrayList<String> signUps;
+    public ArrayList<String> checkIns;
+
 
 
     public Event(String name, String description, String imagePath, User organizer) {
@@ -63,8 +70,14 @@ public class Event implements Parcelable {
     public String getDescription() {return description;}
     public String getImagePath() {return imagePath;}
     public User getOrganizer() {return organizer;}
+    public String getEventID() {return eventID;}
+    public String getOrganizerID() {return organizerID;}
     public String getTime() {return time;}
     public String getLocation() {return location;}
+
+    public ArrayList<String> getSignUps() {return signUps;}
+
+    public ArrayList<String> getCheckIns() {return checkIns;}
 
     // Setters
     public void setName(String name) {this.name = name;}
@@ -73,4 +86,10 @@ public class Event implements Parcelable {
     public void setOrganizer(User organizer) {this.organizer = organizer;}
     public void setTime(String time) {this.time = time;}
     public void setLocation(String location) {this.location = location;}
+    public void setEventID(String eventID) {this.eventID = eventID;}
+    public void setOrganizerID(String organizerID) {this.organizerID = organizerID;}
+
+    public void setSignUps(ArrayList<String> signUps) {this.signUps = signUps;}
+
+    public void setCheckIns(ArrayList<String> checkIns) {this.checkIns = checkIns;}
 }
