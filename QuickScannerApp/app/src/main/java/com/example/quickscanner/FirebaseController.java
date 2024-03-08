@@ -340,7 +340,6 @@ public class FirebaseController
      * @return an UploadTask that can be used to monitor the upload
      */
     public UploadTask uploadImage(String path, byte[] imageData) {
-    {
         StorageReference imageRef = idb.getReference().child(path);
         return imageRef.putBytes(imageData);
     }
