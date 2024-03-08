@@ -27,14 +27,16 @@ public class FirebaseController {
     private CollectionReference usersRef;
     private CollectionReference imagesRef;
     private CollectionReference eventsRef;
+    private StorageReference imageStorage;
 
     public FirebaseController() {
         db = FirebaseFirestore.getInstance();
         idb = FirebaseStorage.getInstance();
-         auth = FirebaseAuth.getInstance();
+        auth = FirebaseAuth.getInstance();
         usersRef = db.collection("users");
         imagesRef = db.collection("images");
         eventsRef = db.collection("events");
+        imageStorage = idb.getReference();
     }
     //sign in operation
     // Checks if it's the first sign in
@@ -146,9 +148,9 @@ public class FirebaseController {
     //Image Firebase Storage operations
 
     // Uploads image to Firebase Storage
-    public UploadTask uploadImage(String path, Uri imageUri) {
+    public UploadTask uploadImage(String path, byte[] imageData) {
         StorageReference imageRef = idb.getReference().child(path);
-        return imageRef.putFile(imageUri);
+        return imageRef.putBytes(imageData);
     }
 
     // Downloads image from Firebase Storage

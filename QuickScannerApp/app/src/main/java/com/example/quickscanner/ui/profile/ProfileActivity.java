@@ -34,7 +34,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -91,6 +93,10 @@ public class ProfileActivity extends AppCompatActivity {
                     nameEdit.setText(myProfile.getName());
                     emailEdit.setText(myProfile.getEmail());
                     linkedinEdit.setText(myProfile.getWebsite());
+                    fbController.downloadImage(myProfile.getImageUrl()).addOnCompleteListener(task1 -> {
+                        String url = String.valueOf(task1.getResult());
+                        Picasso.get().load(url).into(profileImage);
+                    });
 
 
                     profileImage.setOnClickListener(v -> {
@@ -112,6 +118,14 @@ public class ProfileActivity extends AppCompatActivity {
                             myProfile.setName(String.valueOf(nameEdit.getText()));
                             myProfile.setEmail(String.valueOf(emailEdit.getText()));
                             myProfile.setWebsite(String.valueOf(linkedinEdit.getText()));
+                            if (profileBitMap != null) {
+                                myProfile.setImageUrl(myUser.getUid());
+                                ByteArrayOutputStream boas = new ByteArrayOutputStream();
+                                profileBitMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
+                                byte[] imageData = boas.toByteArray();
+                                fbController.uploadImage(myUser.getUid(), imageData);
+                            }
+
                             myUser.setUserProfile(myProfile);
                             fbController.updateUser(myUser);
                             nameEdit.setInputType(TYPE_NULL);
