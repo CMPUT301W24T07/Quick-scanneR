@@ -37,6 +37,11 @@ import com.google.firebase.firestore.EventListener;
 import java.util.ArrayList;
 
 public class AnnouncementsFragment extends Fragment {
+    /**
+     * This Fragment hosts our Announcement list for users to view.
+     * Announcements are expandable by clicking on the dropdown menu to read
+     * more.
+     */
 
     private FragmentAnnouncementsBinding binding;
 

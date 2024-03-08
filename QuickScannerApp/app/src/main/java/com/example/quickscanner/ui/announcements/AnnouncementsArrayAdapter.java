@@ -18,6 +18,9 @@ import com.example.quickscanner.R;
 import com.example.quickscanner.model.*;
 
 public class AnnouncementsArrayAdapter extends ArrayAdapter<Announcement>{
+    /*
+    This Array Adapter customizes the presentation of the Announcements list
+*/
     private ArrayList<Announcement> announcements;
     private Context context;
 

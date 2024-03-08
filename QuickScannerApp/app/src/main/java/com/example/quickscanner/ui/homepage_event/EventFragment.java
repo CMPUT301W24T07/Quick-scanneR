@@ -41,7 +41,11 @@ import com.google.firebase.firestore.EventListener;
 import java.util.ArrayList;
 
 public class EventFragment extends Fragment {
-
+    /**
+     * This Fragment hosts our event list for users to view.
+     * Anybody can Organize an Event through this fragment, and
+     * see more event details by clicking an event.
+     */
     private FragmentEventsBinding binding;
 
     // EventList References
