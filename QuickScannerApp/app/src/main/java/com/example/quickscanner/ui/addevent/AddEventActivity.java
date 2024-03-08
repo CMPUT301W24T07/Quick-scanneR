@@ -36,6 +36,11 @@ import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -50,7 +55,6 @@ public class AddEventActivity extends AppCompatActivity {
     private ImageView eventImageView;
     private String editedEventName;
     private String editedEventDescription;
-    private String editedImagePath;
     private ArrayAdapter<Event> eventAdapter;
     private List<Event> eventDataList = new ArrayList<>();
     private ActivityResultLauncher<Intent> resultLauncher;
@@ -117,6 +121,11 @@ public class AddEventActivity extends AppCompatActivity {
         registerResult();
         editImageButton.setOnClickListener(view -> pickImage());
 
+        // QR code generation
+        ImageButton generateQRbtn = findViewById(R.id.generateQRbtn);
+        generateQRbtn.setOnClickListener(v -> {
+            QRCodeDialogFragment.newInstance(null).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+        });
 
         // Create Event Button
         Button createEventInsideBtn = findViewById(R.id.CreateEventInsideBtn);
@@ -134,6 +143,13 @@ public class AddEventActivity extends AppCompatActivity {
                 // Add the event to the list and update the ArrayAdapter
                 eventDataList.add(newEvent);
                 eventAdapter.notifyDataSetChanged();
+
+                // Assign the eventId here
+                String eventId = newEvent.getEventID();
+
+                // Update the QR code with the eventId and show the dialog
+                QRCodeDialogFragment.newInstance(eventId).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+
 
                 // Pass the new event data back to the calling fragment
                 Intent resultIntent = new Intent();
@@ -224,28 +240,5 @@ public class AddEventActivity extends AppCompatActivity {
                         }
                     }
                 });
-    }
-
-    // Helper method to get the file name from a Uri
-    private String getFileName(Uri uri) {
-        String result = null;
-        if (uri.getScheme().equals("content")) {
-            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
-                if (cursor != null && cursor.moveToFirst()) {
-                    int displayNameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    if (displayNameIndex != -1) {
-                        result = cursor.getString(displayNameIndex);
-                    } else {
-                        // Handle the case where DISPLAY_NAME is not supported
-                        result = uri.getLastPathSegment();
-                    }
-                }
-            }
-        }
-        if (result == null) {
-            // Fallback to the last segment of the URI
-            result = uri.getLastPathSegment();
-        }
-        return result;
     }
 }

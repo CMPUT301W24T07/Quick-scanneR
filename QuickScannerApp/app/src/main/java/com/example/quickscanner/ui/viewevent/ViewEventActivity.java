@@ -16,6 +16,7 @@ import com.example.quickscanner.FirebaseController;
 import com.example.quickscanner.R;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -78,6 +79,8 @@ public class ViewEventActivity extends AppCompatActivity {
                 binding.locationText.setText(event.getLocation());
                 binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
                 binding.eventTimeText.setText(event.getTime());
+                // Set up click listener for the "Generate QR Code" button
+                binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
 
                 //just generate the qr code from the event id and set it to the qr code image view
                 //and get the image from the firebase storage and set it to the image view
@@ -95,6 +98,13 @@ public class ViewEventActivity extends AppCompatActivity {
         });
     }
 
+    private void showQRCodeDialog() {
+        // Check if the event object is available
+        if (event != null) {
+            // Create and show the QR code dialog fragment
+            QRCodeDialogFragment.newInstance(eventID).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+        }
+    }
 
     // Handles The Top Bar menu clicks
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
