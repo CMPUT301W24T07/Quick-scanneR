@@ -17,7 +17,7 @@ public class Profile {
         this.name = "";
         this.email = "";
         this.website = "";
-        this.imageUrl = "";
+        this.imageUrl = "default.jpeg";
     }
 
     public String getName() {

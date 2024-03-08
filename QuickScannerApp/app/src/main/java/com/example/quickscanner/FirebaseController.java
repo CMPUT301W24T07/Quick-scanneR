@@ -33,6 +33,7 @@ public class FirebaseController
     private CollectionReference usersRef;
     private CollectionReference imagesRef;
     private CollectionReference eventsRef;
+    private StorageReference imageStorage;
 
     /**
      * Initializes connections to Firestore, Firebase Storage, and FirebaseAuth.
@@ -44,6 +45,7 @@ public class FirebaseController
         idb = FirebaseStorage.getInstance();
         auth = FirebaseAuth.getInstance();
         usersRef = db.collection("users");
+        imageStorage = idb.getReference();
         imagesRef = db.collection("Images");
         eventsRef = db.collection("Events");
     }
@@ -151,6 +153,7 @@ public class FirebaseController
     {
         return eventsRef.add(event);
     }
+
 
     /**
      * Updates existing event in Firestore.
@@ -332,14 +335,14 @@ public class FirebaseController
     /**
      * Uploads image to Firebase Storage.
      *
-     * @param path     the path where the image will be stored
-     * @param imageUri the Uri of the image to upload
+     * @param path      the path where the image will be stored
+     * @param imageData the byte data of the image to upload
      * @return an UploadTask that can be used to monitor the upload
      */
-    public UploadTask uploadImage(String path, Uri imageUri)
+    public UploadTask uploadImage(String path, byte[] imageData) {
     {
         StorageReference imageRef = idb.getReference().child(path);
-        return imageRef.putFile(imageUri);
+        return imageRef.putBytes(imageData);
     }
 
     /**
