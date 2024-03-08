@@ -1,53 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="wrap_content"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:orientation="horizontal">
+    android:orientation="vertical"
+    android:id="@+id/EventFragmentContent_Row"
+    android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/EventFragment_Name_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="14dp"
-        android:text="@string/name"
-        android:textSize="14sp">
-    </TextView>
+    <RelativeLayout
+        android:id="@+id/EventFragmentContent_itemClicked"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/EventFragment_Description_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:layout_marginStart="20dp"
-        android:text="@string/description">
-    </TextView>
+        <ImageView
+            android:id="@+id/EventFragment_Image"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/baseline_catching_pokemon_24" />
 
-    <TextView
-        android:id="@+id/EventFragment_Location_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:layout_marginStart="20dp"
-        android:text="@string/location">
-    </TextView>
+        <LinearLayout
+            android:id="@+id/EventFragmentContent_Layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_toStartOf="@id/EventFragment_DropDown"
+            android:layout_toEndOf="@+id/EventFragment_Image"
+            android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/EventFragment_Organizers_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:layout_marginStart="20dp"
-        android:text="@string/organizers">
-    </TextView>
+            <TextView
+                android:id="@+id/EventFragment_Name_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/event_name"
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/EventFragment_Time_text"
-        android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/EventFragment_Time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/time"
+                android:textColor="@android:color/black"
+                android:textSize="15sp" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/EventFragment_DropDown"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="3dp"
+            android:visibility="invisible"
+            android:contentDescription="@string/expandable_arrow"
+            android:src="@drawable/baseline_catching_pokemon_24" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/EventFragment_Extension"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:layout_marginStart="20dp"
-        android:text="@string/time">
-    </TextView>
+        android:orientation="vertical"
+        >
+        <TextView
+            android:id="@+id/EventFragment_Location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/location"
+            android:layout_marginTop="5dp"
+            android:textColor="@android:color/black"
+            android:fontFamily="serif"
+            android:textAlignment="center"
+            android:padding="5dp"
+            android:textSize="16sp"
+            />
+        <TextView
+            android:id="@+id/EventFragment_LongDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/long_description"
+            android:layout_marginTop="5dp"
+            android:textColor="@android:color/black"
+            android:fontFamily="serif"
+            android:textAlignment="center"
+            android:padding="5dp"
+            android:textSize="16sp"
+            />
+    </LinearLayout>
 
 </LinearLayout>
