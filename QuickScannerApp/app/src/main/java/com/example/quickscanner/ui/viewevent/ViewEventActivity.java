@@ -19,12 +19,13 @@ import com.example.quickscanner.model.Event;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.squareup.picasso.Picasso;
 
 import java.util.Objects;
 
 public class ViewEventActivity extends AppCompatActivity {
     String eventID;
-    private FirebaseController firebaseController;
+    private FirebaseController fbController;
 
     private Event event;
 
@@ -37,7 +38,7 @@ public class ViewEventActivity extends AppCompatActivity {
         binding = ActivityVieweventBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        firebaseController = new FirebaseController();
+        fbController = new FirebaseController();
 
         // Display Back Button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -58,7 +59,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
     // Fetches the event data from Firestore
     private void fetchEventData() {
-        firebaseController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        fbController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 event = documentSnapshot.toObject(Event.class);
@@ -80,7 +81,10 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 //just generate the qr code from the event id and set it to the qr code image view
                 //and get the image from the firebase storage and set it to the image view
-
+                fbController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
+                    String url = String.valueOf(task1.getResult());
+                    Picasso.get().load(url).into(binding.eventImageImage);
+                });
 
             }
         }).addOnFailureListener(new OnFailureListener() {
