@@ -26,20 +26,25 @@ import com.example.quickscanner.FirebaseController;
 import com.example.quickscanner.R;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+import com.squareup.picasso.Picasso;
+ 
+
 import java.util.Objects;
 
 public class ViewEventActivity extends AppCompatActivity {
     String eventID;
-    private FirebaseController firebaseController;
+    private FirebaseController fbController;
 
     private Event event;
 
@@ -52,7 +57,7 @@ public class ViewEventActivity extends AppCompatActivity {
         binding = ActivityVieweventBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        firebaseController = new FirebaseController();
+        fbController = new FirebaseController();
 
         // Display Back Button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -129,7 +134,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
     // Fetches the event data from Firestore
     private void fetchEventData() {
-        firebaseController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        fbController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 event = documentSnapshot.toObject(Event.class);
@@ -148,6 +153,8 @@ public class ViewEventActivity extends AppCompatActivity {
                 binding.locationTextview.setText(event.getLocation());
                 binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
                 binding.eventTimeText.setText(event.getTime());
+                // Set up click listener for the "Generate QR Code" button
+                binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
 
                 Bitmap qrCodeBitmap = generateQRCode(eventID);
                 if (qrCodeBitmap != null) {
@@ -155,6 +162,12 @@ public class ViewEventActivity extends AppCompatActivity {
                 }
                 //just generate the qr code from the event id and set it to the qr code image view
                 //and get the image from the firebase storage and set it to the image view
+
+                fbController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
+                    String url = String.valueOf(task1.getResult());
+                    Picasso.get().load(url).into(binding.eventImageImage);
+                });
+
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -165,6 +178,13 @@ public class ViewEventActivity extends AppCompatActivity {
         });
     }
 
+    private void showQRCodeDialog() {
+        // Check if the event object is available
+        if (event != null) {
+            // Create and show the QR code dialog fragment
+            QRCodeDialogFragment.newInstance(eventID).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+        }
+    }
 
     // Handles The Top Bar menu clicks
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
