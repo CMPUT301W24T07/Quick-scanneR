@@ -1,24 +1,14 @@
 package com.example.quickscanner.ui.viewevent;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem; // Import Menu class
 
 import androidx.annotation.NonNull;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 
@@ -29,16 +19,8 @@ import com.example.quickscanner.model.Event;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
-
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
-
 import com.squareup.picasso.Picasso;
-
 
 import java.util.Objects;
 
@@ -131,6 +113,7 @@ public class ViewEventActivity extends AppCompatActivity {
             }
         });
 
+
     }
 
     // Fetches the event data from Firestore
@@ -155,12 +138,11 @@ public class ViewEventActivity extends AppCompatActivity {
                 //use event object to update all the views
                 binding.eventTitleText.setText(event.getName());
                 binding.eventDescriptionText.setText(event.getDescription());
-                binding.locationTextview.setText(event.getLocation());
+                binding.locationText.setText(event.getLocation());
                 binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
                 binding.eventTimeText.setText(event.getTime());
                 // Set up click listener for the "Generate QR Code" button
                 binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
-
 
                 //just generate the qr code from the event id and set it to the qr code image view
                 //and get the image from the firebase storage and set it to the image view
@@ -174,6 +156,7 @@ public class ViewEventActivity extends AppCompatActivity {
                         }
                     });
                 }
+
 
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -202,23 +185,4 @@ public class ViewEventActivity extends AppCompatActivity {
 
     }
 
-    //generates QR code
-    private Bitmap generateQRCode(String text) {
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        try {
-            BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
-            int width = bitMatrix.getWidth();
-            int height = bitMatrix.getHeight();
-            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
-                }
-            }
-            return bitmap;
-        } catch (WriterException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 }
