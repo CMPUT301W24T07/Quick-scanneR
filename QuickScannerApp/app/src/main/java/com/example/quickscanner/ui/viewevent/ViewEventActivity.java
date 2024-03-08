@@ -38,16 +38,14 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 import com.squareup.picasso.Picasso;
- 
+
 
 import java.util.Objects;
 
 public class ViewEventActivity extends AppCompatActivity {
     String eventID;
     private FirebaseController fbController;
-
     private Event event;
-
     private ActivityVieweventBinding binding;
 
     @SuppressLint("SetTextI18n")
@@ -61,17 +59,14 @@ public class ViewEventActivity extends AppCompatActivity {
 
         // Display Back Button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-
-        
         // Grab any Intent bundle/parameters
         Bundle inputBundle = getIntent().getExtras();
         if (inputBundle != null) {
             eventID = inputBundle.getString("eventID");
             Log.d("Beans", eventID);
         }
-        if (eventID == null) {
-            Log.e("ViewEventActivity", "Error: Event ID is null");
-            finish();
+        if (eventID != null) {
+            Log.e("halpp", "Event ID is: "+eventID);
         }
         fetchEventData();
 
@@ -116,6 +111,7 @@ public class ViewEventActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Convert the QR code Bitmap to a Uri
                 String path = MediaStore.Images.Media.insertImage(getContentResolver(), qrCodeBitmap, "QR Code", null);
+                Log.d("beans","this is wheere it fails");
                 Uri qrCodeUri = Uri.parse(path);
 
                 // Create an Intent with ACTION_SEND action
@@ -123,10 +119,14 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 // Put the Uri of the image and the text you want to share in the Intent
                 shareIntent.putExtra(Intent.EXTRA_STREAM, qrCodeUri);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, "Join my event titled " + event.getName()+" using this QR code" );
+                Log.d("halpp", "event is null? "+ (event==null));
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "Join my event titled " + event.getName() + " using this QR code");
+
                 shareIntent.setType("image/jpeg");
 
                 // Start the Intent
+                //java.lang.NullPointerException: Attempt to invoke virtual method
+                //'java.lang.String com.example.quickscanner.model.Event.getName()' on a null object reference
                 startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
             }
         });
@@ -138,10 +138,14 @@ public class ViewEventActivity extends AppCompatActivity {
         fbController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
+                Log.d("halpp","great success");
+
                 event = documentSnapshot.toObject(Event.class);
+
                 Log.d("BEANS", "DocumentSnapshot data: " + documentSnapshot.getData());
                 if (event != null) {
                     // Set the event data to the UI
+                    Log.d("halpp",event.getName());
                     setEventDataToUI();
                 }
             }
@@ -157,20 +161,20 @@ public class ViewEventActivity extends AppCompatActivity {
                 // Set up click listener for the "Generate QR Code" button
                 binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
 
-                Bitmap qrCodeBitmap = generateQRCode(eventID);
-                if (qrCodeBitmap != null) {
-                    binding.QRCodeImage.setImageBitmap(qrCodeBitmap);
-                }
+
                 //just generate the qr code from the event id and set it to the qr code image view
                 //and get the image from the firebase storage and set it to the image view
+                    fbController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
+                        if (task1.isSuccessful()) {
+                            String url = String.valueOf(task1.getResult());
+                            Picasso.get().load(url).into(binding.eventImageImage);
+                        } else {
+                            Log.d("halppp", "Document not retrieved, setting default image");
+                            binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
+                        }
+                    });
+                }
 
-                fbController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
-                    String url = String.valueOf(task1.getResult());
-                    Picasso.get().load(url).into(binding.eventImageImage);
-                });
-
-
-            }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
