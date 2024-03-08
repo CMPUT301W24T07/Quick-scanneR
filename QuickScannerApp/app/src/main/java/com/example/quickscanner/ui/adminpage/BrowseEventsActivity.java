@@ -2,6 +2,7 @@ package com.example.quickscanner.ui.adminpage;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -19,6 +20,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class BrowseEventsActivity extends AppCompatActivity {
 
@@ -36,12 +38,15 @@ public class BrowseEventsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_browse_events);
 
+        // Enable the back button
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
         // Firebase references
         db = FirebaseFirestore.getInstance(); // non-image db references
         eventsRef = db.collection("Events");
 
         // Store view references
-        eventListView = findViewById(R.id.BrowseEventsListView); 
+        eventListView = findViewById(R.id.BrowseEventsListView);
 
         // Initialize the event data list and ArrayAdapter
         eventsDataList = new ArrayList<Event>();
@@ -72,5 +77,17 @@ public class BrowseEventsActivity extends AppCompatActivity {
                 eventAdapter.notifyDataSetChanged();
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }
