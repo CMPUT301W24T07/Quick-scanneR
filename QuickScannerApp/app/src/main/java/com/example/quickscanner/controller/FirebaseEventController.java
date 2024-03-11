@@ -11,8 +11,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 public class FirebaseEventController
 {
-    private FirebaseFirestore db;
-    private CollectionReference eventsRef;
+    private final FirebaseFirestore db;
+    private final CollectionReference eventsRef;
     public FirebaseEventController()
     {
         db = FirebaseFirestore.getInstance();

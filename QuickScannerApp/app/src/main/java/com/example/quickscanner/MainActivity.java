@@ -54,20 +54,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.e("Testing", "in onCreate");
-        Toast.makeText(this, "First sign in detected", Toast.LENGTH_SHORT).show();
+
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         fbUserController = new FirebaseUserController();
         // Check user sign-in status
-        Log.e("Testing", "outside the if statement");
+        boolean isFirstSignIn = fbUserController.isFirstSignIn();
+        Log.e("Testing", "Is first sign in? " + isFirstSignIn);
         if (fbUserController.isFirstSignIn()) {
             Log.e("Testing", "Entered the if statement");
             //creates an anonymous user if not signed in
             createUserAndSignIn();
         } else {
-            Log.w("Testing", "first signin not detected");
+            Log.e("Testing", "first signin not detected");
         }
         // Create bottom menu for MainActivity.
         createBottomMenu();

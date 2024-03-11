@@ -16,10 +16,10 @@ import com.google.firebase.storage.UploadTask;
 
 public class FirebaseImageController
 {
-    private FirebaseFirestore db;
-    private FirebaseStorage idb;
-    private CollectionReference imagesRef;
-    private StorageReference imageStorage;
+    private final FirebaseFirestore db;
+    private final FirebaseStorage idb;
+    private final CollectionReference imagesRef;
+    private final StorageReference imageStorage;
 
     public FirebaseImageController()
     {

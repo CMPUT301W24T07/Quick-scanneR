@@ -13,12 +13,13 @@ import java.util.Objects;
 
 public class FirebaseUserController
 {
-    private FirebaseAuth auth;
-    private FirebaseFirestore db;
-    private CollectionReference usersRef;
+    private final FirebaseAuth auth;
+    private final FirebaseFirestore db;
+    private final CollectionReference usersRef;
 
     public FirebaseUserController()
     {
+        db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
         usersRef = db.collection("users");
     }
