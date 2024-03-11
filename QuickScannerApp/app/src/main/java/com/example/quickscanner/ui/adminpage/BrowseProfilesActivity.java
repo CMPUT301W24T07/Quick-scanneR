@@ -6,17 +6,13 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.quickscanner.FirebaseController;
+
 import com.example.quickscanner.R;
+import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.User;
-import com.example.quickscanner.ui.adminpage.ProfileArrayAdapter;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -29,7 +25,7 @@ public class BrowseProfilesActivity extends AppCompatActivity {
     ArrayAdapter<User> profileAdapter;
 
     // FirebaseController Reference
-    private FirebaseController fbController;
+    private FirebaseUserController fbUserController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +35,8 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         // Enable the back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
-        // FirebaseController instance
-        fbController = new FirebaseController();
+        // FirebaseUserController instance
+        fbUserController = new FirebaseUserController();
 
         // Store view references
         profileListView = findViewById(R.id.BrowseProfilesListView);
@@ -52,7 +48,7 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         profileListView.setAdapter(profileAdapter);
 
         // Create FireStore Listener for Updates to the Profiles List.
-        fbController.getUsers().addOnCompleteListener(task -> {
+        fbUserController.getUsers().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 profilesDataList.clear();  // removes current data
                 for (QueryDocumentSnapshot doc : task.getResult()) { // set of documents

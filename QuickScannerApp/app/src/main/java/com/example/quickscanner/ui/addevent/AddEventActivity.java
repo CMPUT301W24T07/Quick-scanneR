@@ -4,12 +4,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,27 +19,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.quickscanner.FirebaseController;
+import com.example.quickscanner.controller.FirebaseImageController;;
 import com.example.quickscanner.R;
-import com.example.quickscanner.databinding.FragmentScanBinding;
+import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.MultiFormatWriter;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.journeyapps.barcodescanner.BarcodeEncoder;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,9 +49,10 @@ public class AddEventActivity extends AppCompatActivity {
     private ArrayAdapter<Event> eventAdapter;
     private List<Event> eventDataList = new ArrayList<>();
     private ActivityResultLauncher<Intent> resultLauncher;
-    private FirebaseFirestore db;
-    private FirebaseController fbController;
-    private CollectionReference eventsRef;
+    private FirebaseEventController fbEventController;
+    private FirebaseImageController fbImageController;
+
+
     private Bitmap eventImageMap;
 
 
@@ -72,7 +60,8 @@ public class AddEventActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_addevent);
-        fbController = new FirebaseController();
+        fbEventController = new FirebaseEventController();
+        fbImageController = new FirebaseImageController();
 
         // Initialize views
         eventDescriptionTextView = findViewById(R.id.EventDescription);
@@ -86,9 +75,7 @@ public class AddEventActivity extends AppCompatActivity {
         eventDataList = new ArrayList<>();
         eventAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, eventDataList);
 
-        // Firebase references
-        db = FirebaseFirestore.getInstance();
-        eventsRef = db.collection("Events");
+
 
         // back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -176,7 +163,7 @@ public class AddEventActivity extends AppCompatActivity {
 
     // Add event to Firestore
     private void addEventToFirestore(Event event) {
-        eventsRef.add(event)
+        fbEventController.addEvent(event)
                 .addOnSuccessListener(documentReference -> {
                     Log.d("AddEventActivity", "Event added with ID: " + documentReference.getId());
                     // additional actions if needed
@@ -187,8 +174,8 @@ public class AddEventActivity extends AppCompatActivity {
                         ByteArrayOutputStream boas = new ByteArrayOutputStream();
                         eventImageMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
                         byte[] imageData = boas.toByteArray();
-                        fbController.uploadImage(event.getImagePath(), imageData);
-                        fbController.updateEvent(event);
+                        fbImageController.uploadImage(event.getImagePath(), imageData);
+                        fbEventController.updateEvent(event);
                     }
                 })
                 .addOnFailureListener(e -> {

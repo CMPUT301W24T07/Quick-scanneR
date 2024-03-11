@@ -1,29 +1,25 @@
 package com.example.quickscanner.ui.viewevent;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.MenuItem; // Import Menu class
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-
-
-import com.example.quickscanner.FirebaseController;
 import com.example.quickscanner.R;
+import com.example.quickscanner.controller.FirebaseImageController;
+import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
@@ -31,20 +27,18 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
-
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-
 import com.squareup.picasso.Picasso;
-
 
 import java.util.Objects;
 
 public class ViewEventActivity extends AppCompatActivity {
     String eventID;
-    private FirebaseController fbController;
+    private FirebaseEventController fbEventController;
+    private FirebaseImageController fbImageController;
     private Event event;
     private ActivityVieweventBinding binding;
 
@@ -55,7 +49,8 @@ public class ViewEventActivity extends AppCompatActivity {
         binding = ActivityVieweventBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        fbController = new FirebaseController();
+        fbEventController = new FirebaseEventController();
+        fbImageController = new FirebaseImageController();
 
         // Display Back Button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -135,7 +130,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
     // Fetches the event data from Firestore
     private void fetchEventData() {
-        fbController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 Log.d("halpp","great success");
@@ -164,7 +159,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 //just generate the qr code from the event id and set it to the qr code image view
                 //and get the image from the firebase storage and set it to the image view
-                    fbController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
+                fbImageController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
                         if (task1.isSuccessful()) {
                             String url = String.valueOf(task1.getResult());
                             Picasso.get().load(url).into(binding.eventImageImage);

@@ -6,12 +6,9 @@ package com.example.quickscanner.ui.profile;
 import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_NULL;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -22,20 +19,16 @@ import android.util.Log;
 import android.view.MenuItem; // Import Menu class
 import androidx.annotation.NonNull;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.example.quickscanner.FirebaseController;
+
 import com.example.quickscanner.R;
+import com.example.quickscanner.controller.FirebaseImageController;
+import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Profile;
 import com.example.quickscanner.model.User;
-import com.google.android.gms.tasks.OnCanceledListener;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.squareup.picasso.Picasso;
 
@@ -60,7 +53,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     User myUser;
     Profile myProfile;
-    FirebaseController fbController;
+    FirebaseUserController fbUserController;
+    FirebaseImageController fbImageController;
     /**
      * Called when the activity is first created.
      *
@@ -73,11 +67,12 @@ public class ProfileActivity extends AppCompatActivity {
         // Set the content view to the profile activity layout.
         setContentView(R.layout.activity_profile);
 
-        // Initialize FirebaseController for Firebase operations.
-        fbController = new FirebaseController();
+        // Initialize FirebaseUserController and FirebaseImageController for Firebase operations.
+        fbUserController = new FirebaseUserController();
+        fbImageController = new FirebaseImageController();
 
         // Log the current user's UID.
-        Log.w("error", fbController.getCurrentUserUid());
+        Log.w("error", fbUserController.getCurrentUserUid());
         Log.w("error", "weird p1");
 
         // Initialize the ActivityResultLauncher for handling image selection.
@@ -97,7 +92,7 @@ public class ProfileActivity extends AppCompatActivity {
                 });
 
         // Fetch user data from Firebase.
-        fbController.getUser(fbController.getCurrentUserUid()).addOnCompleteListener(task -> {
+        fbUserController.getUser(fbUserController.getCurrentUserUid()).addOnCompleteListener(task -> {
             // Log messages...
             if (task.isSuccessful()) {
                 // Process the result when the user data retrieval is successful.
@@ -120,7 +115,7 @@ public class ProfileActivity extends AppCompatActivity {
                     nameEdit.setText(myProfile.getName());
                     emailEdit.setText(myProfile.getEmail());
                     linkedinEdit.setText(myProfile.getWebsite());
-                    fbController.downloadImage(myProfile.getImageUrl()).addOnCompleteListener(task1 -> {
+                    fbImageController.downloadImage(myProfile.getImageUrl()).addOnCompleteListener(task1 -> {
                         String url = String.valueOf(task1.getResult());
                         Picasso.get().load(url).into(profileImage);
                     });
@@ -154,12 +149,12 @@ public class ProfileActivity extends AppCompatActivity {
                                 ByteArrayOutputStream boas = new ByteArrayOutputStream();
                                 profileBitMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
                                 byte[] imageData = boas.toByteArray();
-                                fbController.uploadImage(myUser.getUid(), imageData);
+                                fbImageController.uploadImage(myUser.getUid(), imageData);
                             }
 
                             // Update user data in Firebase.
                             myUser.setUserProfile(myProfile);
-                            fbController.updateUser(myUser);
+                            fbUserController.updateUser(myUser);
 
                             // Disable EditText fields after saving.
                             nameEdit.setInputType(TYPE_NULL);
