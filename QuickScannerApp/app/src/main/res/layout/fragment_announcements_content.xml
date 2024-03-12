@@ -12,7 +12,7 @@
 
         <ImageView
             android:id="@+id/announcementsContent_Image"
-            android:layout_width="60dp"
+            android:layout_width="100dp"
             android:layout_height="60dp"
             android:layout_centerVertical="true"
             android:src="@drawable/baseline_catching_pokemon_24" />
@@ -22,8 +22,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginStart="5dp"
-            android:layout_marginEnd="5dp"
             android:layout_toStartOf="@id/announcementsFragment_DropDown"
             android:layout_toEndOf="@+id/announcementsContent_Image"
             android:orientation="vertical">
@@ -32,17 +30,17 @@
                 android:id="@+id/announcementsContent_Title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
+                android:padding="4dp"
                 android:text="@string/title"
                 android:textColor="@android:color/black"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/announcementsContent_ShortDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
+                android:padding="3dp"
                 android:text="@string/short_description"
                 android:textColor="@android:color/black"
                 android:textSize="15sp" />
@@ -51,8 +49,8 @@
 
         <ImageView
             android:id="@+id/announcementsFragment_DropDown"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:src="@drawable/ic_down_arrow"
@@ -72,12 +70,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/long_description"
-            android:layout_marginTop="5dp"
+            android:padding="3dp"
             android:textColor="@android:color/black"
-            android:fontFamily="serif"
-            android:textAlignment="center"
-            android:padding="5dp"
-            android:textSize="16sp"
+            android:textSize="14sp"
             />
     </LinearLayout>
 
