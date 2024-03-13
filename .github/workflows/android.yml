@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+defaults:
+  run:
+    working-directory: ./QuickScannerApp
+
 jobs:
   build:
 
@@ -23,6 +27,6 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x QuickScannerApp/gradlew
     - name: Build with Gradle
-      run: ./QuickScannerApp/gradlew build
+      run: gradlew build
     - name: Run Unit Tests
-      run: ./QuickScannerApp/gradlew test
+      run: gradlew test
