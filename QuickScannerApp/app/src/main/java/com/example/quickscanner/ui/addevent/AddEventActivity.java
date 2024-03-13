@@ -134,7 +134,7 @@ public class AddEventActivity extends AppCompatActivity {
                 String time = timeEditText.getText().toString();
 
                 // Create an Event object with the edited values
-                Event newEvent = new Event(editedEventName, editedEventDescription, editedImagePath, testUser, time, location);
+                Event newEvent = new Event(editedEventName, editedEventDescription, testUser, time, location);
 
                 // Add the event to the database
                 addEventToFirestore(newEvent);
