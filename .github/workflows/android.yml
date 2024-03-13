@@ -11,9 +11,7 @@ jobs:
 
     runs-on: ubuntu-latest
         
-    defaults:
-      run:
-        working-directory: ./QuickScannerApp
+
 
     steps:
     - uses: actions/checkout@v3
@@ -27,6 +25,10 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: gradlew build
+      run: |
+        cd QuickScannerApp
+        gradlew build
     - name: Run Unit Tests
-      run: gradlew test
+      run: |
+        cd QuickScannerApp
+        gradlew test
