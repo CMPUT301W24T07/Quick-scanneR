@@ -15,8 +15,7 @@ public class ModelTesting {
      * @return User
      */
     public Event MockEvent(){
-        Event event = new Event("Dylan's Event", "This is a mock event for testing",
-                "https://firebasestorage.googleapis.com/v0/b/quick-scanner-54fbc.appspot.com/o/Test%20Poster%202.png?alt=media&token=fb26816d-a7b5-4d35-89a0-65d7d5db31b3",  MockUser(),
+        Event event = new Event("Dylan's Event", "This is a mock event for testing", MockUser(),
                     "05,03,2001", "Edmonton");
         return event;
     }
