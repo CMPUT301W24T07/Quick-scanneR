@@ -1,4 +1,4 @@
-package com.example.quickscanner;
+package com.example.quickscanner.controller;
 
 import android.net.Uri;
 import android.util.Log;
