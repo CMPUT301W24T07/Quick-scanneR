@@ -25,4 +25,4 @@ jobs:
     - name: Build with Gradle
       run: ./QuickScannerApp/gradlew build
     - name: Run Unit Tests
-      run: ./QuickScannerApp/gradlewtest
+      run: ./QuickScannerApp/gradlew test
