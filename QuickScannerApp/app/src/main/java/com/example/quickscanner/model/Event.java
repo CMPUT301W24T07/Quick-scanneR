@@ -15,11 +15,8 @@ public class Event implements Parcelable {
     public String location;
     public String eventID;
     public String organizerID;
-
-    public ArrayList<String> signUps = new ArrayList<>();
-    public ArrayList<String> checkIns = new ArrayList<>();
-
-
+    public int currentAttendees;
+    public int maxAttendees;
 
     public Event(String name, String description, User organizer) {
         this.name = name;
@@ -81,10 +78,8 @@ public class Event implements Parcelable {
     public String getLocation() {return location;}
     public String getEventID() {return eventID;}
     public String getOrganizerID() {return organizerID;}
-
-    public ArrayList<String> getSignUps() {return signUps;}
-
-    public ArrayList<String> getCheckIns() {return checkIns;}
+    public int getMaxAttendees() {return maxAttendees;}
+    public int getCurrentAttendees() {return currentAttendees;}
 
     // Setters
     public void setName(String name) {this.name = name;}
@@ -95,9 +90,7 @@ public class Event implements Parcelable {
     public void setLocation(String location) {this.location = location;}
     public void setEventID(String eventID) {this.eventID = eventID;}
     public void setOrganizerID(String organizerID) {this.organizerID = organizerID;}
-
-    public void setSignUps(ArrayList<String> signUps) {this.signUps = signUps;}
-
-    public void setCheckIns(ArrayList<String> checkIns) {this.checkIns = checkIns;}
+    public void setMaxAttendees(int maxAttendees) {this.maxAttendees = maxAttendees;}
+    public void setCurrentAttendees(int currentAttendees) {this.currentAttendees = currentAttendees;}
 
 }
