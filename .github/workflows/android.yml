@@ -27,8 +27,8 @@ jobs:
     - name: Build with Gradle
       run: |
         cd QuickScannerApp
-        gradlew build
+        ./gradlew build
     - name: Run Unit Tests
       run: |
         cd QuickScannerApp
-        gradlew test
+        ./gradlew test
