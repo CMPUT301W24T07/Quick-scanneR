@@ -24,6 +24,10 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./QuickScannerApp/gradlew
+
+    - name: Add POST_NOTIFICATIONS permission
+      run: echo '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' >> ./QuickScannerApp/app/src/main/AndroidManifest.xml
+
     - name: Build with Gradle
       run: |
         cd QuickScannerApp
