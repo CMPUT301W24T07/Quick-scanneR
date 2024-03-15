@@ -115,18 +115,4 @@ public class ModelTesting {
         assertEquals(1, event.getSignUps().size());
         assertEquals(1, event.getCheckIns().size());
     }
-
-
-
-
-
 }
-
-
-
-
-
-
-
-
-

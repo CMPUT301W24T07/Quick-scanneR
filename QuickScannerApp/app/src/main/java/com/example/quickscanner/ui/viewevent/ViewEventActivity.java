@@ -106,7 +106,6 @@ public class ViewEventActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Convert the QR code Bitmap to a Uri
                 String path = MediaStore.Images.Media.insertImage(getContentResolver(), qrCodeBitmap, "QR Code", null);
-                Log.d("beans","this is wheere it fails");
                 Uri qrCodeUri = Uri.parse(path);
 
                 // Create an Intent with ACTION_SEND action

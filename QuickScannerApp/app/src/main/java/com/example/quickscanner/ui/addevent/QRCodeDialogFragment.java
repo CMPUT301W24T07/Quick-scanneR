@@ -55,7 +55,7 @@ public class QRCodeDialogFragment extends DialogFragment {
     private void generateQRCode(String eventId, ImageView qrCodeImageView) {
         MultiFormatWriter writer = new MultiFormatWriter();
         try {
-            String content = "Event ID: " + eventId;
+            String content = eventId;
             BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, 512, 512);
             BarcodeEncoder encoder = new BarcodeEncoder();
             Bitmap bitmap = encoder.createBitmap(bitMatrix);

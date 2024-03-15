@@ -89,7 +89,10 @@ public class FirebaseEventController
      */
     public void signUp(String eventId, String userId)
     {
-        DocumentReference attendanceRef = db.collection("events").document(eventId).collection("Attendance").document("attendance");
+        DocumentReference attendanceRef = db.collection("events")
+                .document(eventId)
+                .collection("Attendance")
+                .document("attendance");
         attendanceRef.update("signUps", FieldValue.arrayUnion(userId));
     }
 

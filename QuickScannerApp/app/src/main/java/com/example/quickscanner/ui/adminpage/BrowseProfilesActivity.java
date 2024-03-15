@@ -54,9 +54,6 @@ public class BrowseProfilesActivity extends AppCompatActivity {
                 for (QueryDocumentSnapshot doc : task.getResult()) { // set of documents
                     User qryUser = doc.toObject(User.class);
 
-                    //associate user ID with the retrieved user
-                    qryUser.setUid(doc.getId());
-
                     profilesDataList.add((qryUser)); // adds new data from db
                 }
             } else {

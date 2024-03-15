@@ -49,6 +49,7 @@
                 android:editable="false"
                 android:ems="10"
                 android:inputType="none"
+                android:background="@android:color/transparent"
                 android:text="name" />
         </LinearLayout>
 
@@ -73,6 +74,7 @@
                 android:editable="false"
                 android:ems="10"
                 android:inputType="none"
+                android:background="@android:color/transparent"
                 android:text="email" />
         </LinearLayout>
 
@@ -96,6 +98,7 @@
                 android:editable="false"
                 android:ems="10"
                 android:inputType="none"
+                android:background="@android:color/transparent"
                 android:text="linkedin" />
         </LinearLayout>
 

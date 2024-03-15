@@ -19,15 +19,6 @@ public class Event implements Parcelable {
     public ArrayList<String> signUps = new ArrayList<>();
     public ArrayList<String> checkIns = new ArrayList<>();
 
-
-
-    public Event(String name, String description, User organizer) {
-        this.name = name;
-        this.description = description;
-        this.organizer = organizer;
-        imagePath = "default.jpeg";
-    }
-
     public Event(String name, String description, User organizer, String time, String location) {
         this.name = name;
         this.description = description;

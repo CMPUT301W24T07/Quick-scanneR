@@ -71,10 +71,6 @@ public class ProfileActivity extends AppCompatActivity {
         fbUserController = new FirebaseUserController();
         fbImageController = new FirebaseImageController();
 
-        // Log the current user's UID.
-        Log.w("error", fbUserController.getCurrentUserUid());
-        Log.w("error", "weird p1");
-
         // Initialize the ActivityResultLauncher for handling image selection.
         ActivityResultLauncher<Intent> activityResultLauncher =
                 registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -136,6 +132,8 @@ public class ProfileActivity extends AppCompatActivity {
                             nameEdit.setInputType(TYPE_CLASS_TEXT);
                             emailEdit.setInputType(TYPE_CLASS_TEXT);
                             linkedinEdit.setInputType(TYPE_CLASS_TEXT);
+                            // todo do this later:)
+                            // nameEdit.setBackground(Drawable.);
                             editMode = !editMode;
                             editButton.setText("Save");
                         } else {
@@ -150,6 +148,11 @@ public class ProfileActivity extends AppCompatActivity {
                                 profileBitMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
                                 byte[] imageData = boas.toByteArray();
                                 fbImageController.uploadImage(myUser.getUid(), imageData);
+                                // todo add to image collections
+                                // selectedImage.delete()
+                                // in delete
+                                    // if userImage:
+                                    //     userCollection.getUser(selectedImage.name).setImagePath("default.jpeg")
                             }
 
                             // Update user data in Firebase.
