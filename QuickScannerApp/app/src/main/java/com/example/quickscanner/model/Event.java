@@ -2,8 +2,6 @@ package com.example.quickscanner.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import java.io.Serializable;
-import java.util.ArrayList;
 
 public class Event implements Parcelable {
     public String name;
@@ -15,14 +13,15 @@ public class Event implements Parcelable {
     public String location;
     public String eventID;
     public String organizerID;
-    public int currentAttendees;
-    public int maxAttendees;
+    public int takenSpots ;
+    public Integer maxSpots;
 
     public Event(String name, String description, User organizer) {
         this.name = name;
         this.description = description;
         this.organizer = organizer;
         imagePath = "default.jpeg";
+        this.takenSpots  = 0;
     }
 
     public Event(String name, String description, User organizer, String time, String location) {
@@ -32,9 +31,11 @@ public class Event implements Parcelable {
         this.organizer = organizer;
         this.time = time;
         this.location = location;
+        this.takenSpots = 0;
     }
 
     public Event() {
+        this.takenSpots = 0;
     }
 
     // Parcelable implementation
@@ -78,8 +79,8 @@ public class Event implements Parcelable {
     public String getLocation() {return location;}
     public String getEventID() {return eventID;}
     public String getOrganizerID() {return organizerID;}
-    public int getMaxAttendees() {return maxAttendees;}
-    public int getCurrentAttendees() {return currentAttendees;}
+    public Integer getMaxSpots() {return maxSpots;}
+    public int getTakenSpots() {return takenSpots;}
 
     // Setters
     public void setName(String name) {this.name = name;}
@@ -90,7 +91,7 @@ public class Event implements Parcelable {
     public void setLocation(String location) {this.location = location;}
     public void setEventID(String eventID) {this.eventID = eventID;}
     public void setOrganizerID(String organizerID) {this.organizerID = organizerID;}
-    public void setMaxAttendees(int maxAttendees) {this.maxAttendees = maxAttendees;}
-    public void setCurrentAttendees(int currentAttendees) {this.currentAttendees = currentAttendees;}
+    public void setMaxSpots(Integer maxSpots) {this.maxSpots = maxSpots;}
+    public void setTakenSpots(int takenSpots) {this.takenSpots = takenSpots;}
 
 }
