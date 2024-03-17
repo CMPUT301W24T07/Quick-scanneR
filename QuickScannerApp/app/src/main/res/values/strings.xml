@@ -75,4 +75,9 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <string name="edit">Edit</string>
+    <string name="attendance_list">Attendance List</string>
+    <string name="qr_code_check_in">QR code (check in)</string>
+    <string name="qr_code_promotional">QR code (Promotional)</string>
+    <string name="map">Map</string>
 </resources>
