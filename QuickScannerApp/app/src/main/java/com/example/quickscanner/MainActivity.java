@@ -56,10 +56,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        // references
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         fbUserController = new FirebaseUserController();
+
         // Check user sign-in status
         boolean isFirstSignIn = fbUserController.isFirstSignIn();
         Log.e("Testing", "Is first sign in? " + isFirstSignIn);
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.e("Testing", "first signin not detected");
         }
+
         // Create bottom menu for MainActivity.
         createBottomMenu();
 

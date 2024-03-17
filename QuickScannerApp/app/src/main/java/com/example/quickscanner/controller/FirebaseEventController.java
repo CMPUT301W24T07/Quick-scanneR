@@ -183,4 +183,19 @@ public class FirebaseEventController
             }
         });
     }
+
+
+    /**
+     * Retrieves specific event *Task* from Firestore.
+     * This is different from getEvents, as it does not return the object.
+     * Instead, it returns a task of pulling a snapshot of the document.
+     *
+     * @param eventId the ID of the event to retrieve
+     * @return a Task that will be completed once the event is fetched
+     */
+    public Task<DocumentSnapshot> getEventTask(String eventId)
+    {
+        return eventsRef.document(eventId).get();
+
+    }
 }

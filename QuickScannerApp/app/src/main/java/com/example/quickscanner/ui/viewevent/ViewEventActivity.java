@@ -11,11 +11,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
@@ -25,17 +23,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.quickscanner.MainActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
-import com.example.quickscanner.ui.adminpage.AdminActivity;
-import com.example.quickscanner.ui.map.MapActivity;
-import com.example.quickscanner.ui.profile.ProfileActivity;
-import com.example.quickscanner.ui.settings.SettingsActivity;
+import com.example.quickscanner.ui.viewevent.map.MapActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -164,12 +158,16 @@ public class ViewEventActivity extends AppCompatActivity {
 
     // Fetches the event data from Firestore
     private void fetchEventData() {
-        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<Event>() {
+        fbEventController.getEventTask(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
-            public void onSuccess(Event Event) {
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                Log.d("halpp","great success");
+                event = documentSnapshot.toObject(Event.class);
+                Log.d("BEANS", "DocumentSnapshot data: " + documentSnapshot.getData());
+
                 if (event != null) {
 
-                    // set geolocation switch to match event preferences.   // sorry sid :O
+                    // set geolocation switch to match event preferences.
                     if (documentSnapshot.contains("isGeolocationEnabled")) {
                         // TODO: Remove later when Crystal deletes 'Parcelable' from Events
                         event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
@@ -187,6 +185,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 }
             }
+
 
             private void setEventDataToUI() {
 
@@ -287,6 +286,15 @@ public class ViewEventActivity extends AppCompatActivity {
         } else if (itemId == R.id.map) {
             // Handle Map click
             Intent intent = new Intent(ViewEventActivity.this, MapActivity.class);
+            Bundle bundle = new Bundle();
+            // Check if Geolocation is Enabled
+            if (!event.getIsGeolocationEnabled()) {
+                Toast.makeText(this, R.string.enable_geolocation, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            // Add the hashed location
+            bundle.putString("geoHash", event.getLocation());
+            intent.putExtras(bundle);
             startActivity(intent);
             return true;
         } else if (item.getItemId() == android.R.id.home) {

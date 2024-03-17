@@ -40,12 +40,8 @@ dependencies {
 
     //google code scanner
     implementation ("com.google.android.gms:play-services-code-scanner:16.1.0")
-
     implementation ("com.google.zxing:core:3.4.1")
     implementation ("com.journeyapps:zxing-android-embedded:4.2.0")
-
-
-
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -68,5 +64,10 @@ dependencies {
     implementation("com.google.firebase:firebase-storage")
     implementation("com.squareup.picasso:picasso:2.8")
     implementation("com.google.zxing:core:3.2.0")
+    implementation("org.osmdroid:osmdroid-android:6.1.13")
+    implementation("org.mapsforge:mapsforge-map-android:0.21.0")
+    implementation("com.caverock:androidsvg:1.4")
+    implementation("org.apache.commons:commons-lang3:3.8.1")
+    implementation("ch.hsr:geohash:1.4.0")
 
 }
