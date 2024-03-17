@@ -197,4 +197,17 @@ public class FirebaseUserController
             }
         });
     }
+
+
+    /**
+     * Retrieves specific user from Firestore.
+     * The difference is this one returns a task instead of user object
+     *
+     * @param userId the ID of the user to retrieve
+     * @return a Task holding a snapshot of the document
+     */
+    public Task<DocumentSnapshot> getUserTask(String userId)
+    {
+        return usersRef.document(userId).get();
+    }
 }

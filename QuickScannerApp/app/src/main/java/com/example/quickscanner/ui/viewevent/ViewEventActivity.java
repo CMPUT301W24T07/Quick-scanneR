@@ -158,12 +158,16 @@ public class ViewEventActivity extends AppCompatActivity {
 
     // Fetches the event data from Firestore
     private void fetchEventData() {
-        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<Event>() {
+        fbEventController.getEventTask(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
-            public void onSuccess(Event Event) {
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                Log.d("halpp","great success");
+                event = documentSnapshot.toObject(Event.class);
+                Log.d("BEANS", "DocumentSnapshot data: " + documentSnapshot.getData());
+
                 if (event != null) {
 
-                    // set geolocation switch to match event preferences.   // sorry sid :O
+                    // set geolocation switch to match event preferences.
                     if (documentSnapshot.contains("isGeolocationEnabled")) {
                         // TODO: Remove later when Crystal deletes 'Parcelable' from Events
                         event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
@@ -181,6 +185,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 }
             }
+
 
             private void setEventDataToUI() {
 
