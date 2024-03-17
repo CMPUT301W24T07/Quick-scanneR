@@ -1,6 +1,8 @@
 package com.example.quickscanner.controller;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 
@@ -8,7 +10,15 @@ import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.RGBLuminanceSource;
+import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 //javadoc comments
@@ -23,6 +33,30 @@ public class QRScanner {
 
     private Context context;
 
+    public QRScanner(Context context) {
+        this.context = context;
+    }
+
+    public static String readQRCodeFromUri(Context context, Uri imageUri) throws IOException {
+        InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+
+        // Convert the bitmap to a binary bitmap
+        int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
+        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+        BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(new RGBLuminanceSource(bitmap.getWidth(), bitmap.getHeight(), pixels)));
+
+        // Use ZXing to decode the QR code
+        MultiFormatReader multiFormatReader = new MultiFormatReader();
+        try {
+            Result result = multiFormatReader.decode(binaryBitmap);
+            return result.getText(); // Return the decoded text (QR code value)
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+            return null; // Return null if QR code is not found
+        }
+    }
+
     //nonfunctional for now. will handle this later.
     public void scanQRCodeFromGallery(Uri uri, QRCodeScanCallback qrCodeScanCallback) {
         //decode the QR code from the gallery using ZXing
@@ -33,12 +67,10 @@ public class QRScanner {
 
     }
 
+
+
     public interface QRCodeScanCallback {
         void onQRCodeScanned(String qrCodeValue);
-    }
-
-    public QRScanner(Context context) {
-        this.context = context;
     }
 
     //configures all the options for the code scanner

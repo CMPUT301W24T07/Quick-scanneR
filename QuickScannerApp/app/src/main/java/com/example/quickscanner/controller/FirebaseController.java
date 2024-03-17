@@ -370,4 +370,32 @@ public class FirebaseController
         return imageRef.delete();
     }
 
+    public interface EventValidationCallback {
+        void onValidationResult(boolean isValid);
+    }
+
+    public void isValidEvent(String eventId, EventValidationCallback callback) {
+        // Check if eventId is null or empty
+        if (eventId == null || eventId.isEmpty()) {
+            callback.onValidationResult(false);
+            return;
+        }
+
+        // Get a reference to the events collection
+        DocumentReference eventRef = eventsRef.document(eventId);
+
+        // Query Firestore to check if the event exists
+        eventRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                // Check if the document exists
+                boolean isValid = task.getResult().exists();
+                callback.onValidationResult(isValid);
+            } else {
+                // Error occurred while querying Firestore
+                Log.e("isValidEvent", "Error querying Firestore: " + task.getException().getMessage());
+                callback.onValidationResult(false);
+            }
+        });
+    }
+
 }
