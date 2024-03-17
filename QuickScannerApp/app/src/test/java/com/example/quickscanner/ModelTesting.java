@@ -73,8 +73,8 @@ public class ModelTesting {
         // set allowing geolocation to be false
         event.setGeolocationEnabled(false);
         // toggle geolocation
-        event.toggleAllowsGeolocation();
-        assertEquals(true, event.getGeolocationEnabled());
+        event.toggleIsGeolocationEnabled();
+        assertEquals(true, event.getIsGeolocationEnabled());
     }
 
     /**
