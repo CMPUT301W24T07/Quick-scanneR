@@ -8,6 +8,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 public class FirebaseEventController
 {
@@ -29,6 +30,19 @@ public class FirebaseEventController
         return eventsRef.add(event);
     }
 
+    /**
+     * Updates existing event in Firestore. AND merges new Fields.
+     * NOTE: this does not update checked in or signed up users.
+     *  you must use signUp and checkIn methods for that.
+     * use signUp and checkIn methods for that.
+     *
+     * @param event the event to be updated
+     * @return a Task that will be completed once the event is updated
+     */
+    public Task<Void> updateAndMergeEvent(Event event)
+    {
+        return eventsRef.document(event.getEventID()).set(event, SetOptions.merge());
+    }
 
     /**
      * Updates existing event in Firestore.

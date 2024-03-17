@@ -2,7 +2,7 @@ package com.example.quickscanner.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import java.io.Serializable;
+
 import java.util.ArrayList;
 
 public class Event implements Parcelable {
@@ -77,7 +77,7 @@ public class Event implements Parcelable {
      * toggles the isGeolocationEnabled value
      * false -> true, true -> false
      */
-    public void toggleAllowsGeolocation() {
+    public void toggleIsGeolocationEnabled() {
         this.isGeolocationEnabled = !this.isGeolocationEnabled;
     }
 
@@ -91,7 +91,7 @@ public class Event implements Parcelable {
     public String getLocation() {return location;}
     public String getEventID() {return eventID;}
     public String getOrganizerID() {return organizerID;}
-    public boolean getGeolocationEnabled() {return isGeolocationEnabled; }
+    public boolean getIsGeolocationEnabled() {return isGeolocationEnabled; }
 
     public ArrayList<String> getSignUps() {return signUps;}
 

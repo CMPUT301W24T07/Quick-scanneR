@@ -3,9 +3,6 @@
   <component name="deploymentTargetDropDown">
     <value>
       <entry key="IntentTesting">
-        <State />
-      </entry>
-      <entry key="app">
         <State>
           <runningDeviceTargetSelectedWithDropDown>
             <Target>
@@ -18,6 +15,11 @@
               </deviceKey>
             </Target>
           </runningDeviceTargetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-03-17T00:49:33.021002Z" />
+        </State>
+      </entry>
+      <entry key="app">
+        <State>
           <targetSelectedWithDropDown>
             <Target>
               <type value="QUICK_BOOT_TARGET" />
@@ -29,7 +31,7 @@
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-03-17T00:32:02.307315Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-03-17T02:32:50.778023Z" />
         </State>
       </entry>
       <entry key="testAddEvents()">

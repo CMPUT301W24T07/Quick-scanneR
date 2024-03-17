@@ -14,6 +14,7 @@ public class User {
     private ArrayList<String> attendingEvents;
     private String Uid;
     private boolean isGeolocationEnabled;
+    private String testing = "This should show up";
 
     /**
      * Creates a User with a specified profile.

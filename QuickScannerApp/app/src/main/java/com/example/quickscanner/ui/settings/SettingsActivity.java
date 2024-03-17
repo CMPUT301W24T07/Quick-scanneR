@@ -1,8 +1,5 @@
 package com.example.quickscanner.ui.settings;
 
-import static android.widget.Toast.LENGTH_SHORT;
-import static java.lang.String.*;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
@@ -22,11 +19,11 @@ import java.util.Objects;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    // Model/Controllers ref
+    // Model/Controllers reference
     FirebaseUserController fbUserController;
     User myUser;
 
-    // UI ref
+    // UI reference
     Switch toggleGeolocation;
 
     @Override
@@ -40,6 +37,9 @@ public class SettingsActivity extends AppCompatActivity {
         // references
         fbUserController = new FirebaseUserController();
         toggleGeolocation = findViewById(R.id.toggle_geolocation);
+        Toast.makeText(this, fbUserController.getCurrentUserUid(), Toast.LENGTH_SHORT).show();
+
+
 
         // Fetch user data from Firebase.
         fbUserController.getUser(fbUserController.getCurrentUserUid()).addOnCompleteListener(task -> {
@@ -54,11 +54,10 @@ public class SettingsActivity extends AppCompatActivity {
                     // Extract user information from the document.
                     myUser = document.toObject(User.class);
                     // set geolocation switch to match user's preferences
-                    boolean oldAllowGeolocation = myUser.getGeolocationEnabled();
+                    boolean oldIsGeolocationEnabled = myUser.getGeolocationEnabled();
                     toggleGeolocation.setChecked(myUser.getGeolocationEnabled());
-                    myUser.setGeolocationEnabled(oldAllowGeolocation);
+                    myUser.setGeolocationEnabled(oldIsGeolocationEnabled);
                     fbUserController.updateUser(myUser);
-                    Toast.makeText(this, valueOf(myUser.getUid()), LENGTH_SHORT).show();
                 }
             }
         });
