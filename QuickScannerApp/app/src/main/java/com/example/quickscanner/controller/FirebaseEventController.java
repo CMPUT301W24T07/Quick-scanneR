@@ -70,35 +70,16 @@ public class FirebaseEventController
         return eventsRef.document(eventId).delete();
     }
 
-    /**
-     * Retrieves a page of events from Firestore, sorted by the "time" field.
-     * it creates a list of 30, so we don't load more then needed at once.
-     * the idea is that we will load more as the user scrolls down.
-     *
-     * @param lastListId The last document from the previous page, or null for the first page.
-     *                   grab this from the last event in the current list and feed it in.otherwise, it'll do it
-     *                   from the top
-     * @return A task that will complete with a list of Event objects.
-     */
-    public Task<List<Event>> getEvents(DocumentSnapshot lastListId)
-    {
-        // Create a query that retrieves documents from eventsRef, ordered by the "time" field.
-        Query query = eventsRef.orderBy("time");
 
-        // If lastListId is not null, start the query after this document.
-        if (lastListId != null)
-        {
-            query = query.startAfter(lastListId);
-        }
+    public Task<List<Event>> getEvents() {
+        Query query = eventsRef.orderBy("time").limit(30);
 
-        // Limit the query to 30 documents and execute it.
-        Task<QuerySnapshot> task = query.limit(30).get();
+        Task<QuerySnapshot> task = query.get();
 
-        // Transform the QuerySnapshot into a list of Event objects.
-        return task.continueWithTask(new Continuation<QuerySnapshot, Task<List<Event>>>()
+        return task.continueWith(new Continuation<QuerySnapshot, List<Event>>()
         {
             @Override
-            public Task<List<Event>> then(@NonNull Task<QuerySnapshot> task) throws Exception
+            public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception
             {
                 if (task.isSuccessful())
                 {
@@ -106,29 +87,52 @@ public class FirebaseEventController
                     List<Event> events = new ArrayList<>();
                     if (querySnapshot != null)
                     {
-                        // Convert each document in the QuerySnapshot to an Event object and
-                        // add it to the list.
                         for (QueryDocumentSnapshot document : querySnapshot)
                         {
                             Event event = document.toObject(Event.class);
                             events.add(event);
                         }
                     }
-                    // Return a successful task with the list of Event objects.
-                    return Tasks.forResult(events);
+                    return events;
                 }
                 else
                 {
-                    // If the task failed, return a failed task with the exception.
-                    return Tasks.forException(task.getException());
-
+                    throw task.getException();
                 }
             }
         });
-        // this can be used in the caller by using a listener to get the result. then something like
-        //    public void onSuccess(List<Event> events)
-        //  would work
-        //then while in onsuccess you can use the list.
+    }
+    public Task<List<Event>> continueGetEvents(String lastEventId) {
+        Task<DocumentSnapshot> lastEventTask = eventsRef.document(lastEventId).get();
+
+        return lastEventTask.continueWithTask(new Continuation<DocumentSnapshot, Task<List<Event>>>() {
+            @Override
+            public Task<List<Event>> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
+                DocumentSnapshot lastEvent = task.getResult();
+                Query query = eventsRef.orderBy("time").startAfter(lastEvent).limit(30);
+
+                Task<QuerySnapshot> queryTask = query.get();
+
+                return queryTask.continueWith(new Continuation<QuerySnapshot, List<Event>>() {
+                    @Override
+                    public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                        if (task.isSuccessful()) {
+                            QuerySnapshot querySnapshot = task.getResult();
+                            List<Event> events = new ArrayList<>();
+                            if (querySnapshot != null) {
+                                for (QueryDocumentSnapshot document : querySnapshot) {
+                                    Event event = document.toObject(Event.class);
+                                    events.add(event);
+                                }
+                            }
+                            return events;
+                        } else {
+                            throw task.getException();
+                        }
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -155,7 +159,7 @@ public class FirebaseEventController
                     }
                     else
                     {
-                        return Tasks.forException(new Exception("No such document"));
+                        return Tasks.forException(new Exception("No such Event"));
                     }
                 }
                 else
