@@ -13,6 +13,7 @@ public class User {
     private ArrayList<String> organizedEvents;
     private ArrayList<String> attendingEvents;
     private String Uid;
+    private boolean isGeolocationEnabled;
 
     /**
      * Creates a User with a specified profile.
@@ -74,6 +75,23 @@ public class User {
     }
 
     /**
+     * gets the isGeolocationEnabled value
+     *
+     * @return isGeolocationEnabled The toggle value
+     */
+    public boolean getGeolocationEnabled() {
+        return isGeolocationEnabled;
+    }
+
+    /**
+     * toggles the isGeolocationEnabled value
+     * false -> true, true -> false
+     */
+    public void toggleAllowsGeolocation() {
+        this.isGeolocationEnabled = !this.isGeolocationEnabled;
+    }
+
+    /**
      * Sets the user's admin status.
      *
      * @param admin The new admin status.
@@ -116,6 +134,16 @@ public class User {
      */
     public void setAttendingEvents(ArrayList<String> attendingEvents) {
         this.attendingEvents = attendingEvents;
+    }
+
+
+    /**
+     * Sets the isGeolocationEnabled value
+     *
+     * @param geolocationEnabled The new toggle value.
+     */
+    public void setGeolocationEnabled(boolean geolocationEnabled) {
+        this.isGeolocationEnabled = geolocationEnabled;
     }
 
     /**
