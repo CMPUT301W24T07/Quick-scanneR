@@ -11,8 +11,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Display;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
@@ -22,12 +25,17 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.quickscanner.MainActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
+import com.example.quickscanner.ui.adminpage.AdminActivity;
+import com.example.quickscanner.ui.map.MapActivity;
+import com.example.quickscanner.ui.profile.ProfileActivity;
+import com.example.quickscanner.ui.settings.SettingsActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -63,6 +71,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
         // Display Back Button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
         // Grab any Intent bundle/parameters
         Bundle inputBundle = getIntent().getExtras();
         if (inputBundle != null) {
@@ -226,16 +235,16 @@ public class ViewEventActivity extends AppCompatActivity {
         }
     }
 
-    // Handles The Top Bar menu clicks
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            // Handle the Back button press
-            finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-
-    }
+//    // Handles The Top Bar menu clicks
+//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+//        if (item.getItemId() == android.R.id.home) {
+//            // Handle the Back button press
+//            finish();
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//
+//    }
 
     //generates QR code
     private Bitmap generateQRCode(String text) {
@@ -256,4 +265,42 @@ public class ViewEventActivity extends AppCompatActivity {
         }
         return null;
     }
+
+    /*         Inflate Handle Top Menu Options        */
+    // Create the Top Menu bar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.viewevent_top_nav_menu, menu);
+        return true;
+    }
+    /*    Handle click events for the Top Menu Bar    */
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.navigation_attendance_list) {// Handle Edit Profile click
+            // Handle click
+            Toast.makeText(this, "navigation_attendance_list clicked", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.navigation_QR_check_in) {
+            // Handle Click
+            Toast.makeText(this, "navigation_QR_check_in clicked", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.navigation_QR_promotional) {
+            // Handle click
+            Toast.makeText(this, "navigation_QR_promotional clicked", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.map) {
+            // Handle Map click
+            Intent intent = new Intent(ViewEventActivity.this, MapActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (item.getItemId() == android.R.id.home) {
+            // Handle the Back button press
+            finish();
+            return true;
+        }
+        return false;
+
+    }
+
 }
