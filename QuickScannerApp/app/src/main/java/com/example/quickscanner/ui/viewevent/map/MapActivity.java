@@ -1,4 +1,4 @@
-package com.example.quickscanner.ui.map;
+package com.example.quickscanner.ui.viewevent.map;
 
 import android.Manifest;
 
@@ -88,10 +88,18 @@ public class MapActivity extends AppCompatActivity {
             displayUserGeolocation();
         }
 
-        // display geolocation info from the event (doesn't need user's location permission)
-        displayEventGeolocation(hashCoordinates(53.5282, -113.5257)); // TODO: Is hardcoded. Replace with Event location
+        // If a geo location is passed to the activity, display it.
+        Intent intent = getIntent();
+        String hashedLocation = intent.getStringExtra("geoHash");
+        if (hashedLocation != null && !hashedLocation.isEmpty()){
+            displayEventGeolocation(hashedLocation);
+        } else {
+            // default location CCIS
+            displayDefault();
+        }
 
-        // TESTING: Still hardcoded coordinates so far.
+
+        // TODO: Still hardcoded coordinates so far.
         ArrayList<String> geoPoints = new ArrayList<>();
         geoPoints.add(hashCoordinates(53.5283, -113.52625));
         geoPoints.add(hashCoordinates(53.52833,-113.52623));
@@ -103,8 +111,6 @@ public class MapActivity extends AppCompatActivity {
         for (String geopoint : geoPoints) {
             createMarker(geopoint);
         }
-
-
     }
 
 
@@ -143,7 +149,15 @@ public class MapActivity extends AppCompatActivity {
 
     public void displayEventGeolocation(String hash) {
         // start at Event Location
-        GeoHash geoHash = GeoHash.fromGeohashString(hash);
+        GeoHash geoHash;
+        try {
+            geoHash = GeoHash.fromGeohashString(hash);
+        } catch (Exception e){
+            // invalid geo hash
+            displayDefault();
+            Log.d("GeoHash error", "Invalid Geo Hash");
+            return;
+        }
         BoundingBox boundingBox = geoHash.getBoundingBox();
         // Calculate the center of the bounding box
         double latitude = (boundingBox.getNorthLatitude() + boundingBox.getSouthLatitude()) / 2.0;
@@ -174,7 +188,6 @@ public class MapActivity extends AppCompatActivity {
         startMarker.setPosition(point);
         startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
         map.getOverlays().add(startMarker);
-
     }
 
     /* Turns a latitude and longitude into a geo String
@@ -182,6 +195,13 @@ public class MapActivity extends AppCompatActivity {
     public static String hashCoordinates(double latitude, double longitude) {
         GeoHash geoHash = GeoHash.withCharacterPrecision(latitude, longitude, 12); // int is precision
         return geoHash.toBase32();
+    }
+
+    /*        Display default point at CCIS
+     */
+    public void displayDefault() {
+        GeoPoint point = new GeoPoint(53.5282, -113.5257);
+        mapController.setCenter(point);
     }
 
     private void showSettingsDialog() {
