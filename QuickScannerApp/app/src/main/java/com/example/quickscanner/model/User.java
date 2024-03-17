@@ -11,7 +11,8 @@ public class User {
     private Profile userProfile;
     private Boolean isAdmin;
     private ArrayList<String> organizedEvents;
-    private ArrayList<String> attendingEvents;
+    private ArrayList<String> signedUpEvents;
+    private ArrayList<String> checkedInEvents;
     private String Uid;
     private boolean isGeolocationEnabled;
     private String testing = "This should show up";
@@ -28,7 +29,8 @@ public class User {
         userProfile = new Profile(name, email, website, imageUrl);
         isAdmin = false;
         organizedEvents = new ArrayList<String>();
-        attendingEvents = new ArrayList<String>();
+        signedUpEvents = new ArrayList<String>();
+        checkedInEvents = new ArrayList<String>();
     }
 
     /**
@@ -38,7 +40,8 @@ public class User {
         userProfile = new Profile();
         isAdmin = false;
         organizedEvents = new ArrayList<String>();
-        attendingEvents = new ArrayList<String>();
+        signedUpEvents = new ArrayList<String>();
+        checkedInEvents = new ArrayList<String>();
     }
 
     /**
@@ -118,23 +121,20 @@ public class User {
     public void setOrganizedEvents(ArrayList<String> organizedEvents) {
         this.organizedEvents = organizedEvents;
     }
-
-    /**
-     * Returns the events the user is attending.
-     *
-     * @return A list of events the user is attending.
-     */
-    public ArrayList<String> getAttendingEvents() {
-        return attendingEvents;
+    public ArrayList<String> getSignedUpEvents() {
+        return signedUpEvents;
     }
 
-    /**
-     * Sets the events the user is attending.
-     *
-     * @param attendingEvents The new list of events.
-     */
-    public void setAttendingEvents(ArrayList<String> attendingEvents) {
-        this.attendingEvents = attendingEvents;
+    public void setSignedUpEvents(ArrayList<String> signedUpEvents) {
+        this.signedUpEvents = signedUpEvents;
+    }
+
+    public ArrayList<String> getCheckedInEvents() {
+        return checkedInEvents;
+    }
+
+    public void setCheckedInEvents(ArrayList<String> checkedInEvents) {
+        this.checkedInEvents = checkedInEvents;
     }
 
 
@@ -169,8 +169,5 @@ public class User {
         return organizedEvents.size();
     }
 
-    public int getAttendingEventsSize() {
-        return attendingEvents.size();
-    }
 
 }

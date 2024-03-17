@@ -158,14 +158,9 @@ public class ViewEventActivity extends AppCompatActivity {
 
     // Fetches the event data from Firestore
     private void fetchEventData() {
-        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<Event>() {
             @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                Log.d("halpp","great success");
-
-                event = documentSnapshot.toObject(Event.class);
-
-                Log.d("BEANS", "DocumentSnapshot data: " + documentSnapshot.getData());
+            public void onSuccess(Event Event) {
                 if (event != null) {
 
                     // set geolocation switch to match event preferences.   // sorry sid :O

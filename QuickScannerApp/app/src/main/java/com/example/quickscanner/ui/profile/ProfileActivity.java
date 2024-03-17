@@ -96,10 +96,8 @@ public class ProfileActivity extends AppCompatActivity {
             // Log messages...
             if (task.isSuccessful()) {
                 // Process the result when the user data retrieval is successful.
-                DocumentSnapshot document = task.getResult();
-                if (document.exists()) {
-                    // Extract user information from the document.
-                    myUser = document.toObject(User.class);
+               myUser = task.getResult();
+                if (myUser != null) {
                     myProfile = myUser.getUserProfile();
 
                     // Log message...
