@@ -15,6 +15,7 @@ import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
 
+import com.example.quickscanner.ui.settings.SettingsActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -121,7 +122,8 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (itemId == R.id.navigation_settings) {
             // Handle Settings click
-            Toast.makeText(this, "Settings Clicked", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
         return false;

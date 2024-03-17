@@ -6,7 +6,6 @@ import com.example.quickscanner.model.*;
 
 import org.junit.Test;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class ModelTesting {
@@ -48,6 +47,34 @@ public class ModelTesting {
         // admin should be default false
         assertEquals(false, user.getAdmin().booleanValue());
         // TODO: Next sprint, implement and test admin access for specific users.
+    }
+
+    /**
+     * Test User geolocation toggling
+     * @return void
+     */
+    @Test
+    public void testUserGeolocation(){
+        User user = new User("Dylan", "dndu@ualberta.ca", "dndu.linkedin.com", "https://firebasestorage.googleapis.com/v0/b/quick-scanner-54fbc.appspot.com/o/Test%20Poster%202.png?alt=media&token=fb26816d-a7b5-4d35-89a0-65d7d5db31b3");
+        // set allowing geolocation to be false
+        user.setGeolocationEnabled(false);
+        // toggle geolocation
+        user.toggleAllowsGeolocation();
+        assertEquals(true, user.getGeolocationEnabled());
+    }
+
+    /**
+     * Test Event geolocation toggling
+     * @return void
+     */
+    @Test
+    public void testEventGeolocation(){
+        Event event = MockEvent();
+        // set allowing geolocation to be false
+        event.setGeolocationEnabled(false);
+        // toggle geolocation
+        event.toggleAllowsGeolocation();
+        assertEquals(true, event.getGeolocationEnabled());
     }
 
     /**
