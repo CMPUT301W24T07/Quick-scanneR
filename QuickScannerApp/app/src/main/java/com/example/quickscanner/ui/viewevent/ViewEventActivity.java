@@ -1,5 +1,7 @@
 package com.example.quickscanner.ui.viewevent;
 
+import static android.content.ContentValues.TAG;
+
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,7 +13,10 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Switch;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -41,6 +46,8 @@ public class ViewEventActivity extends AppCompatActivity {
     private FirebaseImageController fbImageController;
     private Event event;
     private ActivityVieweventBinding binding;
+    // UI reference
+    Switch toggleGeolocation;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -49,8 +56,10 @@ public class ViewEventActivity extends AppCompatActivity {
         binding = ActivityVieweventBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        //references
         fbEventController = new FirebaseEventController();
         fbImageController = new FirebaseImageController();
+        toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
 
         // Display Back Button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -64,6 +73,8 @@ public class ViewEventActivity extends AppCompatActivity {
             Log.e("halpp", "Event ID is: "+eventID);
         }
         fetchEventData();
+        Toast.makeText(this, eventID, Toast.LENGTH_SHORT).show();
+
 
         // Get a reference to the announcement button
         FloatingActionButton announcementButton = findViewById(R.id.announcement_button);
@@ -126,6 +137,20 @@ public class ViewEventActivity extends AppCompatActivity {
             }
         });
 
+        // implement geolocation switch behaviour
+        toggleGeolocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton switchView, boolean isChecked) {
+                // toggle user's geolocation preferences
+                event.toggleIsGeolocationEnabled();
+                // update user's geolocation preferences in firebase
+                fbEventController.updateEvent(event)
+                        .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
+                        .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
+            }
+        });
+
     }
 
     // Fetches the event data from Firestore
@@ -134,7 +159,23 @@ public class ViewEventActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Event Event) {
                 if (event != null) {
+
+                    // set geolocation switch to match event preferences.   // sorry sid :O
+                    if (documentSnapshot.contains("isGeolocationEnabled")) {
+                        // TODO: Remove later when Crystal deletes 'Parcelable' from Events
+                        event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
+                    }
+                    boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
+                    toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
+                    event.setGeolocationEnabled(oldIsGeolocationEnabled);
+                    fbEventController.updateEvent(event)
+                            .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
+                            .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
+                    // Set the event data to the UI
+                    Log.d("halpp",event.getName());
                     setEventDataToUI();
+
                 }
             }
 
@@ -162,6 +203,7 @@ public class ViewEventActivity extends AppCompatActivity {
                         }
                     });
                 }
+
 
         }).addOnFailureListener(new OnFailureListener() {
             @Override

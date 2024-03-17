@@ -2,6 +2,8 @@ package com.example.quickscanner.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import java.util.ArrayList;
+
 
 public class Event implements Parcelable {
     public String name;
@@ -13,8 +15,18 @@ public class Event implements Parcelable {
     public String location;
     public String eventID;
     public String organizerID;
+
+
+    public ArrayList<String> signUps = new ArrayList<>();
+    public ArrayList<String> checkIns = new ArrayList<>();
+
+    private boolean isGeolocationEnabled;
+
+
+
     public int takenSpots ;
     public Integer maxSpots;
+
 
     public Event(String name, String description, User organizer) {
         this.name = name;
@@ -69,6 +81,14 @@ public class Event implements Parcelable {
         dest.writeString(imagePath);
     }
 
+    /**
+     * toggles the isGeolocationEnabled value
+     * false -> true, true -> false
+     */
+    public void toggleIsGeolocationEnabled() {
+        this.isGeolocationEnabled = !this.isGeolocationEnabled;
+    }
+
 
     // Getters
     public String getName() {return name;}
@@ -79,8 +99,16 @@ public class Event implements Parcelable {
     public String getLocation() {return location;}
     public String getEventID() {return eventID;}
     public String getOrganizerID() {return organizerID;}
+
+    public boolean getIsGeolocationEnabled() {return isGeolocationEnabled; }
+
+    public ArrayList<String> getSignUps() {return signUps;}
+
+    public ArrayList<String> getCheckIns() {return checkIns;}
+
     public Integer getMaxSpots() {return maxSpots;}
     public int getTakenSpots() {return takenSpots;}
+
 
     // Setters
     public void setName(String name) {this.name = name;}
@@ -91,6 +119,11 @@ public class Event implements Parcelable {
     public void setLocation(String location) {this.location = location;}
     public void setEventID(String eventID) {this.eventID = eventID;}
     public void setOrganizerID(String organizerID) {this.organizerID = organizerID;}
+
+    public void setGeolocationEnabled(boolean geolocationEnabled) {this.isGeolocationEnabled = geolocationEnabled;}
+
+    public void setSignUps(ArrayList<String> signUps) {this.signUps = signUps;}
+    public void setCheckIns(ArrayList<String> checkIns) {this.checkIns = checkIns;}
     public void setMaxSpots(Integer maxSpots) {this.maxSpots = maxSpots;}
     public void setTakenSpots(int takenSpots) {this.takenSpots = takenSpots;}
 

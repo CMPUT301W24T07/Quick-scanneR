@@ -14,6 +14,8 @@ public class User {
     private ArrayList<String> signedUpEvents;
     private ArrayList<String> checkedInEvents;
     private String Uid;
+    private boolean isGeolocationEnabled;
+    private String testing = "This should show up";
 
     /**
      * Creates a User with a specified profile.
@@ -77,6 +79,23 @@ public class User {
     }
 
     /**
+     * gets the isGeolocationEnabled value
+     *
+     * @return isGeolocationEnabled The toggle value
+     */
+    public boolean getGeolocationEnabled() {
+        return isGeolocationEnabled;
+    }
+
+    /**
+     * toggles the isGeolocationEnabled value
+     * false -> true, true -> false
+     */
+    public void toggleAllowsGeolocation() {
+        this.isGeolocationEnabled = !this.isGeolocationEnabled;
+    }
+
+    /**
      * Sets the user's admin status.
      *
      * @param admin The new admin status.
@@ -116,6 +135,16 @@ public class User {
 
     public void setCheckedInEvents(ArrayList<String> checkedInEvents) {
         this.checkedInEvents = checkedInEvents;
+    }
+
+
+    /**
+     * Sets the isGeolocationEnabled value
+     *
+     * @param geolocationEnabled The new toggle value.
+     */
+    public void setGeolocationEnabled(boolean geolocationEnabled) {
+        this.isGeolocationEnabled = geolocationEnabled;
     }
 
     /**
