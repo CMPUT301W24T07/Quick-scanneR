@@ -1,11 +1,8 @@
 package com.example.quickscanner.model;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Event implements Parcelable {
+public class Event {
     public String name;
     public String description;
     public String imagePath;
@@ -20,14 +17,6 @@ public class Event implements Parcelable {
     public ArrayList<String> checkIns = new ArrayList<>();
 
 
-
-    public Event(String name, String description, User organizer) {
-        this.name = name;
-        this.description = description;
-        this.organizer = organizer;
-        imagePath = "default.jpeg";
-    }
-
     public Event(String name, String description, User organizer, String time, String location) {
         this.name = name;
         this.description = description;
@@ -36,41 +25,10 @@ public class Event implements Parcelable {
         this.time = time;
         this.location = location;
     }
+    public Event () {
 
-    public Event() {
     }
-
-    // Parcelable implementation
-    protected Event(Parcel in) {
-        name = in.readString();
-        description = in.readString();
-        imagePath = in.readString();
-    }
-
-    public static final Creator<Event> CREATOR = new Creator<Event>() {
-        @Override
-        public Event createFromParcel(Parcel in) {
-            return new Event(in);
-        }
-
-        @Override
-        public Event[] newArray(int size) {
-            return new Event[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(name);
-        dest.writeString(description);
-        dest.writeString(imagePath);
-    }
-
+    // Getters and Setters
 
     // Getters
     public String getName() {return name;}
@@ -99,5 +57,4 @@ public class Event implements Parcelable {
     public void setSignUps(ArrayList<String> signUps) {this.signUps = signUps;}
 
     public void setCheckIns(ArrayList<String> checkIns) {this.checkIns = checkIns;}
-
 }

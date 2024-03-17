@@ -36,6 +36,7 @@ public class QRCodeDialogFragment extends DialogFragment {
         return inflater.inflate(R.layout.fragment_qr_code_dialog, container, false);
     }
 
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -55,7 +56,7 @@ public class QRCodeDialogFragment extends DialogFragment {
     private void generateQRCode(String eventId, ImageView qrCodeImageView) {
         MultiFormatWriter writer = new MultiFormatWriter();
         try {
-            String content = "Event ID: " + eventId;
+            String content = eventId;
             BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, 512, 512);
             BarcodeEncoder encoder = new BarcodeEncoder();
             Bitmap bitmap = encoder.createBitmap(bitMatrix);

@@ -142,7 +142,6 @@ public class EventFragment extends Fragment {
             public void onClick(View view) {
                 // start new create event activity
                 Intent intent = new Intent(requireContext(), AddEventActivity.class);
-                intent.putExtra("eventAdapter", eventsDataList);
                 startActivity(intent);
             }
 
