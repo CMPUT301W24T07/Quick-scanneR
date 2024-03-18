@@ -24,6 +24,7 @@ import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.FragmentEventsBinding;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
 import com.example.quickscanner.ui.homepage_event.EventArrayAdapter;
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
@@ -32,6 +33,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -41,6 +43,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class AttendingEventsFragment extends Fragment {
     /**
@@ -62,6 +65,9 @@ public class AttendingEventsFragment extends Fragment {
     private RelativeLayout itemClicked;
     private ImageView expandableArrow;
 
+    // User
+    User myUser;
+
 
     // Firestore References
     private FirebaseFirestore db;
@@ -74,14 +80,10 @@ public class AttendingEventsFragment extends Fragment {
     // Joey Firestore References
     private FirebaseUserController fbUserController;
 
-
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        // inflate fragment to MyEvents_Activity
-        binding = FragmentEventsBinding.inflate(inflater, container, false);
-        // return view for MyEvents_Activity
-        View root = binding.getRoot();
 
         // Firebase references
         db = FirebaseFirestore.getInstance(); // non-image db references
@@ -93,10 +95,7 @@ public class AttendingEventsFragment extends Fragment {
         // Joey Firebase References
         fbUserController = new FirebaseUserController();
 
-        return binding.getRoot();
-
-
-
+        return inflater.inflate(R.layout.fragment_my_events, container, false);
 
     }
 
@@ -111,11 +110,27 @@ public class AttendingEventsFragment extends Fragment {
         eventsDataList = new ArrayList<Event>();
         eventAdapter = new EventArrayAdapter(getContext(), eventsDataList);
         // Set the adapter to the ListView
-        //eventListView.setAdapter(eventAdapter);
+        eventListView.setAdapter(eventAdapter);
 
-//        // obtain filtered events, pertaining to the user.
+
+        // Fetch user data from Firebase.
+        fbUserController.getUserTask(fbUserController.getCurrentUserUid()).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                // Process the result when the user data retrieval is successful.
+                DocumentSnapshot document = task.getResult();
+                if (!document.exists())
+                    Log.w("error", "user document doesn't exist");
+                else {
+                    // Extract user information from the document.
+                    myUser = document.toObject(User.class);
+
+                }
+            }
+        });
+
+        // obtain filtered events, pertaining to the user.
 //        db.collection("Events")
-//            .whereEqualTo("organizerID", fbUserController.getCurrentUserUid())
+//            .whereIn("eventID", myUser.getSignedUpEvents())
 //            .get()
 //            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
 //                @Override
@@ -136,26 +151,22 @@ public class AttendingEventsFragment extends Fragment {
 //            });
 
 
-
-
-
-
-//        /*      Event ListView Click       */
-//        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//        @Override
-//        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-//            // get the clicked event
-//            Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
-//            // move to new activity and pass the clicked event's unique ID.
-//            Intent intent = new Intent(getContext(), ViewEventActivity.class);
-//            Bundle bundle = new Bundle(1);
-//            // Pass the Event Identifier to the New Activity
-//            bundle.putString("eventID", clickedEvent.getEventID());
-//            intent.putExtras(bundle);
-//            // Start new Activity
-//            requireContext().startActivity(intent);
-//        }
-//    });
+        /*      Event ListView Click       */
+        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            // get the clicked event
+            Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
+            // move to new activity and pass the clicked event's unique ID.
+            Intent intent = new Intent(getContext(), ViewEventActivity.class);
+            Bundle bundle = new Bundle(1);
+            // Pass the Event Identifier to the New Activity
+            bundle.putString("eventID", clickedEvent.getEventID());
+            intent.putExtras(bundle);
+            // Start new Activity
+            requireContext().startActivity(intent);
+        }
+    });
 
 
     }

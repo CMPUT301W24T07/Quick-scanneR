@@ -1,5 +1,7 @@
 package com.example.quickscanner.ui.my_events;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,11 +24,15 @@ import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.FragmentEventsBinding;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
 import com.example.quickscanner.ui.homepage_event.EventArrayAdapter;
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -47,9 +53,11 @@ public class OrganizedEventsFragment extends Fragment {
 
     // EventList References
     ListView eventListView;
-    LinearLayout eventLinearLayout;
     ArrayList<Event> eventsDataList;
     ArrayAdapter<Event> eventAdapter;
+
+    // User references
+    User myUser;
 
 
     // DropDown click References
@@ -58,23 +66,32 @@ public class OrganizedEventsFragment extends Fragment {
     private RelativeLayout itemClicked;
     private ImageView expandableArrow;
 
+
     // Firestore References
-    FirebaseUserController fbUserController;
-    FirebaseEventController fbEventController;
+    private FirebaseFirestore db;
+    private FirebaseStorage idb;
+    private StorageReference storeRef;
+    private CollectionReference profileRef;
+    private CollectionReference eventsRef;
+    private CollectionReference imagesRef;
 
-
+    // Joey Firestore References
+    private FirebaseUserController fbUserController;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        // inflate fragment to MainActivity
-        binding = FragmentEventsBinding.inflate(inflater, container, false);
-        // return view for MainActivity
-        View root = binding.getRoot();
-
         // Firebase references
+        db = FirebaseFirestore.getInstance(); // non-image db references
+        profileRef = db.collection("Profiles");
+        eventsRef = db.collection("Events");
+        imagesRef = db.collection("Images");
+        idb = FirebaseStorage.getInstance(); // image db references
 
-        return root;
+        // Joey Firebase References
+        fbUserController = new FirebaseUserController();
+
+        return inflater.inflate(R.layout.fragment_my_events, container, false);
 
     }
 
@@ -89,27 +106,51 @@ public class OrganizedEventsFragment extends Fragment {
         eventsDataList = new ArrayList<Event>();
         eventAdapter = new EventArrayAdapter(getContext(), eventsDataList);
         // Set the adapter to the ListView
-        //eventListView.setAdapter(eventAdapter);
+        eventListView.setAdapter(eventAdapter);
+
+
+        // obtain filtered events, pertaining to the user.
+        db.collection("Events")
+                .whereEqualTo("organizerID", fbUserController.getCurrentUserUid())
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot doc : task.getResult()) {
+                                Log.d(TAG, doc.getId() + " => " + doc.getData());
+                                Event qryEvent = doc.toObject(Event.class);
+                                //associate event ID with the retrieved event
+                                qryEvent.setEventID(doc.getId());
+                                eventsDataList.add((qryEvent)); // adds new data from db
+                            }
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                        eventAdapter.notifyDataSetChanged();
+                    }
+                });
 
 
 
-//
-//        /*      Event ListView Click       */
-//        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//        @Override
-//        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-//            // get the clicked event
-//            Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
-//            // move to new activity and pass the clicked event's unique ID.
-//            Intent intent = new Intent(getContext(), ViewEventActivity.class);
-//            Bundle bundle = new Bundle(1);
-//            // Pass the Event Identifier to the New Activity
-//            bundle.putString("eventID", clickedEvent.getEventID());
-//            intent.putExtras(bundle);
-//            // Start new Activity
-//            requireContext().startActivity(intent);
-//        }
-//    });
+
+
+        /*      Event ListView Click       */
+        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            // get the clicked event
+            Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
+            // move to new activity and pass the clicked event's unique ID.
+            Intent intent = new Intent(getContext(), ViewEventActivity.class);
+            Bundle bundle = new Bundle(1);
+            // Pass the Event Identifier to the New Activity
+            bundle.putString("eventID", clickedEvent.getEventID());
+            intent.putExtras(bundle);
+            // Start new Activity
+            requireContext().startActivity(intent);
+        }
+    });
 
 
     }
