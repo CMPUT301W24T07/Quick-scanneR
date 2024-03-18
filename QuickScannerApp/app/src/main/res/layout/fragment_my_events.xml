@@ -8,35 +8,24 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.homepage_event.EventFragment">
+        tools:context=".ui.my_events.AttendingEventsFragment">
 
 
         <ListView
-            android:id="@+id/event_listview"
+            android:id="@+id/my_event_listview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:contextClickable="true"
             android:textAlignment="viewEnd"
             android:textFilterEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintHorizontal_bias="0.333"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fob_createEvent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_gravity="end|bottom"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
-        android:clickable="true"
-        android:src="@drawable/baseline_add_24"
-        app:backgroundTint="@color/purple_200" />
+
 
 </RelativeLayout>
 

@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+import com.example.quickscanner.ui.my_events.MyEvents_Activity;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
 
@@ -119,8 +120,9 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             return true;
         } else if (itemId == R.id.navigation_myEvents) {
-            // Handle Events click
-            Toast.makeText(this, "Events Clicked", Toast.LENGTH_SHORT).show();
+            // Handle My Events click
+            Intent intent = new Intent(MainActivity.this, MyEvents_Activity.class);
+            startActivity(intent);
             return true;
         } else if (itemId == R.id.navigation_settings) {
             // Handle Settings click
