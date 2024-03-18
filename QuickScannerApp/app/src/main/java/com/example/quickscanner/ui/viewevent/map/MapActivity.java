@@ -276,7 +276,7 @@ public class MapActivity extends AppCompatActivity {
     // Create the Top Menu bar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.map_menu, menu);
+        getMenuInflater().inflate(R.menu.empty_menu, menu);
         return true;
     }
     // Handles The Top Bar menu clicks
