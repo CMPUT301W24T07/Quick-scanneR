@@ -42,9 +42,7 @@ public class SettingsActivity extends AppCompatActivity {
 
 
         // Fetch user data from Firebase.
-        fbUserController.getUser(fbUserController.getCurrentUserUid()).addOnCompleteListener(task -> {
-            if (!task.isSuccessful())
-                Log.w("error", "get user task is not successful");
+        fbUserController.getUserTask(fbUserController.getCurrentUserUid()).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 // Process the result when the user data retrieval is successful.
                 DocumentSnapshot document = task.getResult();

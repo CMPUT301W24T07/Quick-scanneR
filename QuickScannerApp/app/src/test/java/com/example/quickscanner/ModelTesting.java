@@ -87,7 +87,6 @@ public class ModelTesting {
         assertEquals(false, user.getAdmin().booleanValue());
         // size should be 0 as user has not signed up for anything yet
         assertEquals(user.getOrganizedEvents().size(), 0);
-        assertEquals(user.getAttendingEvents().size(), 0);
         // add events
         Event event = MockEvent();
         ArrayList<String> orgEvents = new ArrayList<>();
@@ -109,14 +108,14 @@ public class ModelTesting {
         assertEquals(false, user.getAdmin().booleanValue());
         // size should be 0 as user has not signed up for anything yet
         assertEquals(user.getOrganizedEvents().size(), 0);
-        assertEquals(user.getAttendingEvents().size(), 0);
+        assertEquals(user.getSignedUpEvents().size(), 0);
         // add events
         Event event = MockEvent();
-        ArrayList<String> attendEvents = new ArrayList<>();
-        attendEvents.add(event.getEventID());
-        user.setAttendingEvents(attendEvents);
+        ArrayList<String> signupEvents = new ArrayList<>();
+        signupEvents.add(event.getEventID());
+        user.setSignedUpEvents(signupEvents);
         // Test Size of organized events
-        assertEquals(1, user.getAttendingEventsSize());
+        assertEquals(1, user.getSignedUpEvents().size());
     }
 
     /**

@@ -10,9 +10,9 @@ import java.util.ArrayList;
 public class User {
     private Profile userProfile;
     private Boolean isAdmin;
-    private ArrayList<String> organizedEvents;
-    private ArrayList<String> signedUpEvents;
-    private ArrayList<String> checkedInEvents;
+    private ArrayList<String> organizedEvents = new ArrayList<String>();
+    private ArrayList<String> signedUpEvents = new ArrayList<String>();
+    private ArrayList<String> checkedInEvents = new ArrayList<String>();
     private String Uid;
     private boolean isGeolocationEnabled;
     private String testing = "This should show up";

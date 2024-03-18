@@ -3,6 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!--  Open Street Maps  -->
+    <!--  https://github.com/osmdroid/osmdroid/wiki/Prerequisites  -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -14,6 +22,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuickScanneR"
         tools:targetApi="31">
+        <activity
+            android:name=".ui.my_events.MyEvents_Activity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.addevent.MapActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.viewevent.map.MapActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.settings.SettingsActivity"
             android:exported="false"
