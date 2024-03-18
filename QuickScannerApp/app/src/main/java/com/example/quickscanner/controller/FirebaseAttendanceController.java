@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.Event;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -13,12 +14,19 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Transaction;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 /**
  * This class is a controller used for handling attendance operations in Firestore.
+ * It provides methods for checking users into events, removing users from check-ins,
+ * and validating user and event IDs.
+ * it also provides methods for fetching the events a user has signed up for and/or checked into.
+ * and fetching the users who have signed up for and/or checked into an event.
+ * It interacts with the 'Events' and 'Users' collections in Firestore.
  */
 public class FirebaseAttendanceController
 {
@@ -34,9 +42,10 @@ public class FirebaseAttendanceController
     }
 
     /**
-     * validates the id of the user or event, throwing a exception if the id is null or empty.
+     * Validates the ID of the user or event, throwing an IllegalArgumentException if the ID is null or empty.
      *
-     * @param id
+     * @param id The ID to validate. It should be a non-null and non-empty string.
+     * @throws IllegalArgumentException If the ID is null or empty.
      */
     private void validateId(String id)
     {
@@ -49,9 +58,18 @@ public class FirebaseAttendanceController
     /**
      * Signs up a user for an event, ensuring that the current attendees does not exceed the max.
      *
-     * @param userId  The ID of the user.
-     * @param eventId The ID of the event.
-     * @return A Task that completes when the transaction is finished.
+     * This method performs the following operations in a transaction:
+     * 1. Checks if the user is already signed up for the event. If so, no further action is taken.
+     * 2. If the user is not signed up and the event is not full, it increments the count of taken spots in the event document.
+     * 3. Adds a document to the signUps subcollection for the event, indicating that the user is signed up.
+     * 4. Adds the event ID to the user's list of signed-up events.
+     *
+     * If the event is full (i.e., the number of taken spots is equal to or greater than the maximum spots),
+     * a FirebaseFirestoreException with the code ABORTED is thrown.
+     *
+     * @param userId  The ID of the user to be signed up for the event.
+     * @param eventId The ID of the event for which the user is to be signed up.
+     * @return A Task that completes when the transaction is finished. The Task's result will be null.
      */
     public Task<Void> signUp(final String userId, final String eventId) {
         validateId(userId);
@@ -94,25 +112,31 @@ public class FirebaseAttendanceController
             }
         });
     }
-
-
     /**
-     * Checks a user into an event. This method performs the following steps in a transaction:
-     * 1. Reads the Event and signedUp documents.
-     * 2. Checks if the user is signed up and if the event is full.
-     * 3. If the user is not signed up and the event is not full, increments the
-     * takenSpots field of the Event document and adds a document to the
-     * checkIns subcollection.
-     * <p>
-     * If any step fails, the transaction is aborted and no changes are made to the database.
+     * Checks a user into an event.
      *
-     * @param userId  The ID of the user to check in.
-     * @param eventId The ID of the event to check the user into.
-     * @return A Task that will be completed when the transaction is finished.
+     * This method performs the following operations in a transaction:
+     * 1. If the user is not signed up, they will be signed up and checked in.
+     * 2. If the user is signed up but not checked in, they will be checked in.
+     * 3. If the user is already checked in, the timesCheckedIn field will be incremented.
+     *
+     * This method ensures all these operations are performed atomically, so there's no chance of
+     * write errors or too many people joining.
+     *
+     * If the event is full
+     * (i.e., the number of taken spots is equal to or greater than the maximum spots),
+     * the transaction is aborted and an exception is thrown.
+     *
+     * @param userId The ID of the user.
+     * @param eventId The ID of the event.
+     * @return A task that resolves when the check-in operation is complete. The Task's result will be null.
      */
     public Task<Void> checkIn(final String userId, final String eventId) {
+        // Validate the user and event IDs
         validateId(userId);
         validateId(eventId);
+
+        // References to various documents in the database
         final DocumentReference eventRef = eventsRef.document(eventId);
         final DocumentReference signUpRef = eventRef.collection("signUps").document(userId);
         final DocumentReference checkInRef = eventRef.collection("checkIns").document(userId);
@@ -121,20 +145,26 @@ public class FirebaseAttendanceController
         final DocumentReference userSignUpsRef = userRef.collection("Attendance").document("signedUpEvents");
         final DocumentReference liveCountRef = eventRef.collection("liveCounts").document("currentAttendance");
 
-
+        // Run a transaction to perform the check-in operation
         return db.runTransaction(new Transaction.Function<Void>() {
             @Nullable
             @Override
             public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                // Fetch the current state of the event, sign-up, and check-in documents
                 DocumentSnapshot eventSnapshot = transaction.get(eventRef);
                 DocumentSnapshot signUpSnapshot = transaction.get(signUpRef);
                 DocumentSnapshot checkInSnapshot = transaction.get(checkInRef);
 
+                // Convert the event document to an Event object
                 Event event = eventSnapshot.toObject(Event.class);
+
+                // Check if the user is signed up and checked in
                 boolean isSignedUp = signUpSnapshot.exists();
                 boolean isCheckedIn = checkInSnapshot.exists();
 
+                // If the user is neither signed up nor checked in
                 if (!isSignedUp && !isCheckedIn) {
+                    // If the event is full, abort the transaction
                     if (event.getMaxSpots() != null && event.getTakenSpots() >= event.getMaxSpots()) {
                         throw new FirebaseFirestoreException(
                                 "Event is full",
@@ -142,33 +172,41 @@ public class FirebaseAttendanceController
                         );
                     }
 
-                    // Increment the takenSpots field
+                    // Increment the number of taken spots for the event
                     transaction.update(eventRef, "takenSpots", FieldValue.increment(1));
                     event.setTakenSpots(event.getTakenSpots() + 1);
-                    // Increment the current attendance field in liveCounts
-                    transaction.update(liveCountRef, "currentAttendance", FieldValue.increment(1));
-                    // Add a document to the signUps and checkIns subcollections
-                    transaction.set(signUpRef, new HashMap<>());
 
+                    // Increment the current attendance count
+                    transaction.update(liveCountRef, "currentAttendance", FieldValue.increment(1));
+
+                    // Add a document to the sign-ups and check-ins collections
+                    transaction.set(signUpRef, new HashMap<>());
+                    //makes a hashmap to store the times checked in or other check in data
                     Map<String, Object> checkInData = new HashMap<>();
                     checkInData.put("timesCheckedIn", 1);
                     transaction.set(checkInRef, checkInData);
 
-                    // Add the event to the user's signed-up and checked-in events
+                    // Add the event to the user's list of signed-up and checked-in events
                     transaction.update(userSignUpsRef, "eventIds", FieldValue.arrayUnion(eventId));
                     transaction.update(userCheckInsRef, "eventIds", FieldValue.arrayUnion(eventId));
                 }
+
+                // If the user is signed up but not checked in
                 else if (isSignedUp && !isCheckedIn) {
-                    // Add a document to the checkIns subcollection
+                    // Add a document to the check-ins collection
                     Map<String, Object> checkInData = new HashMap<>();
                     checkInData.put("timesCheckedIn", 1);
                     transaction.set(checkInRef, checkInData);
+
+                    // Increment the current attendance count
                     transaction.update(liveCountRef, "currentAttendance", FieldValue.increment(1));
 
-                    // Add the event to the user's checked-in events
+                    // Add the event to the user's list of checked-in events
                     transaction.update(userCheckInsRef, "eventIds", FieldValue.arrayUnion(eventId));
                 }
+                // If the user is already checked in
                 else if (isCheckedIn) {
+                    // Increment the number of times the user has checked in
                     transaction.update(checkInRef, "timesCheckedIn", FieldValue.increment(1));
                 }
 
@@ -181,9 +219,16 @@ public class FirebaseAttendanceController
     /**
      * Removes a user from the check-ins of an event.
      *
-     * @param userId  The ID of the user.
-     * @param eventId The ID of the event.
-     * @return A Task that completes when the user is removed from the check-ins.
+     * This method performs the following operations in a transaction:
+     * 1. Decrements the count of current attendees in the event document.
+     * 2. Deletes the check-in document for the user in the event's check-ins collection.
+     * 3. Removes the event ID from the user's list of checked-in events.
+     *
+     * If the user is not checked into the event, the method does nothing
+     *
+     * @param userId  The ID of the user to be removed from the check-ins.
+     * @param eventId The ID of the event from which the user is to be removed.
+     * @return A Task that completes when the transaction is finished. The Task's result will be null.
      */
     public Task<Void> removeFromCheckIn(final String userId, final String eventId)
     {
@@ -220,13 +265,29 @@ public class FirebaseAttendanceController
             }
         });
     }
+    /**
+     * Removes a user from the sign-ups of an event.
+     *
+     * This method performs the following operations in a transaction:
+     * 1. Decrements the count of taken spots in the event document.
+     * 2. Deletes the sign-up document for the user in the event's sign-ups collection.
+     * 3. Removes the event ID from the user's list of signed-up events.
+     *
+     * If the user is not signed up for the event, the method does nothing.
+     *
+     * @param userId  The ID of the user to be removed from the sign-ups.
+     * @param eventId The ID of the event from which the user is to be removed.
+     * @return A Task that completes when the transaction is finished. The Task's result will be null.
+     */
+
     public Task<Void> removeFromSignUp(final String userId, final String eventId) {
         validateId(userId);
         validateId(eventId);
         final DocumentReference eventRef = eventsRef.document(eventId);
         final DocumentReference signUpRef = eventRef.collection("signUps").document(userId);
         final DocumentReference userRef = db.collection("users").document(userId);
-        final DocumentReference userSignUpsRef = userRef.collection("Attendance").document("signedUpEvents");
+        final DocumentReference userSignUpsRef = userRef.collection("Attendance")
+                .document("signedUpEvents");
 
         return db.runTransaction(new Transaction.Function<Void>() {
             @Nullable
@@ -251,5 +312,136 @@ public class FirebaseAttendanceController
             }
         });
     }
-}
+    /**
+     * Fetches the events a user has signed up for.
+     *
+     * This method performs the following operations:
+     * 1. Fetches the user's signed-up events document.
+     * 2. Retrieves the list of event IDs from the document.
+     * 3. Converts the event IDs to a list of tasks that fetch the corresponding DocumentSnapshots.
+     * 4. Waits for all tasks to complete.
+     * 5. Converts the DocumentSnapshots to Event objects.
+     *
+     * If the user has not signed up for any events, the method returns a task that resolves to an empty list.
+     *
+     * @param userId The ID of the user.
+     * @return A task that resolves to a list of Event objects.
+     */
+    public Task<List<Event>> getUserSignedUpEvents(String userId) {
+        // Reference to the user's signed up events document
+        DocumentReference userSignUpsRef = db.collection("users")
+                .document(userId)
+                .collection("Attendance")
+                .document("signedUpEvents");
 
+        // Fetch the document and continue with the task
+        return userSignUpsRef.get().continueWithTask(task -> {
+            DocumentSnapshot document = task.getResult();
+
+            // Get the list of event IDs from the document
+            List<String> eventIds = (List<String>) document.get("eventIds");
+            if (eventIds == null) {
+                // If there are no event IDs, return an empty list
+                return Tasks.forResult(new ArrayList<Object>());
+            }
+
+            // Convert the event IDs to a list of DocumentSnapshot tasks
+            List<Task<DocumentSnapshot>> tasks = arrayToDocList(eventIds);
+
+            // Wait for all tasks to complete
+            return Tasks.whenAllSuccess(tasks);
+        }).continueWith(task -> {
+            // Convert the DocumentSnapshots to Event objects
+            return convertToObject(task.getResult(), Event.class);
+        });
+    }
+
+    /**
+     * Fetches the events a user has checked into.
+     *
+     * This method performs the following operations:
+     * 1. Fetches the user's checked-in events document.
+     * 2. Retrieves the list of event IDs from the document.
+     * 3. Converts the event IDs to a list of tasks that fetch the corresponding DocumentSnapshots.
+     * 4. Waits for all tasks to complete.
+     * 5. Converts the DocumentSnapshots to Event objects.
+     *
+     * If the user has not checked into any events, the method returns a task that resolves to an empty list.
+     *
+     * @param userId The ID of the user.
+     * @return A task that resolves to a list of Event objects.
+     */
+    public Task<List<Event>> getUserCheckedInEvents(String userId) {
+        // Reference to the user's checked in events document
+        DocumentReference userCheckInsRef = db.collection("users")
+                .document(userId)
+                .collection("Attendance")
+                .document("checkedInEvents");
+
+        // Fetch the document and continue with the task
+        return userCheckInsRef.get().continueWithTask(task -> {
+            DocumentSnapshot document = task.getResult();
+
+            // Get the list of event IDs from the document
+            List<String> eventIds = (List<String>) document.get("eventIds");
+            if (eventIds == null) {
+                // If there are no event IDs, return an empty list
+                return Tasks.forResult(new ArrayList<Object>());
+            }
+
+            // Convert the event IDs to a list of DocumentSnapshot tasks
+            List<Task<DocumentSnapshot>> tasks = arrayToDocList(eventIds);
+
+            // Wait for all tasks to complete
+            return Tasks.whenAllSuccess(tasks);
+        }).continueWith(task -> {
+            // Convert the DocumentSnapshots to Event objects
+            return convertToObject(task.getResult(), Event.class);
+        });
+    }
+
+    /**
+     * Converts a list of DocumentSnapshots to a list of objects of a specified class.
+     *
+     * Each DocumentSnapshot in the list is converted to an instance of the specified class.
+     * If a DocumentSnapshot cannot be converted to an instance of the specified class, it is ignored.
+     * can convert any document snapshot list to any class
+     *
+     * @param objects The list of DocumentSnapshots.
+     * @param objectClass The class to convert the DocumentSnapshots to.
+     * @return A list of objects of the specified class.
+     */
+    public <ObjectClass> List<ObjectClass> convertToObject
+    (List<Object> objects, Class<ObjectClass> objectClass) {
+        List<ObjectClass> result = new ArrayList<>();
+        for (Object object : objects) {
+            if (object instanceof DocumentSnapshot) {
+                DocumentSnapshot documentSnapshot = (DocumentSnapshot) object;
+                ObjectClass item = documentSnapshot.toObject(objectClass);
+                if (item != null) {
+                    result.add(item);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Converts a list of event IDs to a list of tasks that retrieve the corresponding DocumentSnapshots.
+     *
+     * Each task in the returned list, when run, will fetch the DocumentSnapshot for the corresponding event ID.
+     * currently only works for event ids, but could be converted to work with any id by taking
+     * in the collection reference as well as changing variable names
+     *
+     * @param eventIds The list of event IDs.
+     * @return A list of tasks, each of which retrieves the DocumentSnapshot for an event ID.
+     */
+    public List<Task<DocumentSnapshot>> arrayToDocList(List<String> eventIds) {
+        List<Task<DocumentSnapshot>> docList = new ArrayList<>();
+        for (String eventId : eventIds) {
+            DocumentReference eventRef = eventsRef.document(eventId);
+            docList.add(eventRef.get());
+        }
+        return docList;
+    }
+}
