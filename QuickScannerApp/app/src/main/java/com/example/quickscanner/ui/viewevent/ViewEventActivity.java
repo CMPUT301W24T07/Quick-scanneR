@@ -16,10 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-<<<<<<< HEAD
-=======
 import android.widget.Switch;
->>>>>>> main
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -29,17 +26,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseEventController;
-import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
-import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
 import com.example.quickscanner.ui.viewevent.map.MapActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.gson.Gson;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
@@ -52,7 +46,6 @@ public class ViewEventActivity extends AppCompatActivity {
     String eventID;
     private FirebaseEventController fbEventController;
     private FirebaseImageController fbImageController;
-    private FirebaseUserController fbUserController;
     private Event event;
     private ActivityVieweventBinding binding;
     // UI reference
@@ -98,20 +91,20 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 // Create an AlertDialog
                 new AlertDialog.Builder(ViewEventActivity.this)
-                    .setTitle("Announcement")
-                    .setMessage("What do you wish to announce?")
-                    .setView(input)
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            // Get the user's input
-                            String announcement = input.getText().toString();
+                        .setTitle("Announcement")
+                        .setMessage("What do you wish to announce?")
+                        .setView(input)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                // Get the user's input
+                                String announcement = input.getText().toString();
 
-                            // TODO: Handle the announcement (e.g., send it to Firebase)
+                                // TODO: Handle the announcement (e.g., send it to Firebase)
 
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
             }
         });
 
@@ -126,35 +119,24 @@ public class ViewEventActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Convert the QR code Bitmap to a Uri
-                if (event != null) {
-                    Bitmap qrCodeBitmap = generateQRCode(eventID);
-                    if (qrCodeBitmap != null) {
-                        String path = MediaStore.Images.Media.insertImage(getContentResolver(), qrCodeBitmap, "QR Code", null);
-                        //Log.d("beans","this is wheere it fails");
-                        Uri qrCodeUri = Uri.parse(path);
+                String path = MediaStore.Images.Media.insertImage(getContentResolver(), qrCodeBitmap, "QR Code", null);
+                Log.d("beans","this is wheere it fails");
+                Uri qrCodeUri = Uri.parse(path);
 
-                        // Create an Intent with ACTION_SEND action
-                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                // Create an Intent with ACTION_SEND action
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
 
-                        // Put the Uri of the image and the text you want to share in the Intent
-                        shareIntent.putExtra(Intent.EXTRA_STREAM, qrCodeUri);
-                        Log.d("halpp", "event is null? "+ (event==null));
-                        shareIntent.putExtra(Intent.EXTRA_TEXT, "Join my event titled " + event.getName() + " using this QR code");
+                // Put the Uri of the image and the text you want to share in the Intent
+                shareIntent.putExtra(Intent.EXTRA_STREAM, qrCodeUri);
+                Log.d("halpp", "event is null? "+ (event==null));
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "Join my event titled " + event.getName() + " using this QR code");
 
-                        shareIntent.setType("image/jpeg");
+                shareIntent.setType("image/jpeg");
 
-                        // Start the Intent
-                        //java.lang.NullPointerException: Attempt to invoke virtual method
-                        //'java.lang.String com.example.quickscanner.model.Event.getName()' on a null object reference
-                        startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
-                    } else {
-                        // Show an error message if QR code generation failed
-                        Toast.makeText(ViewEventActivity.this, "Failed to generate QR code", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    // Show an error message or handle the null event object appropriately
-                    Toast.makeText(ViewEventActivity.this, "Event data not available", Toast.LENGTH_SHORT).show();
-                }
+                // Start the Intent
+                //java.lang.NullPointerException: Attempt to invoke virtual method
+                //'java.lang.String com.example.quickscanner.model.Event.getName()' on a null object reference
+                startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
             }
         });
 
@@ -211,39 +193,32 @@ public class ViewEventActivity extends AppCompatActivity {
                 binding.eventTitleText.setText(event.getName());
                 binding.eventDescriptionText.setText(event.getDescription());
                 binding.locationTextview.setText(event.getLocation());
-                //User organizer = fbUserController.getUser(event.getOrganizerID());
-                //binding.organiserText.setText(organizer.getUserProfile().getName());
+                binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
                 binding.eventTimeText.setText(event.getTime());
                 // Set up click listener for the "Generate QR Code" button
                 binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
 
-                // Check if the image path is not null or empty
-                if (event != null && event.getImagePath() != null && !event.getImagePath().isEmpty()) {
-                    // Download the image from Firebase Storage
-                    fbImageController.downloadImage(event.getImagePath())
-                        .addOnCompleteListener(task1 -> {
-                            if (task1.isSuccessful() && task1.getResult() != null) {
-                                String url = task1.getResult().toString();
-                                Picasso.get().load(url).into(binding.eventImageImage);
-                            } else {
-                                Log.d("ViewEventActivity", "Image download failed, setting default image");
-                                binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
-                            }
-                        });
-                } else {
-                    Log.d("ViewEventActivity", "Image path is null or empty");
-                    // Set default image or handle the case accordingly
-                    binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
-                }
-            })
 
-                    .addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
+                //just generate the qr code from the event id and set it to the qr code image view
+                //and get the image from the firebase storage and set it to the image view
+                fbImageController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
+                        if (task1.isSuccessful()) {
+                            String url = String.valueOf(task1.getResult());
+                            Picasso.get().load(url).into(binding.eventImageImage);
+                        } else {
+                            Log.d("halppp", "Document not retrieved, setting default image");
+                            binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
+                        }
+                    });
                 }
-            });
-        }
+
+
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
+            }
+        });
     }
 
     private void showQRCodeDialog() {
@@ -251,9 +226,6 @@ public class ViewEventActivity extends AppCompatActivity {
         if (event != null) {
             // Create and show the QR code dialog fragment
             QRCodeDialogFragment.newInstance(eventID).show(getSupportFragmentManager(), "QRCodeDialogFragment");
-        } else {
-            // If the event object is not available, show a toast message
-            Toast.makeText(ViewEventActivity.this, "Event data not available", Toast.LENGTH_SHORT).show();
         }
     }
 
