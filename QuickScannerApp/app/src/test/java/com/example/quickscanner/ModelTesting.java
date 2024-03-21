@@ -6,7 +6,6 @@ import com.example.quickscanner.model.*;
 
 import org.junit.Test;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class ModelTesting {
@@ -51,6 +50,34 @@ public class ModelTesting {
     }
 
     /**
+     * Test User geolocation toggling
+     * @return void
+     */
+    @Test
+    public void testUserGeolocation(){
+        User user = new User("Dylan", "dndu@ualberta.ca", "dndu.linkedin.com", "https://firebasestorage.googleapis.com/v0/b/quick-scanner-54fbc.appspot.com/o/Test%20Poster%202.png?alt=media&token=fb26816d-a7b5-4d35-89a0-65d7d5db31b3");
+        // set allowing geolocation to be false
+        user.setGeolocationEnabled(false);
+        // toggle geolocation
+        user.toggleAllowsGeolocation();
+        assertEquals(true, user.getGeolocationEnabled());
+    }
+
+    /**
+     * Test Event geolocation toggling
+     * @return void
+     */
+    @Test
+    public void testEventGeolocation(){
+        Event event = MockEvent();
+        // set allowing geolocation to be false
+        event.setGeolocationEnabled(false);
+        // toggle geolocation
+        event.toggleIsGeolocationEnabled();
+        assertEquals(true, event.getIsGeolocationEnabled());
+    }
+
+    /**
      * Test adding organizing events to User
      * @return void
      */
@@ -60,7 +87,6 @@ public class ModelTesting {
         assertEquals(false, user.getAdmin().booleanValue());
         // size should be 0 as user has not signed up for anything yet
         assertEquals(user.getOrganizedEvents().size(), 0);
-        assertEquals(user.getAttendingEvents().size(), 0);
         // add events
         Event event = MockEvent();
         ArrayList<String> orgEvents = new ArrayList<>();
@@ -82,14 +108,14 @@ public class ModelTesting {
         assertEquals(false, user.getAdmin().booleanValue());
         // size should be 0 as user has not signed up for anything yet
         assertEquals(user.getOrganizedEvents().size(), 0);
-        assertEquals(user.getAttendingEvents().size(), 0);
+        assertEquals(user.getSignedUpEvents().size(), 0);
         // add events
         Event event = MockEvent();
-        ArrayList<String> attendEvents = new ArrayList<>();
-        attendEvents.add(event.getEventID());
-        user.setAttendingEvents(attendEvents);
+        ArrayList<String> signupEvents = new ArrayList<>();
+        signupEvents.add(event.getEventID());
+        user.setSignedUpEvents(signupEvents);
         // Test Size of organized events
-        assertEquals(1, user.getAttendingEventsSize());
+        assertEquals(1, user.getSignedUpEvents().size());
     }
 
     /**

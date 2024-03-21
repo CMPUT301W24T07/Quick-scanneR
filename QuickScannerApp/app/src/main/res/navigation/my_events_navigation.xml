@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/my_events_navigation"
+    app:startDestination="@+id/navigation_attending_events">
+
+    <fragment
+        android:id="@+id/navigation_attending_events"
+        android:name="com.example.quickscanner.ui.my_events.AttendingEventsFragment"
+        android:label="attending_events"
+        tools:layout="@layout/fragment_my_events" />
+
+    <fragment
+        android:id="@+id/navigation_organized_events"
+        android:name="com.example.quickscanner.ui.my_events.OrganizedEventsFragment"
+        android:label="organized_events"
+        tools:layout="@layout/fragment_my_events" />
+
+
+</navigation>

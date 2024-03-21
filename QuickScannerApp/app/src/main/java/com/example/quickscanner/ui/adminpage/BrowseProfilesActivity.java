@@ -6,15 +6,19 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class BrowseProfilesActivity extends AppCompatActivity {
@@ -47,22 +51,20 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         // Set the adapter to the ListView
         profileListView.setAdapter(profileAdapter);
 
-        // Create FireStore Listener for Updates to the Profiles List.
-        fbUserController.getUsers().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                profilesDataList.clear();  // removes current data
-                for (QueryDocumentSnapshot doc : task.getResult()) { // set of documents
-                    User qryUser = doc.toObject(User.class);
-
-                    //associate user ID with the retrieved user
-                    qryUser.setUid(doc.getId());
-
-                    profilesDataList.add((qryUser)); // adds new data from db
+        fbUserController.getUsers().addOnCompleteListener(new OnCompleteListener<List<User>>() {
+            @Override
+            public void onComplete(@NonNull Task<List<User>> task) {
+                if (task.isSuccessful()) {
+                    profilesDataList.clear();  // removes current data
+                    List<User> users = task.getResult();
+                    if (users != null) {
+                        profilesDataList.addAll(users); // adds new data from db
+                    }
+                } else {
+                    Log.e("Firestore", task.getException().toString());
                 }
-            } else {
-                Log.e("Firestore", task.getException().toString());
+                profileAdapter.notifyDataSetChanged();
             }
-            profileAdapter.notifyDataSetChanged();
         });
     }
 

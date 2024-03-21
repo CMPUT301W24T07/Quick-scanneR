@@ -19,19 +19,29 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+<<<<<<< HEAD
 import com.example.quickscanner.controller.FirebaseImageController;
+=======
+import com.example.quickscanner.MainActivity;
+import com.example.quickscanner.controller.FirebaseImageController;;
+>>>>>>> main
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+<<<<<<< HEAD
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.gson.Gson;
+=======
+import com.example.quickscanner.ui.profile.ProfileActivity;
+>>>>>>> main
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -60,6 +70,22 @@ public class AddEventActivity extends AppCompatActivity {
 
     private Bitmap eventImageMap;
 
+    // Used to get an event location string back from the Map Activity Fragment.
+    // Credit: https://developer.android.com/training/basics/intents/result
+    ActivityResultLauncher<Intent> mapGetLocation = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        String geoHash = data.getStringExtra("geoHash");
+                        // Handle the location string
+                        locationEditText.setText(geoHash);
+
+                    }
+                }
+            });
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +109,24 @@ public class AddEventActivity extends AppCompatActivity {
 
         // back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
+        // Location Text Click behaviour
+        locationEditText = findViewById(R.id.location_textview);
+        locationEditText.setFocusable(false); // can't type, must interact with listener
+        locationEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Open map activity to choose your location
+                // Credit: https://developer.android.com/training/basics/intents/result
+                Intent intent = new Intent(AddEventActivity.this, MapActivity.class);
+                // Pass the current location to the map activity
+                Bundle bundle = new Bundle(1);
+                bundle.putString("geoHash", locationEditText.getText().toString());
+                intent.putExtras(bundle);
+                // start map activity
+                mapGetLocation.launch(intent);
+            }
+        });
 
         // Edit Button 1
         ImageButton editBtn1 = findViewById(R.id.editBtn1);

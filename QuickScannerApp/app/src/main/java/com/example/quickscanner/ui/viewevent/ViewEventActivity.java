@@ -1,5 +1,7 @@
 package com.example.quickscanner.ui.viewevent;
 
+import static android.content.ContentValues.TAG;
+
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,9 +11,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+<<<<<<< HEAD
+=======
+import android.widget.Switch;
+>>>>>>> main
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,6 +34,7 @@ import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
+import com.example.quickscanner.ui.viewevent.map.MapActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -46,6 +55,8 @@ public class ViewEventActivity extends AppCompatActivity {
     private FirebaseUserController fbUserController;
     private Event event;
     private ActivityVieweventBinding binding;
+    // UI reference
+    Switch toggleGeolocation;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -54,11 +65,14 @@ public class ViewEventActivity extends AppCompatActivity {
         binding = ActivityVieweventBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        //references
         fbEventController = new FirebaseEventController();
         fbImageController = new FirebaseImageController();
+        toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
 
         // Display Back Button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
         // Grab any Intent bundle/parameters
         Bundle inputBundle = getIntent().getExtras();
         if (inputBundle != null) {
@@ -69,6 +83,8 @@ public class ViewEventActivity extends AppCompatActivity {
             Log.e("halpp", "Event ID is: "+eventID);
         }
         fetchEventData();
+        Toast.makeText(this, eventID, Toast.LENGTH_SHORT).show();
+
 
         // Get a reference to the announcement button
         FloatingActionButton announcementButton = findViewById(R.id.announcement_button);
@@ -142,24 +158,52 @@ public class ViewEventActivity extends AppCompatActivity {
             }
         });
 
+        // implement geolocation switch behaviour
+        toggleGeolocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton switchView, boolean isChecked) {
+                // toggle user's geolocation preferences
+                event.toggleIsGeolocationEnabled();
+                // update user's geolocation preferences in firebase
+                fbEventController.updateEvent(event)
+                        .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
+                        .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
+            }
+        });
+
     }
 
     // Fetches the event data from Firestore
     private void fetchEventData() {
-        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        fbEventController.getEventTask(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 Log.d("halpp","great success");
-
                 event = documentSnapshot.toObject(Event.class);
-
                 Log.d("BEANS", "DocumentSnapshot data: " + documentSnapshot.getData());
+
                 if (event != null) {
+
+                    // set geolocation switch to match event preferences.
+                    if (documentSnapshot.contains("isGeolocationEnabled")) {
+                        // TODO: Remove later when Crystal deletes 'Parcelable' from Events
+                        event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
+                    }
+                    boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
+                    toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
+                    event.setGeolocationEnabled(oldIsGeolocationEnabled);
+                    fbEventController.updateEvent(event)
+                            .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
+                            .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
                     // Set the event data to the UI
                     Log.d("halpp",event.getName());
                     setEventDataToUI();
+
                 }
             }
+
 
             private void setEventDataToUI() {
 
@@ -191,14 +235,15 @@ public class ViewEventActivity extends AppCompatActivity {
                     // Set default image or handle the case accordingly
                     binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
                 }
-            }
+            })
 
-            }).addOnFailureListener(new OnFailureListener() {
+                    .addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
                 }
             });
+        }
     }
 
     private void showQRCodeDialog() {
@@ -212,16 +257,16 @@ public class ViewEventActivity extends AppCompatActivity {
         }
     }
 
-    // Handles The Top Bar menu clicks
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            // Handle the Back button press
-            finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-
-    }
+//    // Handles The Top Bar menu clicks
+//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+//        if (item.getItemId() == android.R.id.home) {
+//            // Handle the Back button press
+//            finish();
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//
+//    }
 
     //generates QR code
     private Bitmap generateQRCode(String text) {
@@ -242,4 +287,51 @@ public class ViewEventActivity extends AppCompatActivity {
         }
         return null;
     }
+
+    /*         Inflate Handle Top Menu Options        */
+    // Create the Top Menu bar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.viewevent_top_nav_menu, menu);
+        return true;
+    }
+    /*    Handle click events for the Top Menu Bar    */
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.navigation_attendance_list) {// Handle Edit Profile click
+            // Handle click
+            Toast.makeText(this, "navigation_attendance_list clicked", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.navigation_QR_check_in) {
+            // Handle Click
+            Toast.makeText(this, "navigation_QR_check_in clicked", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.navigation_QR_promotional) {
+            // Handle click
+            Toast.makeText(this, "navigation_QR_promotional clicked", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.map) {
+            // Handle Map click
+            Intent intent = new Intent(ViewEventActivity.this, MapActivity.class);
+            Bundle bundle = new Bundle();
+            // Check if Geolocation is Enabled
+            if (!event.getIsGeolocationEnabled()) {
+                Toast.makeText(this, R.string.enable_geolocation, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            // Add the hashed location
+            bundle.putString("geoHash", event.getLocation());
+            intent.putExtras(bundle);
+            startActivity(intent);
+            return true;
+        } else if (item.getItemId() == android.R.id.home) {
+            // Handle the Back button press
+            finish();
+            return true;
+        }
+        return false;
+
+    }
+
 }
