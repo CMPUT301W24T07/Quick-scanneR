@@ -1,17 +1,8 @@
 package com.example.quickscanner.model;
 
-<<<<<<< HEAD
 import java.util.ArrayList;
 
 public class Event {
-=======
-import android.os.Parcel;
-import android.os.Parcelable;
-import java.util.ArrayList;
-
-
-public class Event implements Parcelable {
->>>>>>> main
     public String name;
     public String description;
     public String imagePath;
@@ -37,13 +28,10 @@ public class Event implements Parcelable {
         this.name = name;
         this.description = description;
         imagePath = "default.jpeg";
-<<<<<<< HEAD
         this.organizerID = organizerID;
         this.time = time;
         this.location = location;
-=======
         this.takenSpots  = 0;
->>>>>>> main
     }
 
     public Event(String name, String description, String imagePath, String organizerID, String time, String location) {
@@ -60,39 +48,7 @@ public class Event implements Parcelable {
         this.takenSpots = 0;
     }
 
-<<<<<<< HEAD
     // Getters and Setters
-=======
-    // Parcelable implementation
-    protected Event(Parcel in) {
-        name = in.readString();
-        description = in.readString();
-        imagePath = in.readString();
-    }
-
-    public static final Creator<Event> CREATOR = new Creator<Event>() {
-        @Override
-        public Event createFromParcel(Parcel in) {
-            return new Event(in);
-        }
-
-        @Override
-        public Event[] newArray(int size) {
-            return new Event[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(name);
-        dest.writeString(description);
-        dest.writeString(imagePath);
-    }
 
     /**
      * toggles the isGeolocationEnabled value
@@ -102,8 +58,6 @@ public class Event implements Parcelable {
         this.isGeolocationEnabled = !this.isGeolocationEnabled;
     }
 
-
->>>>>>> main
     // Getters
     public String getName() {return name;}
     public String getDescription() {return description;}
@@ -138,11 +92,6 @@ public class Event implements Parcelable {
 
     public void setSignUps(ArrayList<String> signUps) {this.signUps = signUps;}
     public void setCheckIns(ArrayList<String> checkIns) {this.checkIns = checkIns;}
-<<<<<<< HEAD
-}
-=======
     public void setMaxSpots(Integer maxSpots) {this.maxSpots = maxSpots;}
     public void setTakenSpots(int takenSpots) {this.takenSpots = takenSpots;}
-
 }
->>>>>>> main
