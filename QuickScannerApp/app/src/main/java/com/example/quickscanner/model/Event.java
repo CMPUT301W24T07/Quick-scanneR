@@ -35,6 +35,9 @@ public class Event {
         this.location = location;
     }
 
+    public Event() {
+    }
+
     // Getters and Setters
     // Getters
     public String getName() {return name;}

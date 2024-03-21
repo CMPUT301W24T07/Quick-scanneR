@@ -21,8 +21,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -41,6 +43,7 @@ public class ViewEventActivity extends AppCompatActivity {
     String eventID;
     private FirebaseEventController fbEventController;
     private FirebaseImageController fbImageController;
+    private FirebaseUserController fbUserController;
     private Event event;
     private ActivityVieweventBinding binding;
 
@@ -164,7 +167,8 @@ public class ViewEventActivity extends AppCompatActivity {
                 binding.eventTitleText.setText(event.getName());
                 binding.eventDescriptionText.setText(event.getDescription());
                 binding.locationTextview.setText(event.getLocation());
-                binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
+                //User organizer = fbUserController.getUser(event.getOrganizerID());
+                //binding.organiserText.setText(organizer.getUserProfile().getName());
                 binding.eventTimeText.setText(event.getTime());
                 // Set up click listener for the "Generate QR Code" button
                 binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());

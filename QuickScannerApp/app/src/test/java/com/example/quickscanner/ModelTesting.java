@@ -15,7 +15,7 @@ public class ModelTesting {
      * @return User
      */
     public Event MockEvent(){
-        Event event = new Event("Dylan's Event", "This is a mock event for testing", MockUser(),
+        Event event = new Event("Dylan's Event", "This is a mock event for testing", MockUser().getUid(),
                     "05,03,2001", "Edmonton");
         return event;
     }
