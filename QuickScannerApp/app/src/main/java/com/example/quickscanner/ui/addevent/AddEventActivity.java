@@ -108,7 +108,6 @@ public class AddEventActivity extends AppCompatActivity {
 
         // Create Event Button
         Button createEventInsideBtn = findViewById(R.id.CreateEventInsideBtn);
-        User testUser = new User();
         createEventInsideBtn.setOnClickListener(v -> {
             // Check if necessary fields are filled
             if (editedEventName != null && !editedEventName.isEmpty() &&

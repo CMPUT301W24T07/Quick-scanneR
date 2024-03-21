@@ -17,19 +17,25 @@ public class Event {
     public ArrayList<String> checkIns = new ArrayList<>();
 
 
-    public Event(String name, String description, User organizer, String time, String location) {
+    public Event(String name, String description, String organizerID, String time, String location) {
         this.name = name;
         this.description = description;
         imagePath = "default.jpeg";
-        this.organizer = organizer;
+        this.organizerID = organizerID;
         this.time = time;
         this.location = location;
     }
-    public Event () {
 
+    public Event(String name, String description, String imagePath, String organizerID, String time, String location) {
+        this.name = name;
+        this.description = description;
+        this.imagePath = imagePath;
+        this.organizerID = organizerID;
+        this.time = time;
+        this.location = location;
     }
-    // Getters and Setters
 
+    // Getters and Setters
     // Getters
     public String getName() {return name;}
     public String getDescription() {return description;}
