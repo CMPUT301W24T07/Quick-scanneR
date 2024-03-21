@@ -17,6 +17,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <Switch
+                android:id="@+id/toggle_geolocation"
+                android:layout_width="152dp"
+                android:layout_height="51dp"
+                android:layout_marginTop="12dp"
+                android:text="Geo-location Tracking:"
+                android:textSize="15dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <TextView
                 android:id="@+id/eventTitle_text"
                 android:layout_width="wrap_content"
@@ -26,8 +36,8 @@
                 android:paddingEnd="10dp"
                 android:text="Event Title"
                 android:textSize="34sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.053"
+                app:layout_constraintEnd_toStartOf="@+id/toggle_geolocation"
+                app:layout_constraintHorizontal_bias="0.158"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 

@@ -1,5 +1,7 @@
 package com.example.quickscanner.ui.viewevent;
 
+import static android.content.ContentValues.TAG;
+
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,9 +11,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,11 +29,11 @@ import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
+import com.example.quickscanner.ui.viewevent.map.MapActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.gson.Gson;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
@@ -43,6 +48,8 @@ public class ViewEventActivity extends AppCompatActivity {
     private FirebaseImageController fbImageController;
     private Event event;
     private ActivityVieweventBinding binding;
+    // UI reference
+    Switch toggleGeolocation;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -51,11 +58,14 @@ public class ViewEventActivity extends AppCompatActivity {
         binding = ActivityVieweventBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        //references
         fbEventController = new FirebaseEventController();
         fbImageController = new FirebaseImageController();
+        toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
 
         // Display Back Button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
         // Grab any Intent bundle/parameters
         Bundle inputBundle = getIntent().getExtras();
         if (inputBundle != null) {
@@ -66,6 +76,8 @@ public class ViewEventActivity extends AppCompatActivity {
             Log.e("halpp", "Event ID is: "+eventID);
         }
         fetchEventData();
+        Toast.makeText(this, eventID, Toast.LENGTH_SHORT).show();
+
 
         // Get a reference to the announcement button
         FloatingActionButton announcementButton = findViewById(R.id.announcement_button);
@@ -79,20 +91,20 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 // Create an AlertDialog
                 new AlertDialog.Builder(ViewEventActivity.this)
-                    .setTitle("Announcement")
-                    .setMessage("What do you wish to announce?")
-                    .setView(input)
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            // Get the user's input
-                            String announcement = input.getText().toString();
+                        .setTitle("Announcement")
+                        .setMessage("What do you wish to announce?")
+                        .setView(input)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                // Get the user's input
+                                String announcement = input.getText().toString();
 
-                            // TODO: Handle the announcement (e.g., send it to Firebase)
+                                // TODO: Handle the announcement (e.g., send it to Firebase)
 
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
             }
         });
 
@@ -107,35 +119,38 @@ public class ViewEventActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Convert the QR code Bitmap to a Uri
-                if (event != null) {
-                    Bitmap qrCodeBitmap = generateQRCode(eventID);
-                    if (qrCodeBitmap != null) {
-                        String path = MediaStore.Images.Media.insertImage(getContentResolver(), qrCodeBitmap, "QR Code", null);
-                        //Log.d("beans","this is wheere it fails");
-                        Uri qrCodeUri = Uri.parse(path);
+                String path = MediaStore.Images.Media.insertImage(getContentResolver(), qrCodeBitmap, "QR Code", null);
+                Log.d("beans","this is wheere it fails");
+                Uri qrCodeUri = Uri.parse(path);
 
-                        // Create an Intent with ACTION_SEND action
-                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                // Create an Intent with ACTION_SEND action
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
 
-                        // Put the Uri of the image and the text you want to share in the Intent
-                        shareIntent.putExtra(Intent.EXTRA_STREAM, qrCodeUri);
-                        Log.d("halpp", "event is null? "+ (event==null));
-                        shareIntent.putExtra(Intent.EXTRA_TEXT, "Join my event titled " + event.getName() + " using this QR code");
+                // Put the Uri of the image and the text you want to share in the Intent
+                shareIntent.putExtra(Intent.EXTRA_STREAM, qrCodeUri);
+                Log.d("halpp", "event is null? "+ (event==null));
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "Join my event titled " + event.getName() + " using this QR code");
 
-                        shareIntent.setType("image/jpeg");
+                shareIntent.setType("image/jpeg");
 
-                        // Start the Intent
-                        //java.lang.NullPointerException: Attempt to invoke virtual method
-                        //'java.lang.String com.example.quickscanner.model.Event.getName()' on a null object reference
-                        startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
-                    } else {
-                        // Show an error message if QR code generation failed
-                        Toast.makeText(ViewEventActivity.this, "Failed to generate QR code", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    // Show an error message or handle the null event object appropriately
-                    Toast.makeText(ViewEventActivity.this, "Event data not available", Toast.LENGTH_SHORT).show();
-                }
+                // Start the Intent
+                //java.lang.NullPointerException: Attempt to invoke virtual method
+                //'java.lang.String com.example.quickscanner.model.Event.getName()' on a null object reference
+                startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
+            }
+        });
+
+        // implement geolocation switch behaviour
+        toggleGeolocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton switchView, boolean isChecked) {
+                // toggle user's geolocation preferences
+                event.toggleIsGeolocationEnabled();
+                // update user's geolocation preferences in firebase
+                fbEventController.updateEvent(event)
+                        .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
+                        .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
             }
         });
 
@@ -143,20 +158,34 @@ public class ViewEventActivity extends AppCompatActivity {
 
     // Fetches the event data from Firestore
     private void fetchEventData() {
-        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        fbEventController.getEventTask(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 Log.d("halpp","great success");
-
                 event = documentSnapshot.toObject(Event.class);
-
                 Log.d("BEANS", "DocumentSnapshot data: " + documentSnapshot.getData());
+
                 if (event != null) {
+
+                    // set geolocation switch to match event preferences.
+                    if (documentSnapshot.contains("isGeolocationEnabled")) {
+                        // TODO: Remove later when Crystal deletes 'Parcelable' from Events
+                        event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
+                    }
+                    boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
+                    toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
+                    event.setGeolocationEnabled(oldIsGeolocationEnabled);
+                    fbEventController.updateEvent(event)
+                            .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
+                            .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
                     // Set the event data to the UI
                     Log.d("halpp",event.getName());
                     setEventDataToUI();
+
                 }
             }
+
 
             private void setEventDataToUI() {
 
@@ -169,32 +198,27 @@ public class ViewEventActivity extends AppCompatActivity {
                 // Set up click listener for the "Generate QR Code" button
                 binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
 
-                // Check if the image path is not null or empty
-                if (event != null && event.getImagePath() != null && !event.getImagePath().isEmpty()) {
-                    // Download the image from Firebase Storage
-                    fbImageController.downloadImage(event.getImagePath())
-                        .addOnCompleteListener(task1 -> {
-                            if (task1.isSuccessful() && task1.getResult() != null) {
-                                String url = task1.getResult().toString();
-                                Picasso.get().load(url).into(binding.eventImageImage);
-                            } else {
-                                Log.d("ViewEventActivity", "Image download failed, setting default image");
-                                binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
-                            }
-                        });
-                } else {
-                    Log.d("ViewEventActivity", "Image path is null or empty");
-                    // Set default image or handle the case accordingly
-                    binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
-                }
-            }
 
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
+                //just generate the qr code from the event id and set it to the qr code image view
+                //and get the image from the firebase storage and set it to the image view
+                fbImageController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
+                        if (task1.isSuccessful()) {
+                            String url = String.valueOf(task1.getResult());
+                            Picasso.get().load(url).into(binding.eventImageImage);
+                        } else {
+                            Log.d("halppp", "Document not retrieved, setting default image");
+                            binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
+                        }
+                    });
                 }
-            });
+
+
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
+            }
+        });
     }
 
     private void showQRCodeDialog() {
@@ -202,22 +226,19 @@ public class ViewEventActivity extends AppCompatActivity {
         if (event != null) {
             // Create and show the QR code dialog fragment
             QRCodeDialogFragment.newInstance(eventID).show(getSupportFragmentManager(), "QRCodeDialogFragment");
-        } else {
-            // If the event object is not available, show a toast message
-            Toast.makeText(ViewEventActivity.this, "Event data not available", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // Handles The Top Bar menu clicks
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            // Handle the Back button press
-            finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-
-    }
+//    // Handles The Top Bar menu clicks
+//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+//        if (item.getItemId() == android.R.id.home) {
+//            // Handle the Back button press
+//            finish();
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//
+//    }
 
     //generates QR code
     private Bitmap generateQRCode(String text) {
@@ -238,4 +259,51 @@ public class ViewEventActivity extends AppCompatActivity {
         }
         return null;
     }
+
+    /*         Inflate Handle Top Menu Options        */
+    // Create the Top Menu bar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.viewevent_top_nav_menu, menu);
+        return true;
+    }
+    /*    Handle click events for the Top Menu Bar    */
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.navigation_attendance_list) {// Handle Edit Profile click
+            // Handle click
+            Toast.makeText(this, "navigation_attendance_list clicked", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.navigation_QR_check_in) {
+            // Handle Click
+            Toast.makeText(this, "navigation_QR_check_in clicked", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.navigation_QR_promotional) {
+            // Handle click
+            Toast.makeText(this, "navigation_QR_promotional clicked", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.map) {
+            // Handle Map click
+            Intent intent = new Intent(ViewEventActivity.this, MapActivity.class);
+            Bundle bundle = new Bundle();
+            // Check if Geolocation is Enabled
+            if (!event.getIsGeolocationEnabled()) {
+                Toast.makeText(this, R.string.enable_geolocation, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            // Add the hashed location
+            bundle.putString("geoHash", event.getLocation());
+            intent.putExtras(bundle);
+            startActivity(intent);
+            return true;
+        } else if (item.getItemId() == android.R.id.home) {
+            // Handle the Back button press
+            finish();
+            return true;
+        }
+        return false;
+
+    }
+
 }

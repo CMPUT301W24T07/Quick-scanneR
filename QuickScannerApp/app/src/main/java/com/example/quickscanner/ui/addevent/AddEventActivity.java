@@ -19,14 +19,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.quickscanner.controller.FirebaseImageController;
+import com.example.quickscanner.MainActivity;
+import com.example.quickscanner.controller.FirebaseImageController;;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
@@ -54,9 +57,26 @@ public class AddEventActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> resultLauncher;
     private FirebaseEventController fbEventController;
     private FirebaseImageController fbImageController;
+    private FirebaseUserController fbUserController;
 
 
     private Bitmap eventImageMap;
+
+    // Used to get an event location string back from the Map Activity Fragment.
+    // Credit: https://developer.android.com/training/basics/intents/result
+    ActivityResultLauncher<Intent> mapGetLocation = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        String geoHash = data.getStringExtra("geoHash");
+                        // Handle the location string
+                        locationEditText.setText(geoHash);
+
+                    }
+                }
+            });
 
 
     @Override
@@ -65,6 +85,7 @@ public class AddEventActivity extends AppCompatActivity {
         setContentView(R.layout.activity_addevent);
         fbEventController = new FirebaseEventController();
         fbImageController = new FirebaseImageController();
+        fbUserController = new FirebaseUserController();
 
         // Initialize views
         eventDescriptionTextView = findViewById(R.id.EventDescription);
@@ -80,6 +101,24 @@ public class AddEventActivity extends AppCompatActivity {
 
         // back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
+        // Location Text Click behaviour
+        locationEditText = findViewById(R.id.location_textview);
+        locationEditText.setFocusable(false); // can't type, must interact with listener
+        locationEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Open map activity to choose your location
+                // Credit: https://developer.android.com/training/basics/intents/result
+                Intent intent = new Intent(AddEventActivity.this, MapActivity.class);
+                // Pass the current location to the map activity
+                Bundle bundle = new Bundle(1);
+                bundle.putString("geoHash", locationEditText.getText().toString());
+                intent.putExtras(bundle);
+                // start map activity
+                mapGetLocation.launch(intent);
+            }
+        });
 
         // Edit Button 1
         ImageButton editBtn1 = findViewById(R.id.editBtn1);
@@ -108,7 +147,6 @@ public class AddEventActivity extends AppCompatActivity {
 
         // Create Event Button
         Button createEventInsideBtn = findViewById(R.id.CreateEventInsideBtn);
-        User testUser = new User();
         createEventInsideBtn.setOnClickListener(v -> {
             // Check if necessary fields are filled
             if (editedEventName != null && !editedEventName.isEmpty() &&
@@ -119,7 +157,7 @@ public class AddEventActivity extends AppCompatActivity {
                 String time = timeEditText.getText().toString();
 
                 // Create an Event object with the edited values
-                Event newEvent = new Event(editedEventName, editedEventDescription, testUser, time, location);
+                Event newEvent = new Event(editedEventName, editedEventDescription, fbUserController.getCurrentUserUid(), time, location);
 
                 // Add the event to the database
                 addEventToFirestore(newEvent);
@@ -154,8 +192,9 @@ public class AddEventActivity extends AppCompatActivity {
                     eventImageMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
                     byte[] imageData = boas.toByteArray();
                     fbImageController.uploadImage(event.getImagePath(), imageData);
-                    fbEventController.updateEvent(event);
                 }
+
+                fbEventController.updateEvent(event);
 
                 // Pass the JSON string to the next activity
                 Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
