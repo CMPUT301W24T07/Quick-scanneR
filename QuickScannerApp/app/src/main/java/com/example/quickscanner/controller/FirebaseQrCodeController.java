@@ -104,4 +104,88 @@ public class FirebaseQrCodeController {
             }
         });
     }
+    /**
+     * Retrieves an event from the Firestore that has QR code id input
+     * in the checkInQrCode field. throws exception if not found
+     *
+     * @param qrCode The QR code string.
+     * @return A Task that represents the operation of retrieving the event.
+     * The result of the Task is an Event object.
+     */
+    public Task<Event> getCheckInEventFromQr(String qrCode) {
+        validateId(qrCode);
+        CollectionReference eventsRef = db.collection("events");
+        Query query = eventsRef.whereEqualTo("checkInQrCode", qrCode).limit(1);
+        return query.get().continueWith(new Continuation<QuerySnapshot, Event>() {
+            @Override
+            public Event then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        return document.toObject(Event.class);
+                    }
+                    return null; // No event found with the provided QR code
+                } else {
+                    throw task.getException();
+                }
+            }
+        });
+    }
+    /**
+     * Retrieves an event from the Firestore that has the provided QR code string in the "promoQrCode" field.
+     *
+     * @param qrCode The QR code string.
+     * @return A Task that represents the operation of retrieving the event.
+     * The result of the Task is an Event object.
+     */
+    public Task<Event> getPromoEventFromQr(String qrCode) {
+        validateId(qrCode);
+        CollectionReference eventsRef = db.collection("events");
+        Query query = eventsRef.whereEqualTo("promoQrCode", qrCode).limit(1);
+        return query.get().continueWith(new Continuation<QuerySnapshot, Event>() {
+            @Override
+            public Event then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        return document.toObject(Event.class);
+                    }
+                    return null; // No event found with the provided QR code
+                } else {
+                    throw task.getException();
+                }
+            }
+        });
+    }
+    /**
+     * Checks if there is an event in the Firestore that the provided QR code string is
+     * used either in check ins or promotion page.
+     *
+     * @param qrCode The QR code string.
+     * @return A Task that represents the operation of checking the existence of the event.
+     * The result of the Task is a boolean value indicating whether its used in any event.
+     */
+    public Task<Boolean> eventExists(String qrCode) {
+        validateId(qrCode);
+        CollectionReference eventsRef = db.collection("events");
+        // Create a query for the "checkInQrCode" field
+        Query queryCheckIn = eventsRef.whereEqualTo("checkInQrCode", qrCode).limit(1);
+        // Create a query for the "promoQrCode" field
+        Query queryPromo = eventsRef.whereEqualTo("promoQrCode", qrCode).limit(1);
+
+        // Execute the queries
+        Task<QuerySnapshot> taskCheckIn = queryCheckIn.get();
+        Task<QuerySnapshot> taskPromo = queryPromo.get();
+
+        // Combine the tasks and transform the result into a boolean value
+        Task<Boolean> combinedTask = Tasks.whenAllSuccess(taskCheckIn, taskPromo).continueWith(task -> {
+            // Get the results of the queries
+            QuerySnapshot checkInResult = taskCheckIn.getResult();
+            QuerySnapshot promoResult = taskPromo.getResult();
+
+            // Return true if both of the query results are empty (i.e., there is no event with the provided QR code), false otherwise
+            return checkInResult.isEmpty() && promoResult.isEmpty();
+        });
+
+        return combinedTask;
+    }
+
 }
