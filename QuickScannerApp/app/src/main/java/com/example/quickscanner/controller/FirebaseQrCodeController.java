@@ -120,10 +120,13 @@ public class FirebaseQrCodeController {
             @Override
             public Event then(@NonNull Task<QuerySnapshot> task) throws Exception {
                 if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
+                    QuerySnapshot querySnapshot = task.getResult();
+                    if (!querySnapshot.isEmpty()) {
+                        DocumentSnapshot document = querySnapshot.getDocuments().get(0);
                         return document.toObject(Event.class);
+                    } else {
+                        return null; // No event found with the provided QR code
                     }
-                    return null; // No event found with the provided QR code
                 } else {
                     throw task.getException();
                 }
@@ -145,10 +148,13 @@ public class FirebaseQrCodeController {
             @Override
             public Event then(@NonNull Task<QuerySnapshot> task) throws Exception {
                 if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
+                    QuerySnapshot querySnapshot = task.getResult();
+                    if (!querySnapshot.isEmpty()) {
+                        DocumentSnapshot document = querySnapshot.getDocuments().get(0);
                         return document.toObject(Event.class);
-                    }
-                    return null; // No event found with the provided QR code
+                    } else {
+                        return null; // No event found with the provided QR code
+                    }// No event found with the provided QR code
                 } else {
                     throw task.getException();
                 }
