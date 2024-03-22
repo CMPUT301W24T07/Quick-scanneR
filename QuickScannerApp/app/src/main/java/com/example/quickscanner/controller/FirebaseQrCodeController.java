@@ -156,36 +156,46 @@ public class FirebaseQrCodeController {
         });
     }
     /**
-     * Checks if there is an event in the Firestore that the provided QR code string is
-     * used either in check ins or promotion page.
+     * Checks if a given QR code is unused in the Firestore database.
+     * The method first checks if its used in check ins, and if it isnt checks if its used in promo.
      *
-     * @param qrCode The QR code string.
-     * @return A Task that represents the operation of checking the existence of the event.
-     * The result of the Task is a boolean value indicating whether its used in any event.
+     * @param qrCode The QR code string to check.
+     * @return A Task that represents the operation of checking the QR code.
+     * The result of the Task is a boolean value indicating whether the QR code is unused.
+     * If the QR code is not being used by any event, the method returns true.
+     * If the QR code is being used, the method returns false.
      */
     public Task<Boolean> isQrUnused(String qrCode) {
         validateId(qrCode);
         CollectionReference eventsRef = db.collection("events");
+
         // Create a query for the "checkInQrCode" field
         Query queryCheckIn = eventsRef.whereEqualTo("checkInQrCode", qrCode).limit(1);
-        // Create a query for the "promoQrCode" field
-        Query queryPromo = eventsRef.whereEqualTo("promoQrCode", qrCode).limit(1);
 
-        // Execute the queries
+        // Execute the first query
         Task<QuerySnapshot> taskCheckIn = queryCheckIn.get();
-        Task<QuerySnapshot> taskPromo = queryPromo.get();
 
-        // Combine the tasks and transform the result into a boolean value
-        Task<Boolean> combinedTask = Tasks.whenAllSuccess(taskCheckIn, taskPromo).continueWith(task -> {
-            // Get the results of the queries
-            QuerySnapshot checkInResult = taskCheckIn.getResult();
-            QuerySnapshot promoResult = taskPromo.getResult();
+        return taskCheckIn.continueWithTask(task -> {
+            QuerySnapshot checkInResult = task.getResult();
 
-            // Return true if both of the query results are empty (i.e., there is no event with the provided QR code), false otherwise
-            return checkInResult.isEmpty() && promoResult.isEmpty();
+            // If the first query didn't find a match, execute the second query
+            if (checkInResult.isEmpty()) {
+                // Create a query for the "promoQrCode" field
+                Query queryPromo = eventsRef.whereEqualTo("promoQrCode", qrCode).limit(1);
+
+                // Execute the second query
+                Task<QuerySnapshot> taskPromo = queryPromo.get();
+
+                return taskPromo.continueWith(innerTask -> {
+                    QuerySnapshot promoResult = innerTask.getResult();
+
+                    // Return true if the second query also didn't find a match, false otherwise
+                    return promoResult.isEmpty();
+                });
+            } else {
+                // If the first query found a match, return false
+                return Tasks.forResult(false);
+            }
         });
-
-        return combinedTask;
     }
-
 }
