@@ -136,11 +136,9 @@ public class AnnouncementsFragment extends Fragment {
 
                 // display fragment
                 if (dropDownLayout.getVisibility() == View.GONE){
-                    TransitionManager.beginDelayedTransition(fullRowLayout, new AutoTransition().setDuration(100));
                     dropDownLayout.setVisibility(View.VISIBLE);
                     expandableArrow.setImageResource(R.drawable.ic_up_arrow);
                 } else {
-                    TransitionManager.beginDelayedTransition(fullRowLayout, new AutoTransition().setDuration(100));
                     dropDownLayout.setVisibility(View.GONE);
                     expandableArrow.setImageResource(R.drawable.ic_down_arrow);
                 }

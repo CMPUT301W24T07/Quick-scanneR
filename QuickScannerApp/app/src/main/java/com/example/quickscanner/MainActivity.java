@@ -12,9 +12,11 @@ import androidx.annotation.NonNull;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+import com.example.quickscanner.ui.my_events.MyEvents_Activity;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
 
+import com.example.quickscanner.ui.settings.SettingsActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -55,10 +57,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        // references
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         fbUserController = new FirebaseUserController();
+
         // Check user sign-in status
         boolean isFirstSignIn = fbUserController.isFirstSignIn();
         Log.e("Testing", "Is first sign in? " + isFirstSignIn);
@@ -69,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.e("Testing", "first signin not detected");
         }
+
         // Create bottom menu for MainActivity.
         createBottomMenu();
 
@@ -110,18 +114,20 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
             startActivity(intent);
             return true;
-
         } else if (itemId == R.id.navigation_adminPage) {
             // Handle Admin Page Click
             Intent intent = new Intent(MainActivity.this, AdminActivity.class);
             startActivity(intent);
+            return true;
         } else if (itemId == R.id.navigation_myEvents) {
-            // Handle Events click
-            Toast.makeText(this, "Events Clicked", Toast.LENGTH_SHORT).show();
+            // Handle My Events click
+            Intent intent = new Intent(MainActivity.this, MyEvents_Activity.class);
+            startActivity(intent);
             return true;
         } else if (itemId == R.id.navigation_settings) {
             // Handle Settings click
-            Toast.makeText(this, "Settings Clicked", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
         return false;

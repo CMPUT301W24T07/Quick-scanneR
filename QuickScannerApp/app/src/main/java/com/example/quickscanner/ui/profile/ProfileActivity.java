@@ -83,9 +83,11 @@ public class ProfileActivity extends AppCompatActivity {
 
         fbUserController.getUser(selectedProfileId).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                DocumentSnapshot document = task.getResult();
-                if (document.exists()) {
-                    myUser = document.toObject(User.class);
+              
+                // Process the result when the user data retrieval is successful.
+               myUser = task.getResult();
+              
+                if (myUser != null) {
                     myProfile = myUser.getUserProfile();
 
                     editButton = findViewById(R.id.edit_button);

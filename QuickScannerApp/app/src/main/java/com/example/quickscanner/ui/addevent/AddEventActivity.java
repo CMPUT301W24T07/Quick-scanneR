@@ -19,16 +19,28 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+
+import com.example.quickscanner.controller.FirebaseImageController;
+
+import com.example.quickscanner.MainActivity;
 import com.example.quickscanner.controller.FirebaseImageController;;
+
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+
+import com.example.quickscanner.ui.viewevent.ViewEventActivity;
+import com.google.gson.Gson;
+import com.example.quickscanner.ui.profile.ProfileActivity;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +63,26 @@ public class AddEventActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> resultLauncher;
     private FirebaseEventController fbEventController;
     private FirebaseImageController fbImageController;
+    private FirebaseUserController fbUserController;
 
 
     private Bitmap eventImageMap;
+
+    // Used to get an event location string back from the Map Activity Fragment.
+    // Credit: https://developer.android.com/training/basics/intents/result
+    ActivityResultLauncher<Intent> mapGetLocation = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        String geoHash = data.getStringExtra("geoHash");
+                        // Handle the location string
+                        locationEditText.setText(geoHash);
+
+                    }
+                }
+            });
 
 
     @Override
@@ -62,6 +91,7 @@ public class AddEventActivity extends AppCompatActivity {
         setContentView(R.layout.activity_addevent);
         fbEventController = new FirebaseEventController();
         fbImageController = new FirebaseImageController();
+        fbUserController = new FirebaseUserController();
 
         // Initialize views
         eventDescriptionTextView = findViewById(R.id.EventDescription);
@@ -75,40 +105,40 @@ public class AddEventActivity extends AppCompatActivity {
         eventDataList = new ArrayList<>();
         eventAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, eventDataList);
 
-
-
         // back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
-        // Edit Button 1
-        ImageButton editBtn1 = findViewById(R.id.editBtn1);
-        editBtn1.setOnClickListener(new View.OnClickListener() {
+        // Location Text Click behaviour
+        locationEditText = findViewById(R.id.location_textview);
+        locationEditText.setFocusable(false); // can't type, must interact with listener
+        locationEditText.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                showTextDialog("Edit Event Name", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        editedEventName = ((EditText) ((AlertDialog) dialog).findViewById(R.id.input)).getText().toString();
-                        eventNameEditText.setText(editedEventName);
-                    }
-                });
+            public void onClick(View view) {
+                // Open map activity to choose your location
+                // Credit: https://developer.android.com/training/basics/intents/result
+                Intent intent = new Intent(AddEventActivity.this, MapActivity.class);
+                // Pass the current location to the map activity
+                Bundle bundle = new Bundle(1);
+                bundle.putString("geoHash", locationEditText.getText().toString());
+                intent.putExtras(bundle);
+                // start map activity
+                mapGetLocation.launch(intent);
             }
         });
 
+        // Edit Button 1
+        ImageButton editBtn1 = findViewById(R.id.editBtn1);
+        editBtn1.setOnClickListener(v -> showTextDialog("Edit Event Name", (dialog, which) -> {
+            editedEventName = ((EditText) ((AlertDialog) dialog).findViewById(R.id.input)).getText().toString();
+            eventNameEditText.setText(editedEventName);
+        }));
+
         // Edit Button 2
         ImageButton editBtn2 = findViewById(R.id.editBtn2);
-        editBtn2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showTextDialog("Edit Event Description", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        editedEventDescription = ((EditText) ((AlertDialog) dialog).findViewById(R.id.input)).getText().toString();
-                        eventDescriptionTextView.setText(editedEventDescription);
-                    }
-                });
-            }
-        });
+        editBtn2.setOnClickListener(v -> showTextDialog("Edit Event Description", (dialog, which) -> {
+            editedEventDescription = ((EditText) ((AlertDialog) dialog).findViewById(R.id.input)).getText().toString();
+            eventDescriptionTextView.setText(editedEventDescription);
+        }));
 
         // Image Button
         ImageButton editImageButton = findViewById(R.id.editImageButton);
@@ -123,7 +153,6 @@ public class AddEventActivity extends AppCompatActivity {
 
         // Create Event Button
         Button createEventInsideBtn = findViewById(R.id.CreateEventInsideBtn);
-        User testUser = new User();
         createEventInsideBtn.setOnClickListener(v -> {
             // Check if necessary fields are filled
             if (editedEventName != null && !editedEventName.isEmpty() &&
@@ -134,29 +163,23 @@ public class AddEventActivity extends AppCompatActivity {
                 String time = timeEditText.getText().toString();
 
                 // Create an Event object with the edited values
-                Event newEvent = new Event(editedEventName, editedEventDescription, testUser, time, location);
+                Event newEvent = new Event(editedEventName, editedEventDescription, fbUserController.getCurrentUserUid(), time, location);
 
                 // Add the event to the database
                 addEventToFirestore(newEvent);
 
+                /*
                 // Add the event to the list and update the ArrayAdapter
                 eventDataList.add(newEvent);
                 eventAdapter.notifyDataSetChanged();
 
-                // Assign the eventId here
-                String eventId = newEvent.getEventID();
-
                 // Update the QR code with the eventId and show the dialog
-                QRCodeDialogFragment.newInstance(eventId).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+                QRCodeDialogFragment.newInstance(newEvent.getEventID()).show(getSupportFragmentManager(), "QRCodeDialogFragment");
 
-
-                // Pass the new event data back to the calling fragment
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra("newEvent", newEvent);
-                setResult(Activity.RESULT_OK, resultIntent);
 
                 // finish the activity or perform other actions
                 finish();
+                */
             }
         });
     }
@@ -164,24 +187,33 @@ public class AddEventActivity extends AppCompatActivity {
     // Add event to Firestore
     private void addEventToFirestore(Event event) {
         fbEventController.addEvent(event)
-                .addOnSuccessListener(documentReference -> {
-                    Log.d("AddEventActivity", "Event added with ID: " + documentReference.getId());
-                    // additional actions if needed
-                    event.setEventID(documentReference.getId());
+            .addOnSuccessListener(documentReference -> {
+                Log.d("AddEventActivity", "Event added with ID: " + documentReference.getId());
+                // additional actions if needed
+                event.setEventID(documentReference.getId());
 
-                    if (eventImageMap != null) {
-                        event.setImagePath(event.getEventID() + "primary");
-                        ByteArrayOutputStream boas = new ByteArrayOutputStream();
-                        eventImageMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
-                        byte[] imageData = boas.toByteArray();
-                        fbImageController.uploadImage(event.getImagePath(), imageData);
-                        fbEventController.updateEvent(event);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("AddEventActivity", "Error adding event", e);
-                    // Handle the error appropriately
-                });
+                if (eventImageMap != null) {
+                    event.setImagePath(event.getEventID() + "primary");
+                    ByteArrayOutputStream boas = new ByteArrayOutputStream();
+                    eventImageMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
+                    byte[] imageData = boas.toByteArray();
+                    fbImageController.uploadImage(event.getImagePath(), imageData);
+                }
+
+                fbEventController.updateEvent(event);
+
+                // Pass the JSON string to the next activity
+                Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
+                intent.putExtra("eventJson", new Gson().toJson(event));
+                startActivity(intent);
+
+                finish();
+
+            })
+            .addOnFailureListener(e -> {
+                Log.e("AddEventActivity", "Error adding event", e);
+                // Handle the error appropriately
+            });
     }
 
     // Handles The Top Bar menu clicks
@@ -199,22 +231,19 @@ public class AddEventActivity extends AppCompatActivity {
         final EditText input = new EditText(this);
         input.setId(R.id.input); // Set the ID for the EditText
         new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setView(input)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (title.equals("Edit Event Name")) {
-                            editedEventName = input.getText().toString();
-                            eventNameEditText.setText(editedEventName);
-                        } else if (title.equals("Edit Event Description")) {
-                            editedEventDescription = input.getText().toString();
-                            eventDescriptionTextView.setText(editedEventDescription);
-                        }
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+            .setTitle(title)
+            .setView(input)
+            .setPositiveButton("OK", (dialog, which) -> {
+                if (title.equals("Edit Event Name")) {
+                    editedEventName = input.getText().toString();
+                    eventNameEditText.setText(editedEventName);
+                } else if (title.equals("Edit Event Description")) {
+                    editedEventDescription = input.getText().toString();
+                    eventDescriptionTextView.setText(editedEventDescription);
+                }
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
     }
 
     // To pick an image from the gallery
@@ -226,18 +255,20 @@ public class AddEventActivity extends AppCompatActivity {
     // Register the result of the image picker
     private void registerResult() {
         resultLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent data = result.getData();
-                        Uri imageUri = data.getData();
-                        try {
-                            eventImageMap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                            eventImageView.setImageBitmap(eventImageMap);
-                        } catch (Exception e) {
-                            Toast.makeText(AddEventActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    Uri imageUri = data.getData();
+                    try {
+                        eventImageMap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                        // Set the selected image bitmap to the eventImageView
+                        eventImageView.setImageBitmap(eventImageMap); // Update this line
+                    } catch (Exception e) {
+                        Toast.makeText(AddEventActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                });
+                }
+            });
     }
+
 }
