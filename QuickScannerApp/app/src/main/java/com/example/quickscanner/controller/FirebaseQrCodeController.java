@@ -163,7 +163,7 @@ public class FirebaseQrCodeController {
      * @return A Task that represents the operation of checking the existence of the event.
      * The result of the Task is a boolean value indicating whether its used in any event.
      */
-    public Task<Boolean> eventExists(String qrCode) {
+    public Task<Boolean> isQrUnused(String qrCode) {
         validateId(qrCode);
         CollectionReference eventsRef = db.collection("events");
         // Create a query for the "checkInQrCode" field
