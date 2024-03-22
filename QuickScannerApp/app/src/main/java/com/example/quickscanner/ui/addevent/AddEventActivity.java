@@ -25,23 +25,21 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-<<<<<<< HEAD
+
 import com.example.quickscanner.controller.FirebaseImageController;
-=======
+
 import com.example.quickscanner.MainActivity;
 import com.example.quickscanner.controller.FirebaseImageController;;
->>>>>>> main
+
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
-<<<<<<< HEAD
+
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.gson.Gson;
-=======
 import com.example.quickscanner.ui.profile.ProfileActivity;
->>>>>>> main
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;

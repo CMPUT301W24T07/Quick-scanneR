@@ -16,6 +16,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.List;
 /**
  * Controller for managing events in Firestore.
