@@ -154,7 +154,7 @@ public class FirebaseQrCodeController {
                         return document.toObject(Event.class);
                     } else {
                         return null; // No event found with the provided QR code
-                    }// No event found with the provided QR code
+                    }
                 } else {
                     throw task.getException();
                 }
