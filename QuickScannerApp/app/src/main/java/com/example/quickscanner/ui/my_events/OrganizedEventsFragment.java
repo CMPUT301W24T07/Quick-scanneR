@@ -109,28 +109,29 @@ public class OrganizedEventsFragment extends Fragment {
         eventListView.setAdapter(eventAdapter);
 
 
-        // obtain filtered events, pertaining to the user.
+        // obtain filtered events pertaining to the user.
         db.collection("Events")
                 .whereEqualTo("organizerID", fbUserController.getCurrentUserUid())
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot doc : task.getResult()) {
-                                Log.d(TAG, doc.getId() + " => " + doc.getData());
-                                Event qryEvent = doc.toObject(Event.class);
-                                //associate event ID with the retrieved event
-                                qryEvent.setEventID(doc.getId());
-                                eventsDataList.add((qryEvent)); // adds new data from db
-                            }
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
+                    public void onEvent(@Nullable QuerySnapshot events, @Nullable FirebaseFirestoreException error) {
+                        // error handling
+                        if (error != null){
+                            Log.w(TAG, "organized events: listen failed. ", error);
                         }
+                        // remove old data
+                        eventsDataList.clear();
+                        // populate list with new data
+                        for (QueryDocumentSnapshot event : events) {
+                            if (event.get("eventID") != null) {
+                                eventsDataList.add(event.toObject(Event.class));
+                            }
+                        }
+                        // update list view
                         eventAdapter.notifyDataSetChanged();
+
                     }
                 });
-
 
 
 

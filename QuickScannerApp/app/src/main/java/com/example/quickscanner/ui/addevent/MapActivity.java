@@ -72,14 +72,17 @@ public class MapActivity extends AppCompatActivity {
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
         map.setMultiTouchControls(true);
 
-        // Set center of the map
-        mapController.setCenter(new GeoPoint(53.5282, -113.525)); // CCIS
-
-        // If a geo location is passed to the activity, display it.
+        // Display Current Geolocation
         Intent intent = getIntent();
         String hashedLocation = intent.getStringExtra("geoHash");
-        if (!hashedLocation.isEmpty()){
+        if ((hashedLocation != null) && !hashedLocation.isEmpty()){
+            // If a geo location is passed to the activity, display it.
             createMarker(hashedLocation);
+            centerFromHash(hashedLocation);
+        } else {
+            // Center at a default location
+            displayDefault();
+            centerFromHash(hashCoordinates(53.5282,-113.5257));
         }
 
         // Allow user to touch on the map to set their event location
@@ -126,19 +129,39 @@ public class MapActivity extends AppCompatActivity {
      * @param hash: represents the latitude and longitude of a coordinate in String format.
      */
     public void createMarker(String hash){
+        GeoPoint point = decodeHash(hash);
+        Marker startMarker = new Marker(map);
+        startMarker.setPosition(point);
+        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+        map.getOverlays().add(startMarker);
+    }
+
+    /* Turns a coordinate string (hash) into latitude/longitude and places
+     * a corresponding marker on the map
+     * And then centers the map on the marker
+     * @param hash: represents the latitude and longitude of a coordinate in String format.
+     */
+    public void centerFromHash(String hash){
+        // decode hash
+        GeoPoint point = decodeHash(hash);
+        // center at location
+        mapController.setCenter(point);
+    }
+
+
+    /* Turns a coordinate string (hash) into latitude/longitude and places
+     * @param hash: represents the latitude and longitude of a coordinate in String format.
+     */
+    public GeoPoint decodeHash(String hash) {
         GeoHash geoHash = GeoHash.fromGeohashString(hash);
         BoundingBox boundingBox = geoHash.getBoundingBox();
         // Calculate the center of the bounding box
         double latitude = (boundingBox.getNorthLatitude() + boundingBox.getSouthLatitude()) / 2.0;
         double longitude = (boundingBox.getEastLongitude() + boundingBox.getWestLongitude()) / 2.0;
-        // Marker !!
-        GeoPoint point = new GeoPoint(latitude, longitude);
-        Marker startMarker = new Marker(map);
-        startMarker.setPosition(point);
-        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-        map.getOverlays().add(startMarker);
-
+        // return GeoPoint
+        return new GeoPoint(latitude, longitude);
     }
+
 
     /* Turns a latitude and longitude into a geo String
      */
@@ -159,6 +182,11 @@ public class MapActivity extends AppCompatActivity {
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
+    }
+
+    public void displayDefault() {
+        GeoPoint point = new GeoPoint(53.5282, -113.5257);
+        mapController.setCenter(point);
     }
 
 
@@ -189,28 +217,6 @@ public class MapActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-
-
-    private ActivityResultLauncher<String[]> requestMultiplePermissionsLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
-                Boolean fineLocationGranted = permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
-                Boolean writeExternalStorageGranted = permissions.getOrDefault(Manifest.permission.WRITE_EXTERNAL_STORAGE, false);
-
-                if (fineLocationGranted != null && fineLocationGranted) {
-                    // ACCESS_FINE_LOCATION permission granted
-                } else {
-                    // ACCESS_FINE_LOCATION permission not granted
-                }
-
-                if (writeExternalStorageGranted != null && writeExternalStorageGranted) {
-                    // WRITE_EXTERNAL_STORAGE permission granted
-                } else {
-                    // WRITE_EXTERNAL_STORAGE permission not granted
-                }
-
-                // You can proceed with actions requiring these permissions
-                // Note: Consider user experience and app functionality if any or all permissions are denied
-            });
 
 
 
