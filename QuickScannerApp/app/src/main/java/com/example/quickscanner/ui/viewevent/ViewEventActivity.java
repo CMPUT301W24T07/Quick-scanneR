@@ -26,12 +26,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
 import com.example.quickscanner.ui.viewevent.map.MapActivity;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.zxing.BarcodeFormat;
@@ -46,6 +50,7 @@ public class ViewEventActivity extends AppCompatActivity {
     String eventID;
     private FirebaseEventController fbEventController;
     private FirebaseImageController fbImageController;
+    private FirebaseUserController fbUserController;
     private Event event;
     private ActivityVieweventBinding binding;
     // UI reference
@@ -61,6 +66,7 @@ public class ViewEventActivity extends AppCompatActivity {
         //references
         fbEventController = new FirebaseEventController();
         fbImageController = new FirebaseImageController();
+        fbUserController = new FirebaseUserController();
         toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
 
         // Display Back Button
@@ -144,12 +150,18 @@ public class ViewEventActivity extends AppCompatActivity {
         toggleGeolocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton switchView, boolean isChecked) {
-                // toggle user's geolocation preferences
-                event.toggleIsGeolocationEnabled();
-                // update user's geolocation preferences in firebase
-                fbEventController.updateEvent(event)
-                        .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
-                        .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+                if (event != null) {
+                    // toggle user's geolocation preferences
+                    event.toggleIsGeolocationEnabled();
+                    // update user's geolocation preferences in firebase
+                    fbEventController.updateEvent(event)
+                            .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
+                            .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
+                }
+                else {
+                    Log.e("ViewEventActivity", "Event object is null");
+                }
 
             }
         });
@@ -158,42 +170,63 @@ public class ViewEventActivity extends AppCompatActivity {
 
     // Fetches the event data from Firestore
     private void fetchEventData() {
-        fbEventController.getEventTask(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<Event>() {
             @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                Log.d("halpp","great success");
-                event = documentSnapshot.toObject(Event.class);
-                Log.d("BEANS", "DocumentSnapshot data: " + documentSnapshot.getData());
-
-                if (event != null) {
-
-                    // set geolocation switch to match event preferences.
-                    if (documentSnapshot.contains("isGeolocationEnabled")) {
-                        // TODO: Remove later when Crystal deletes 'Parcelable' from Events
-                        event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
-                    }
-                    boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
-                    toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
-                    event.setGeolocationEnabled(oldIsGeolocationEnabled);
-                    fbEventController.updateEvent(event)
-                            .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
-                            .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
-
-                    // Set the event data to the UI
-                    Log.d("halpp",event.getName());
-                    setEventDataToUI();
-
+            public void onSuccess(Event gotEvent) {
+                if (gotEvent == null) {
+                    throw new RuntimeException("No such Event");
                 }
+                event = gotEvent;
+                Log.d("halpp","great success");
+                Log.d("BEANS", "event name and id " + event.getName() + " " + event.getEventID());
+
+
+                // set geolocation switch to match event preferences.unsure if needed, so commented out
+                //if (documentSnapshot.contains("isGeolocationEnabled")) {
+                    // TODO: Remove later when Crystal deletes 'Parcelable' from Events
+               //   event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
+               // }
+                boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
+                toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
+                event.setGeolocationEnabled(oldIsGeolocationEnabled);
+                fbEventController.updateEvent(event)
+                        .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
+                        .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
+                // Set the event data to the UI
+                Log.d("halpp",event.getName());
+                setEventDataToUI(event);
+
             }
 
 
-            private void setEventDataToUI() {
-
+            private void setEventDataToUI(Event event) {
+                Log.d("halpp","great success");
+                Log.d("BEANS", "event name and id " + event.getName() + " " + event.getEventID());
                 //use event object to update all the views
                 binding.eventTitleText.setText(event.getName());
                 binding.eventDescriptionText.setText(event.getDescription());
                 binding.locationTextview.setText(event.getLocation());
-                binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
+                Log.d("halpp", "Organiser ID: " + event.getOrganizerID());
+                fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
+                   public void onSuccess(User user)
+                   {
+                       if (user != null && user.getUserProfile() != null)
+                       {
+                           binding.organiserText.setText(user.getUserProfile().getName());
+                       }
+                       else
+                       {
+                           Log.d("halpp", "Document not retrieved, setting default image");
+                           binding.organiserText.setText("Unknown");
+                       }
+                   }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("ViewEventActivity", "Error fetching user data: " + e.getMessage());
+                    }
+                });
                 binding.eventTimeText.setText(event.getTime());
                 // Set up click listener for the "Generate QR Code" button
                 binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
