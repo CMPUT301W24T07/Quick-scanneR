@@ -33,6 +33,19 @@ public class FirebaseUserController
         auth = FirebaseAuth.getInstance();
         usersRef = db.collection("users");
     }
+    /**
+     * Validates the ID of the user or event, throwing an IllegalArgumentException if the ID is null or empty.
+     *
+     * @param id The ID to validate. It should be a non-null and non-empty string.
+     * @throws IllegalArgumentException If the ID is null or empty.
+     */
+    private void validateId(String id)
+    {
+        if (id == null || id.isEmpty())
+        {
+            throw new IllegalArgumentException("ID cannot be null or empty in User controller");
+        }
+    }
 
     /**
      * Checks if the user is signing in for the first time by checking if the current user from FirebaseAuth is null.
@@ -101,6 +114,7 @@ public class FirebaseUserController
      */
     public Task<Void> deleteUser(String userId)
     {
+        validateId(userId);
         return usersRef.document(userId).delete();
     }
 
@@ -134,6 +148,7 @@ public class FirebaseUserController
         });
     }
     public Task<List<User>> continueGetUsers(String lastUserId) {
+        validateId(lastUserId);
         DocumentReference lastUserRef = usersRef.document(lastUserId);
         Task<DocumentSnapshot> lastUserTask = lastUserRef.get();
         return lastUserTask.continueWithTask(new Continuation<DocumentSnapshot, Task<List<User>>>() {
@@ -179,6 +194,7 @@ public class FirebaseUserController
      */
     public Task<User> getUser(String userId)
     {
+        validateId(userId);
         Task<DocumentSnapshot> task = usersRef.document(userId).get();
         return task.continueWithTask(new Continuation<DocumentSnapshot, Task<User>>() {
             @Override
@@ -208,6 +224,7 @@ public class FirebaseUserController
      */
     public Task<DocumentSnapshot> getUserTask(String userId)
     {
+        //TODO remove this and replace with other get user method
         return usersRef.document(userId).get();
     }
 }

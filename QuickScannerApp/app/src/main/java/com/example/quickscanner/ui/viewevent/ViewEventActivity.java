@@ -26,8 +26,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
 import com.example.quickscanner.ui.viewevent.map.MapActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -48,6 +50,7 @@ public class ViewEventActivity extends AppCompatActivity {
     String eventID;
     private FirebaseEventController fbEventController;
     private FirebaseImageController fbImageController;
+    private FirebaseUserController fbUserController;
     private Event event;
     private ActivityVieweventBinding binding;
     // UI reference
@@ -63,6 +66,7 @@ public class ViewEventActivity extends AppCompatActivity {
         //references
         fbEventController = new FirebaseEventController();
         fbImageController = new FirebaseImageController();
+        fbUserController = new FirebaseUserController();
         toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
 
         // Display Back Button
@@ -146,12 +150,18 @@ public class ViewEventActivity extends AppCompatActivity {
         toggleGeolocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton switchView, boolean isChecked) {
-                // toggle user's geolocation preferences
-                event.toggleIsGeolocationEnabled();
-                // update user's geolocation preferences in firebase
-                fbEventController.updateEvent(event)
-                        .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
-                        .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+                if (event != null) {
+                    // toggle user's geolocation preferences
+                    event.toggleIsGeolocationEnabled();
+                    // update user's geolocation preferences in firebase
+                    fbEventController.updateEvent(event)
+                            .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
+                            .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
+                }
+                else {
+                    Log.e("ViewEventActivity", "Event object is null");
+                }
 
             }
         });
@@ -185,24 +195,38 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 // Set the event data to the UI
                 Log.d("halpp",event.getName());
-                setEventDataToUI();
+                setEventDataToUI(event);
 
             }
 
 
-            private void setEventDataToUI() {
+            private void setEventDataToUI(Event event) {
                 Log.d("halpp","great success");
                 Log.d("BEANS", "event name and id " + event.getName() + " " + event.getEventID());
-
                 //use event object to update all the views
                 binding.eventTitleText.setText(event.getName());
                 binding.eventDescriptionText.setText(event.getDescription());
                 binding.locationTextview.setText(event.getLocation());
-
-//                todo: this is unable to retrieve organiser text and bugging out
-                binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
-
-                
+                Log.d("halpp", "Organiser ID: " + event.getOrganizerID());
+                fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
+                   public void onSuccess(User user)
+                   {
+                       if (user != null && user.getUserProfile() != null)
+                       {
+                           binding.organiserText.setText(user.getUserProfile().getName());
+                       }
+                       else
+                       {
+                           Log.d("halpp", "Document not retrieved, setting default image");
+                           binding.organiserText.setText("Unknown");
+                       }
+                   }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("ViewEventActivity", "Error fetching user data: " + e.getMessage());
+                    }
+                });
                 binding.eventTimeText.setText(event.getTime());
                 // Set up click listener for the "Generate QR Code" button
                 binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
