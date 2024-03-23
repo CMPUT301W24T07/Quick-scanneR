@@ -30,8 +30,10 @@ import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
 import com.example.quickscanner.ui.viewevent.map.MapActivity;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.zxing.BarcodeFormat;
@@ -158,36 +160,39 @@ public class ViewEventActivity extends AppCompatActivity {
 
     // Fetches the event data from Firestore
     private void fetchEventData() {
-        fbEventController.getEventTask(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<Event>() {
             @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                Log.d("halpp","great success");
-                event = documentSnapshot.toObject(Event.class);
-                Log.d("BEANS", "DocumentSnapshot data: " + documentSnapshot.getData());
-
-                if (event != null) {
-
-                    // set geolocation switch to match event preferences.
-                    if (documentSnapshot.contains("isGeolocationEnabled")) {
-                        // TODO: Remove later when Crystal deletes 'Parcelable' from Events
-                        event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
-                    }
-                    boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
-                    toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
-                    event.setGeolocationEnabled(oldIsGeolocationEnabled);
-                    fbEventController.updateEvent(event)
-                            .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
-                            .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
-
-                    // Set the event data to the UI
-                    Log.d("halpp",event.getName());
-                    setEventDataToUI();
-
+            public void onSuccess(Event gotEvent) {
+                if (gotEvent == null) {
+                    throw new RuntimeException("No such Event");
                 }
+                event = gotEvent;
+                Log.d("halpp","great success");
+                Log.d("BEANS", "event name and id " + event.getName() + " " + event.getEventID());
+
+
+                // set geolocation switch to match event preferences.unsure if needed, so commented out
+                //if (documentSnapshot.contains("isGeolocationEnabled")) {
+                    // TODO: Remove later when Crystal deletes 'Parcelable' from Events
+               //   event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
+               // }
+                boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
+                toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
+                event.setGeolocationEnabled(oldIsGeolocationEnabled);
+                fbEventController.updateEvent(event)
+                        .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
+                        .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
+                // Set the event data to the UI
+                Log.d("halpp",event.getName());
+                setEventDataToUI();
+
             }
 
 
             private void setEventDataToUI() {
+                Log.d("halpp","great success");
+                Log.d("BEANS", "event name and id " + event.getName() + " " + event.getEventID());
 
                 //use event object to update all the views
                 binding.eventTitleText.setText(event.getName());
