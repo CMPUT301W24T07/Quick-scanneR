@@ -193,7 +193,11 @@ public class ViewEventActivity extends AppCompatActivity {
                 binding.eventTitleText.setText(event.getName());
                 binding.eventDescriptionText.setText(event.getDescription());
                 binding.locationTextview.setText(event.getLocation());
+
+//                todo: this is unable to retrieve organiser text and bugging out
                 binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
+
+                
                 binding.eventTimeText.setText(event.getTime());
                 // Set up click listener for the "Generate QR Code" button
                 binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());

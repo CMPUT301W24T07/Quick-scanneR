@@ -33,6 +33,7 @@ import com.example.quickscanner.controller.FirebaseImageController;;
 
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.controller.FirebaseQrCodeController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
@@ -64,6 +65,7 @@ public class AddEventActivity extends AppCompatActivity {
     private FirebaseEventController fbEventController;
     private FirebaseImageController fbImageController;
     private FirebaseUserController fbUserController;
+    private FirebaseQrCodeController fbQrCodeController;
 
 
     private Bitmap eventImageMap;
@@ -92,6 +94,7 @@ public class AddEventActivity extends AppCompatActivity {
         fbEventController = new FirebaseEventController();
         fbImageController = new FirebaseImageController();
         fbUserController = new FirebaseUserController();
+        fbQrCodeController = new FirebaseQrCodeController();
 
         // Initialize views
         eventDescriptionTextView = findViewById(R.id.EventDescription);
@@ -202,18 +205,46 @@ public class AddEventActivity extends AppCompatActivity {
 
                 fbEventController.updateEvent(event);
 
-                // Pass the JSON string to the next activity
-                Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
-                intent.putExtra("eventJson", new Gson().toJson(event));
-                startActivity(intent);
-
-                finish();
+                //this should happen after qr code is added
+//                // Pass the JSON string to the next activity
+//                Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
+//                intent.putExtra("eventJson", new Gson().toJson(event));
+//                startActivity(intent);
 
             })
             .addOnFailureListener(e -> {
                 Log.e("AddEventActivity", "Error adding event", e);
                 // Handle the error appropriately
             });
+
+        fbQrCodeController.addQrCode(fbUserController.getCurrentUserUid())
+                .addOnSuccessListener(documentReference -> {
+                    Log.d("testerrrr", "QR code added with ID: " + documentReference.getId());
+                    // additional actions if needed
+
+                    //show the event details page on this event
+
+//                    // Pass the JSON string to the next activity
+//                    Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
+//                    Bundle bundle = new Bundle(1);
+//                    // Pass the Event Identifier to the New Activity
+//                    bundle.putString("eventID", event.getEventID());
+//                    startActivity(intent);
+//                    finish();
+
+                    //commenting this out cos it is bugging out the app for now
+                    // Pass the JSON string to the next activity
+//                Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
+//                intent.putExtra("eventJson", new Gson().toJson(event));
+//                startActivity(intent);
+                 finish();
+
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("AddEventActivity", "Error adding QR code", e);
+                    // Handle the error appropriately
+                });
+
     }
 
     // Handles The Top Bar menu clicks
