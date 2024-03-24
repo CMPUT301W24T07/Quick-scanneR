@@ -120,7 +120,6 @@ public class SettingsActivity extends AppCompatActivity {
         builder.setTitle("Need Permissions");
         builder.setMessage(R.string.grant_permission);
 
-
         builder.setPositiveButton("Go to Settings", (dialog, which) -> {
             dialog.cancel();
             openAppSettings();

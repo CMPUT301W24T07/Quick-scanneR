@@ -82,27 +82,22 @@ public class MainActivity extends AppCompatActivity {
             Log.e("Testing", "Entered the if statement");
             //creates an anonymous user if not signed in
             createUserAndSignIn();
+            Toast.makeText(this, "Hash Geolocation" + MainActivityHashedUserLocation, Toast.LENGTH_SHORT).show();
+
         } else {
             Log.e("Testing", "first signin not detected");
+            getHashedGeoLocation();
         }
+
 
 
         // Create bottom menu for MainActivity.
         createBottomMenu();
 
 
-
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Get Current User Location
-        // User Location is stored in the private attribute "hashedUserLocation"
-        getHashedGeoLocation();
-        Toast.makeText(this, "Hash Geolocation" + MainActivityHashedUserLocation, Toast.LENGTH_SHORT).show();
 
-    }
 
 
     /*                                           *
@@ -183,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
                             if (task1.isSuccessful()) {
                                 // Logs success
                                 Log.d("Testing", "User added successfully");
+                                getHashedGeoLocation();
                             } else {
                                 // Logs error
                                 Log.w("Testing", "Error adding user", task1.getException());
@@ -207,7 +203,10 @@ public class MainActivity extends AppCompatActivity {
      */
     private void getHashedGeoLocation() {
         // get current user
-        fbUserController.getUserTask(fbUserController.getCurrentUserUid()).addOnCompleteListener(task -> {
+        String uid = fbUserController.getCurrentUserUid();
+        if (uid == null)
+            return;
+        fbUserController.getUserTask(uid).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
                 // Convert task to User class

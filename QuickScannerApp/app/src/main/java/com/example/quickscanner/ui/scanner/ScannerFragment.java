@@ -88,6 +88,7 @@ public class ScannerFragment extends Fragment {
         // Basically the location is pulled in Main Activity, instead of the fragment
         // So you only have to pull it once.
         hashedUserLocation = ((MainActivity) requireActivity()).MainActivityHashedUserLocation;
+        Toast.makeText(getContext(), "Hash Geolocation" + hashedUserLocation, Toast.LENGTH_SHORT).show();
 
 
         //idk why it needs to make an intent array instead of a single intent object
