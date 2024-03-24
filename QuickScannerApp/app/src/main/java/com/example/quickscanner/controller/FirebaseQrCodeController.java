@@ -104,6 +104,7 @@ public class FirebaseQrCodeController {
             }
         });
     }
+
     /**
      * Retrieves an event from the Firestore that has QR code id input
      * in the checkInQrCode field. throws exception if not found
