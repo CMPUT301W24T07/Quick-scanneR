@@ -15,6 +15,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.Transaction;
 
 import java.util.ArrayList;
@@ -184,7 +185,9 @@ public class FirebaseAttendanceController
                     Log.d("testerrr","reached taken spots check");
 
                     // Increment the current attendance count
-                    transaction.update(liveCountRef, "attendanceCount", FieldValue.increment(1));
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("attendanceCount", FieldValue.increment(1));
+                    transaction.set(liveCountRef, data, SetOptions.merge());
                     Log.d("testerrr","reached current attendance count check");
 
                     // Add a document to the sign-ups and check-ins collections
@@ -199,7 +202,10 @@ public class FirebaseAttendanceController
                     Log.d("testerrr","new hashmap created");
 
                     // Add the event to the user's list of signed-up and checked-in events
-                    transaction.update(userCheckInsRef, "eventIds", FieldValue.arrayUnion(eventId));
+                    Map<String, Object> userCheckInsData = new HashMap<>();
+                    userCheckInsData.put("eventIds", FieldValue.arrayUnion(eventId));
+                    transaction.set(userCheckInsRef, userCheckInsData, SetOptions.merge());
+                    //transaction.update(userCheckInsRef, "eventIds", FieldValue.arrayUnion(eventId));
                     Log.d("testerrr","event added to user check ins");
 
                 }
@@ -212,21 +218,29 @@ public class FirebaseAttendanceController
                     transaction.set(checkInRef, checkInData);
 
                     // Increment the current attendance count
-                    transaction.update(liveCountRef, "attendanceCount", FieldValue.increment(1));
+                    Map<String, Object> liveCountData = new HashMap<>();
+                    liveCountData.put("attendanceCount", FieldValue.increment(1));
+                    transaction.set(liveCountRef, liveCountData, SetOptions.merge());
                     // Remove the document from the sign-ups collection
                     transaction.delete(signUpRef);
 
                     // Remove the event from the user's list of signed-up events
-                    transaction.update(userSignUpsRef, "eventIds", FieldValue.arrayRemove(eventId));
+                    Map<String, Object> signUpData = new HashMap<>();
+                    signUpData.put("eventIds", FieldValue.arrayRemove(eventId));
+                    transaction.set(userSignUpsRef, signUpData, SetOptions.merge());
 
 
                     // Add the event to the user's list of checked-in events
-                    transaction.update(userCheckInsRef, "eventIds", FieldValue.arrayUnion(eventId));
+                    Map<String, Object> userCheckInData = new HashMap<>();
+                    userCheckInData.put("eventIds", FieldValue.arrayUnion(eventId));
+                    transaction.set(userCheckInsRef, userCheckInData, SetOptions.merge());
                 }
                 // If the user is already checked in
                 else if (isCheckedIn) {
                     // Increment the number of times the user has checked in
-                    transaction.update(checkInRef, "timesCheckedIn", FieldValue.increment(1));
+                    Map<String, Object> checkInData = new HashMap<>();
+                    checkInData.put("timesCheckedIn", FieldValue.increment(1));
+                    transaction.set(checkInRef, checkInData, SetOptions.merge());
                 }
 
                 return null;
