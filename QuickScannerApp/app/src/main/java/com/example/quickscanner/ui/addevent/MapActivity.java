@@ -1,18 +1,22 @@
 package com.example.quickscanner.ui.addevent;
 
-import android.Manifest;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.quickscanner.R;
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.api.IMapController;
@@ -21,17 +25,6 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
-
-
-import android.provider.Settings;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-
-import com.example.quickscanner.R;
-
 import org.osmdroid.views.overlay.Marker;
 
 import java.util.Objects;
@@ -46,11 +39,13 @@ import ch.hsr.geohash.GeoHash;
  */
 public class MapActivity extends AppCompatActivity {
 
+    // Should App Request permissions? Yes=1, No=0
+    private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
+
     // References
     private MapView map = null;
     private IMapController mapController;
     private String hashedLocation;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +67,7 @@ public class MapActivity extends AppCompatActivity {
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
         map.setMultiTouchControls(true);
 
-        // Display Current Geolocation
+        // Display Current Event Geolocation
         Intent intent = getIntent();
         String hashedLocation = intent.getStringExtra("geoHash");
         if ((hashedLocation != null) && !hashedLocation.isEmpty()){
@@ -216,7 +211,6 @@ public class MapActivity extends AppCompatActivity {
         intent.setData(uri);
         startActivity(intent);
     }
-
 
 
 

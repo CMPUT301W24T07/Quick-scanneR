@@ -1,9 +1,9 @@
 package com.example.quickscanner.ui.viewevent.map;
 
+import static org.osmdroid.views.overlay.mylocation.IMyLocationProvider.*;
+
 import android.Manifest;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,6 +37,9 @@ import java.util.ArrayList;
 import com.example.quickscanner.R;
 
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.IMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.Objects;
 
@@ -70,6 +73,12 @@ public class MapActivity extends AppCompatActivity {
         Configuration.getInstance().load(ctx, ctx.getSharedPreferences("myPreferences", Context.MODE_PRIVATE));
 
 
+        // Request UserLocation Permissions
+        ArrayList<String> permissionList = new ArrayList<String>();
+        permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        requestPermissionsIfNecessary(permissionList);
+
+
         // create map reference and initialize map settings
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
@@ -78,17 +87,11 @@ public class MapActivity extends AppCompatActivity {
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
         map.setMultiTouchControls(true);
 
-        // Get necessary permissions for geolocation.
-        // requestPermissions();
+        // Display Current UserLocation
+        MyLocationNewOverlay userLocation = new MyLocationNewOverlay(new GpsMyLocationProvider(getApplicationContext()),map);
+        GeoPoint userGeoLocation = userLocation.getMyLocation();
+        hashCoordinates(userGeoLocation.getLatitude(), userGeoLocation.getLongitude());
 
-
-/*
-        if (((ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) ||
-                (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED))) {
-            // User location permissions accepted
-            displayUserGeolocation();
-        }
-*/
 
         // If a geo location is passed to the activity, display it.
         Intent intent = getIntent();
@@ -115,21 +118,35 @@ public class MapActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        ArrayList<String> permissionsToRequest = new ArrayList<>();
+        for (int i = 0; i < grantResults.length; i++) {
+            permissionsToRequest.add(permissions[i]);
+        }
+        if (permissionsToRequest.size() > 0) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    permissionsToRequest.toArray(new String[0]),
+                    REQUEST_PERMISSIONS_REQUEST_CODE);
+        }
+    }
 
-    public void requestPermissions() {
-        if (((ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) ||
-                (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED))) {
-            // Geolocation Permissions already granted, do nothing
-        } else if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            // Request Permission.
-            requestMultiplePermissionsLauncher.launch(new String[]{
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-            });
-        } else {
-            // The user checked "Don't ask again."
-            // Explain that the permission is essential and guide them to settings.
-            showSettingsDialog();
+    private void requestPermissionsIfNecessary(ArrayList<String> permissions) {
+        ArrayList<String> permissionsToRequest = new ArrayList<>();
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // Permission is not granted
+                permissionsToRequest.add(permission);
+            }
+        }
+        if (permissionsToRequest.size() > 0) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    permissionsToRequest.toArray(new String[0]),
+                    REQUEST_PERMISSIONS_REQUEST_CODE);
         }
     }
 
@@ -248,30 +265,6 @@ public class MapActivity extends AppCompatActivity {
         intent.setData(uri);
         startActivity(intent);
     }
-
-
-
-    private ActivityResultLauncher<String[]> requestMultiplePermissionsLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
-                Boolean fineLocationGranted = permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
-                Boolean writeExternalStorageGranted = permissions.getOrDefault(Manifest.permission.WRITE_EXTERNAL_STORAGE, false);
-
-                if (fineLocationGranted != null && fineLocationGranted) {
-                    // ACCESS_FINE_LOCATION permission granted
-                } else {
-                    // ACCESS_FINE_LOCATION permission not granted
-                }
-
-                if (writeExternalStorageGranted != null && writeExternalStorageGranted) {
-                    // WRITE_EXTERNAL_STORAGE permission granted
-                } else {
-                    // WRITE_EXTERNAL_STORAGE permission not granted
-                }
-
-                // You can proceed with actions requiring these permissions
-                // Note: Consider user experience and app functionality if any or all permissions are denied
-            });
-
 
 
     /*         Inflate Handle Top Menu Options        */
