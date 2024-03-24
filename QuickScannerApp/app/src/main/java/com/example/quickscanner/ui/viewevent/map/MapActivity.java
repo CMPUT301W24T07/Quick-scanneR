@@ -11,8 +11,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -35,6 +38,8 @@ import android.view.MenuItem;
 import java.util.ArrayList;
 
 import com.example.quickscanner.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
@@ -54,7 +59,6 @@ import ch.hsr.geohash.GeoHash;
 public class MapActivity extends AppCompatActivity {
 
     // References
-    private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
     private MapView map = null;
     IMapController mapController;
 
@@ -73,12 +77,6 @@ public class MapActivity extends AppCompatActivity {
         Configuration.getInstance().load(ctx, ctx.getSharedPreferences("myPreferences", Context.MODE_PRIVATE));
 
 
-        // Request UserLocation Permissions
-        ArrayList<String> permissionList = new ArrayList<String>();
-        permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        requestPermissionsIfNecessary(permissionList);
-
-
         // create map reference and initialize map settings
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
@@ -87,10 +85,9 @@ public class MapActivity extends AppCompatActivity {
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
         map.setMultiTouchControls(true);
 
-        // Display Current UserLocation
-        MyLocationNewOverlay userLocation = new MyLocationNewOverlay(new GpsMyLocationProvider(getApplicationContext()),map);
-        GeoPoint userGeoLocation = userLocation.getMyLocation();
-        hashCoordinates(userGeoLocation.getLatitude(), userGeoLocation.getLongitude());
+
+        // display user location
+        displayUserGeolocation();
 
 
         // If a geo location is passed to the activity, display it.
@@ -116,42 +113,14 @@ public class MapActivity extends AppCompatActivity {
         for (String geopoint : geoPoints) {
             createMarker(geopoint);
         }
+
+
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        ArrayList<String> permissionsToRequest = new ArrayList<>();
-        for (int i = 0; i < grantResults.length; i++) {
-            permissionsToRequest.add(permissions[i]);
-        }
-        if (permissionsToRequest.size() > 0) {
-            ActivityCompat.requestPermissions(
-                    this,
-                    permissionsToRequest.toArray(new String[0]),
-                    REQUEST_PERMISSIONS_REQUEST_CODE);
-        }
-    }
 
-    private void requestPermissionsIfNecessary(ArrayList<String> permissions) {
-        ArrayList<String> permissionsToRequest = new ArrayList<>();
-        for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(this, permission)
-                    != PackageManager.PERMISSION_GRANTED) {
-                // Permission is not granted
-                permissionsToRequest.add(permission);
-            }
-        }
-        if (permissionsToRequest.size() > 0) {
-            ActivityCompat.requestPermissions(
-                    this,
-                    permissionsToRequest.toArray(new String[0]),
-                    REQUEST_PERMISSIONS_REQUEST_CODE);
-        }
-    }
 
     public void displayUserGeolocation() {
-        //
+        // check permissions
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // User did not allow permission to access their location
             Log.d("permissions","User did not allow permission to access their location");
@@ -223,20 +192,6 @@ public class MapActivity extends AppCompatActivity {
         mapController.setCenter(point);
     }
 
-    private void showSettingsDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Need Permissions");
-        builder.setMessage(R.string.grant_permission);
-
-
-        builder.setPositiveButton("Go to Settings", (dialog, which) -> {
-            dialog.cancel();
-            openAppSettings();
-        });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-        builder.show();
-    }
-
 
 
     @Override
@@ -259,12 +214,6 @@ public class MapActivity extends AppCompatActivity {
         map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
     }
 
-    private void openAppSettings() {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package", getPackageName(), null);
-        intent.setData(uri);
-        startActivity(intent);
-    }
 
 
     /*         Inflate Handle Top Menu Options        */
