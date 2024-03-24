@@ -203,7 +203,6 @@ public class AddEventActivity extends AppCompatActivity {
                     fbImageController.uploadImage(event.getImagePath(), imageData);
                 }
 
-                fbEventController.updateEvent(event);
 
                 //this should happen after qr code is added
 //                // Pass the JSON string to the next activity
@@ -217,10 +216,14 @@ public class AddEventActivity extends AppCompatActivity {
                 // Handle the error appropriately
             });
 
+        //promo qr code
         fbQrCodeController.addQrCode(fbUserController.getCurrentUserUid())
                 .addOnSuccessListener(documentReference -> {
                     Log.d("testerrrr", "QR code added with ID: " + documentReference.getId());
                     // additional actions if needed
+                    event.setPromoQrCode(documentReference.getId());
+                    Log.d("testerrrr","event has set check in code: "+event.getPromoQrCode());
+
 
                     //show the event details page on this event
 
@@ -237,7 +240,7 @@ public class AddEventActivity extends AppCompatActivity {
 //                Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
 //                intent.putExtra("eventJson", new Gson().toJson(event));
 //                startActivity(intent);
-                 finish();
+//                 finish();
 
                 })
                 .addOnFailureListener(e -> {
@@ -245,7 +248,50 @@ public class AddEventActivity extends AppCompatActivity {
                     // Handle the error appropriately
                 });
 
+        //check in qr code
+        fbQrCodeController.addQrCode(fbUserController.getCurrentUserUid())
+                .addOnSuccessListener(documentReference -> {
+                    Log.d("testerrrr", "QR code added with ID: " + documentReference.getId());
+                    // additional actions if needed
+                    event.setCheckInQrCode(documentReference.getId());
+
+                    Log.d("testerrrr","event has set check in code: "+event.getCheckInQrCode());
+                    Log.d("uteeee","event is is: "+event.getEventID());
+                    addEventToUserOrganizedEvents(event.getEventID());
+                    fbEventController.updateEvent(event);
+                    finish();
+
+                    //show the event details page on this event
+                });
+
+        //get current event id instance
+
+
     }
+
+    private void addEventToUserOrganizedEvents(String eventId) {
+        // Get the current user's ID
+        String currentUserId = fbUserController.getCurrentUserUid();
+
+        // Retrieve the current user's data from Firestore
+        fbUserController.getUser(currentUserId)
+                .addOnSuccessListener(user -> {
+                    // Add the new event's ID to the user's organizedEvents list
+
+                    user.getOrganizedEvents().add(eventId);
+
+                    // Update the user's data in Firestore
+                    fbUserController.updateUser(user)
+                            .addOnSuccessListener(aVoid -> {
+//                                Log.d("uteeee", eventId.toString());
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("AddEventActivity", "Error updating user's organized events", e);
+                            });
+                });
+
+    }
+
 
     // Handles The Top Bar menu clicks
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

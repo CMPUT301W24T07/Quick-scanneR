@@ -53,6 +53,7 @@ public class QRCodeDialogFragment extends DialogFragment {
         view.findViewById(R.id.closeButton).setOnClickListener(v -> dismiss());
     }
 
+
     private void generateQRCode(String eventId, ImageView qrCodeImageView) {
         MultiFormatWriter writer = new MultiFormatWriter();
         try {
