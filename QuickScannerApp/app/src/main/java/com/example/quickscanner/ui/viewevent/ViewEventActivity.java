@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.controller.FirebaseQrCodeController;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
@@ -48,6 +49,8 @@ public class ViewEventActivity extends AppCompatActivity {
     private FirebaseImageController fbImageController;
     private Event event;
     private ActivityVieweventBinding binding;
+
+    private FirebaseQrCodeController fbQRCodeController;
     // UI reference
     Switch toggleGeolocation;
 
@@ -61,6 +64,7 @@ public class ViewEventActivity extends AppCompatActivity {
         //references
         fbEventController = new FirebaseEventController();
         fbImageController = new FirebaseImageController();
+        fbQRCodeController = new FirebaseQrCodeController();
         toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
 
         // Display Back Button
@@ -73,7 +77,7 @@ public class ViewEventActivity extends AppCompatActivity {
             Log.d("Beans", eventID);
         }
         if (eventID != null) {
-            Log.e("halpp", "Event ID is: "+eventID);
+            Log.e("halpp", "Event ID is: " + eventID);
         }
         fetchEventData();
         Toast.makeText(this, eventID, Toast.LENGTH_SHORT).show();
@@ -120,7 +124,7 @@ public class ViewEventActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Convert the QR code Bitmap to a Uri
                 String path = MediaStore.Images.Media.insertImage(getContentResolver(), qrCodeBitmap, "QR Code", null);
-                Log.d("beans","this is wheere it fails");
+                Log.d("beans", "this is wheere it fails");
                 Uri qrCodeUri = Uri.parse(path);
 
                 // Create an Intent with ACTION_SEND action
@@ -128,7 +132,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 // Put the Uri of the image and the text you want to share in the Intent
                 shareIntent.putExtra(Intent.EXTRA_STREAM, qrCodeUri);
-                Log.d("halpp", "event is null? "+ (event==null));
+                Log.d("halpp", "event is null? " + (event == null));
                 shareIntent.putExtra(Intent.EXTRA_TEXT, "Join my event titled " + event.getName() + " using this QR code");
 
                 shareIntent.setType("image/jpeg");
@@ -161,7 +165,7 @@ public class ViewEventActivity extends AppCompatActivity {
         fbEventController.getEventTask(eventID).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                Log.d("halpp","great success");
+                Log.d("halpp", "great success");
                 event = documentSnapshot.toObject(Event.class);
                 Log.d("BEANS", "DocumentSnapshot data: " + documentSnapshot.getData());
 
@@ -180,49 +184,53 @@ public class ViewEventActivity extends AppCompatActivity {
                             .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
 
                     // Set the event data to the UI
-                    Log.d("halpp",event.getName());
+                    Log.d("halpp", event.getName());
                     setEventDataToUI();
 
                 }
             }
+        });
+    }
 
 
-            private void setEventDataToUI() {
+    private void setEventDataToUI() {
 
-                //use event object to update all the views
-                binding.eventTitleText.setText(event.getName());
-                binding.eventDescriptionText.setText(event.getDescription());
-                binding.locationTextview.setText(event.getLocation());
+        //use event object to update all the views
+        binding.eventTitleText.setText(event.getName());
+        binding.eventDescriptionText.setText(event.getDescription());
+        binding.locationTextview.setText(event.getLocation());
 
 //                todo: this is unable to retrieve organiser text and bugging out
-                binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
-
-                
-                binding.eventTimeText.setText(event.getTime());
-                // Set up click listener for the "Generate QR Code" button
-                binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
+//                     disabling for now
+//                binding.organiserText.setText(event.getOrganizer().getUserProfile().getName());
 
 
-                //just generate the qr code from the event id and set it to the qr code image view
-                //and get the image from the firebase storage and set it to the image view
-                fbImageController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
-                        if (task1.isSuccessful()) {
-                            String url = String.valueOf(task1.getResult());
-                            Picasso.get().load(url).into(binding.eventImageImage);
-                        } else {
-                            Log.d("halppp", "Document not retrieved, setting default image");
-                            binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
-                        }
-                    });
-                }
+        binding.eventTimeText.setText(event.getTime());
+        // Set up click listener for the "Generate QR Code" button
+        binding.generateQRbtn.setOnClickListener(v -> showQRCodeDialog());
+
+        Log.d("halpp", "Event ID is: " + eventID);
 
 
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
+        //just generate the qr code from the event id and set it to the qr code image view
+        //and get the image from the firebase storage and set it to the image view
+        fbImageController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
+            if (task1.isSuccessful()) {
+                String url = String.valueOf(task1.getResult());
+                Picasso.get().load(url).into(binding.eventImageImage);
+            } else {
+                Log.d("halppp", "Document not retrieved, setting default image");
+                binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
             }
         });
+
+
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
+//            }
+//        });
     }
 
     private void showQRCodeDialog() {
@@ -271,6 +279,7 @@ public class ViewEventActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.viewevent_top_nav_menu, menu);
         return true;
     }
+
     /*    Handle click events for the Top Menu Bar    */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -282,10 +291,31 @@ public class ViewEventActivity extends AppCompatActivity {
         } else if (itemId == R.id.navigation_QR_check_in) {
             // Handle Click
             Toast.makeText(this, "navigation_QR_check_in clicked", Toast.LENGTH_SHORT).show();
+
+            //todo: implement dialog fragment for check in qr code
+            String checkinQrCode = event.getCheckInQrCode();
+            Log.d("testerrrr", "checkinQrCode: " + checkinQrCode);
+
+            // Create and show the QR code dialog fragment
+            QRCodeDialogFragment.newInstance(checkinQrCode).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+
             return true;
-        } else if (itemId == R.id.navigation_QR_promotional) {
+
+        }
+        else if (itemId == R.id.navigation_QR_promotional) {
             // Handle click
             Toast.makeText(this, "navigation_QR_promotional clicked", Toast.LENGTH_SHORT).show();
+
+            //todo: implement dialog fragment for promotional qr code
+            String promoQrCode = event.getPromoQrCode();
+
+            Log.d("testerrrr", "promoQRcode: " + promoQrCode);
+
+
+            // Create and show the QR code dialog fragment
+            QRCodeDialogFragment.newInstance(promoQrCode).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+
+
             return true;
         } else if (itemId == R.id.map) {
             // Handle Map click
