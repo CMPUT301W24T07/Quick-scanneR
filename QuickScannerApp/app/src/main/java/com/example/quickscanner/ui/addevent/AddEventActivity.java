@@ -50,6 +50,12 @@ import java.util.Objects;
 
 
 public class AddEventActivity extends AppCompatActivity {
+    /* Uses Open Street Maps to display user's
+     *  check-in geolocation
+     *  Credits: https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library-(Java)
+     *           https://developer.android.com/training/permissions/requesting
+     */
+
     private TextView eventDescriptionTextView;
     private TextView eventNameEditText;
     private ImageView eventImageView;
@@ -57,6 +63,7 @@ public class AddEventActivity extends AppCompatActivity {
     private String editedEventDescription;
     private String editedImagePath;
     private EditText locationEditText;
+    private EditText geolocationEditText;
     private EditText timeEditText;
 
     private ArrayAdapter<Event> eventAdapter;
@@ -80,7 +87,7 @@ public class AddEventActivity extends AppCompatActivity {
                     if (data != null) {
                         String geoHash = data.getStringExtra("geoHash");
                         // Handle the location string
-                        locationEditText.setText(geoHash);
+                        geolocationEditText.setText(geoHash);
 
                     }
                 }
@@ -102,6 +109,7 @@ public class AddEventActivity extends AppCompatActivity {
         eventImageView = findViewById(R.id.imageView);
 
         locationEditText = findViewById(R.id.location_textview);
+        geolocationEditText = findViewById(R.id.geolocation_textview);
         timeEditText = findViewById(R.id.time_textview);
 
         // Initialize the event data list and ArrayAdapter
@@ -112,9 +120,9 @@ public class AddEventActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         // Location Text Click behaviour
-        locationEditText = findViewById(R.id.location_textview);
-        locationEditText.setFocusable(false); // can't type, must interact with listener
-        locationEditText.setOnClickListener(new View.OnClickListener() {
+        geolocationEditText = findViewById(R.id.geolocation_textview);
+        geolocationEditText.setFocusable(false); // can't type, must interact with listener
+        geolocationEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Open map activity to choose your location
@@ -122,7 +130,7 @@ public class AddEventActivity extends AppCompatActivity {
                 Intent intent = new Intent(AddEventActivity.this, MapActivity.class);
                 // Pass the current location to the map activity
                 Bundle bundle = new Bundle(1);
-                bundle.putString("geoHash", locationEditText.getText().toString());
+                bundle.putString("geoHash", geolocationEditText.getText().toString());
                 intent.putExtras(bundle);
                 // start map activity
                 mapGetLocation.launch(intent);
@@ -163,10 +171,12 @@ public class AddEventActivity extends AppCompatActivity {
 
                 // Retrieve the text from the EditText fields
                 String location = locationEditText.getText().toString();
+                String geolocation = geolocationEditText.getText().toString();
                 String time = timeEditText.getText().toString();
 
                 // Create an Event object with the edited values
                 Event newEvent = new Event(editedEventName, editedEventDescription, fbUserController.getCurrentUserUid(), time, location);
+                newEvent.setGeoLocation(geolocation);
 
                 // Add the event to the database
                 addEventToFirestore(newEvent);

@@ -51,12 +51,13 @@ import java.util.Objects;
 import ch.hsr.geohash.BoundingBox;
 import ch.hsr.geohash.GeoHash;
 
-/* Uses Open Street Maps to display user's
- *  check-in geolocation
- *  Credits: https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library-(Java)
- *           https://developer.android.com/training/permissions/requesting
- */
+
 public class MapActivity extends AppCompatActivity {
+    /* Uses Open Street Maps to display user's
+     *  check-in geolocation
+     *  Credits: https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library-(Java)
+     *           https://developer.android.com/training/permissions/requesting
+     */
 
     // References
     private MapView map = null;

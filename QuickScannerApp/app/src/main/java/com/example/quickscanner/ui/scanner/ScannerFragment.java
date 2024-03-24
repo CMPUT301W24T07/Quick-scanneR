@@ -85,9 +85,11 @@ public class ScannerFragment extends Fragment {
 //        final String[] returnedText = new String[1];
         textView.setText("Ready to rock and roll");
 
-        // Get the Hashed Location from the Singleton
+        // Example Usage: Get the Hashed Location from the Singleton
+        /*         - Note: This usage returns NULL if device permissions are disabled
+        *                  If permissions are enabled, returns hashed geolocation as a String
+        */
         hashedUserLocation = SettingsDataSingleton.getInstance().getHashedGeoLocation();
-        Toast.makeText(getContext(), "Hash Geolocation" + hashedUserLocation, Toast.LENGTH_SHORT).show();
 
 
         //idk why it needs to make an intent array instead of a single intent object

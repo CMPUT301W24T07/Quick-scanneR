@@ -215,8 +215,7 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     // verify permissions are enabled
                     if (validGeolocationPermissions(user)) {
-                        String tempgeo = getDeviceGeolocation(user);
-                        SettingsDataSingleton.getInstance().setHashedGeoLocation(tempgeo);
+                        SettingsDataSingleton.getInstance().setHashedGeoLocation(getDeviceGeolocation(user));
                         Log.w("Geolocation: ", "Successful pull");
                     }
                 }
@@ -247,14 +246,19 @@ public class MainActivity extends AppCompatActivity {
      *   Use this in conjunction with "validGeolocationPermissions"
      *   to ensure the device and user has geolocation enabled.
      */
+    @SuppressLint("MissingPermission") // we use our own permission checker
     private String getDeviceGeolocation(User user){
         // check if permissions are valid
-        assert validGeolocationPermissions(user);
+        if (!validGeolocationPermissions(user)) {
+            return null;
+        }
         // Query the Device's Geolocation
         LocationManager lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        @SuppressLint("MissingPermission")
         Location lastKnownLoc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         String hashLoc = null;
+        // Try another Provider if the previous failed
+        if (lastKnownLoc == null)
+            lastKnownLoc = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         // Hash the Geolocation
         if (lastKnownLoc != null) {
             double longitude = (lastKnownLoc.getLongitude());

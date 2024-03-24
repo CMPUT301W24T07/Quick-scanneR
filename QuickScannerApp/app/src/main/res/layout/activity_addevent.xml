@@ -114,13 +114,27 @@
             android:id="@+id/location_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="36dp"
             android:ems="10"
             android:hint="Enter Location"
             android:inputType="text"
             app:layout_constraintBottom_toTopOf="@+id/time_textview"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/EventDescription" />
+
+        <EditText
+            android:id="@+id/geolocation_textview"
+            android:layout_width="88dp"
+            android:layout_height="45dp"
+            android:ems="10"
+            android:hint="@string/geopoint"
+            android:inputType="text"
+            app:layout_constraintBottom_toTopOf="@+id/time_textview"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.549"
+            app:layout_constraintStart_toEndOf="@+id/location_textview"
+            app:layout_constraintTop_toBottomOf="@+id/EventDescription"
+            app:layout_constraintVertical_bias="0.551" />
 
         <EditText
             android:id="@+id/time_textview"
