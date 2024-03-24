@@ -209,25 +209,21 @@ public class ViewEventActivity extends AppCompatActivity {
 
 
             private void setEventDataToUI(Event event) {
-                
+
                 //use event object to update all the views
                 binding.eventTitleText.setText(event.getName());
                 binding.eventDescriptionText.setText(event.getDescription());
                 binding.locationTextview.setText(event.getLocation());
                 fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
-                   public void onSuccess(User user)
-                   {
-                       if (user != null && user.getUserProfile() != null)
-                       {
-                         //disable this organiser text line if creating new event crashes
-                           binding.organiserText.setText(user.getUserProfile().getName());
-                       }
-                       else
-                       {
-                           Log.d("halpp", "Document not retrieved, setting default image");
-                           binding.organiserText.setText("Unknown");
-                       }
-                   }
+                    public void onSuccess(User user) {
+                        if (user != null && user.getUserProfile() != null) {
+                            //disable this organiser text line if creating new event crashes
+                            binding.organiserText.setText(user.getUserProfile().getName());
+                        } else {
+                            Log.d("halpp", "Document not retrieved, setting default image");
+                            binding.organiserText.setText("Unknown");
+                        }
+                    }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
@@ -242,15 +238,16 @@ public class ViewEventActivity extends AppCompatActivity {
                 //just generate the qr code from the event id and set it to the qr code image view
                 //and get the image from the firebase storage and set it to the image view
                 fbImageController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 -> {
-                        if (task1.isSuccessful()) {
-                            String url = String.valueOf(task1.getResult());
-                            Picasso.get().load(url).into(binding.eventImageImage);
-                        } else {
-                            Log.d("halppp", "Document not retrieved, setting default image");
-                            binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
-                        }
-                    });
-                }
+                    if (task1.isSuccessful()) {
+                        String url = String.valueOf(task1.getResult());
+                        Picasso.get().load(url).into(binding.eventImageImage);
+                    } else {
+                        Log.d("halppp", "Document not retrieved, setting default image");
+                        binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
+                    }
+                });
+
+
 
 
         binding.eventTimeText.setText(event.getTime());
@@ -272,6 +269,10 @@ public class ViewEventActivity extends AppCompatActivity {
             }
         });
 
+            }
+
+
+
 
 //        }).addOnFailureListener(new OnFailureListener() {
 //            @Override
@@ -279,7 +280,7 @@ public class ViewEventActivity extends AppCompatActivity {
 //                Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
 //            }
 //        });
-    }
+
 
     private void showQRCodeDialog() {
         // Check if the event object is available
@@ -365,6 +366,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
 
             return true;
+
         } else if (itemId == R.id.map) {
             // Handle Map click
             Intent intent = new Intent(ViewEventActivity.this, MapActivity.class);
@@ -387,5 +389,5 @@ public class ViewEventActivity extends AppCompatActivity {
         return false;
 
     }
-
 }
+
