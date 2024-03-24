@@ -1,9 +1,9 @@
 package com.example.quickscanner.ui.viewevent.map;
 
+import static org.osmdroid.views.overlay.mylocation.IMyLocationProvider.*;
+
 import android.Manifest;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,8 +11,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -35,8 +38,13 @@ import android.view.MenuItem;
 import java.util.ArrayList;
 
 import com.example.quickscanner.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.IMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.Objects;
 
@@ -51,7 +59,6 @@ import ch.hsr.geohash.GeoHash;
 public class MapActivity extends AppCompatActivity {
 
     // References
-    private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
     private MapView map = null;
     IMapController mapController;
 
@@ -78,15 +85,10 @@ public class MapActivity extends AppCompatActivity {
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
         map.setMultiTouchControls(true);
 
-        // Get necessary permissions for geolocation.
-        requestPermissions();
 
+        // display user location
+        displayUserGeolocation();
 
-        if (((ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) ||
-                (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED))) {
-            // User location permissions accepted
-            displayUserGeolocation();
-        }
 
         // If a geo location is passed to the activity, display it.
         Intent intent = getIntent();
@@ -111,28 +113,14 @@ public class MapActivity extends AppCompatActivity {
         for (String geopoint : geoPoints) {
             createMarker(geopoint);
         }
+
+
     }
 
 
-    public void requestPermissions() {
-        if (((ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) ||
-                (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED))) {
-            // Geolocation Permissions already granted, do nothing
-        } else if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            // Request Permission.
-            requestMultiplePermissionsLauncher.launch(new String[]{
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-            });
-        } else {
-            // The user checked "Don't ask again."
-            // Explain that the permission is essential and guide them to settings.
-            showSettingsDialog();
-        }
-    }
 
     public void displayUserGeolocation() {
-        //
+        // check permissions
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // User did not allow permission to access their location
             Log.d("permissions","User did not allow permission to access their location");
@@ -204,20 +192,6 @@ public class MapActivity extends AppCompatActivity {
         mapController.setCenter(point);
     }
 
-    private void showSettingsDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Need Permissions");
-        builder.setMessage(R.string.grant_permission);
-
-
-        builder.setPositiveButton("Go to Settings", (dialog, which) -> {
-            dialog.cancel();
-            openAppSettings();
-        });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-        builder.show();
-    }
-
 
 
     @Override
@@ -239,36 +213,6 @@ public class MapActivity extends AppCompatActivity {
         //Configuration.getInstance().save(this, prefs);
         map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
     }
-
-    private void openAppSettings() {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package", getPackageName(), null);
-        intent.setData(uri);
-        startActivity(intent);
-    }
-
-
-
-    private ActivityResultLauncher<String[]> requestMultiplePermissionsLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
-                Boolean fineLocationGranted = permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
-                Boolean writeExternalStorageGranted = permissions.getOrDefault(Manifest.permission.WRITE_EXTERNAL_STORAGE, false);
-
-                if (fineLocationGranted != null && fineLocationGranted) {
-                    // ACCESS_FINE_LOCATION permission granted
-                } else {
-                    // ACCESS_FINE_LOCATION permission not granted
-                }
-
-                if (writeExternalStorageGranted != null && writeExternalStorageGranted) {
-                    // WRITE_EXTERNAL_STORAGE permission granted
-                } else {
-                    // WRITE_EXTERNAL_STORAGE permission not granted
-                }
-
-                // You can proceed with actions requiring these permissions
-                // Note: Consider user experience and app functionality if any or all permissions are denied
-            });
 
 
 

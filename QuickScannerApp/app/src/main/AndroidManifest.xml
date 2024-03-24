@@ -25,6 +25,7 @@
         <activity
             android:name=".ui.adminpage.BrowseImagesActivity"
             android:exported="false" />
+        <activity
             android:name=".ui.my_events.MyEvents_Activity"
             android:exported="false" />
         <activity
