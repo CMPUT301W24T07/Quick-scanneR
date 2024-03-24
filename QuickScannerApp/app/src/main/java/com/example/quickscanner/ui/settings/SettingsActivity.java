@@ -67,7 +67,8 @@ public class SettingsActivity extends AppCompatActivity {
                     myUser = document.toObject(User.class);
                     assert myUser != null;
                     // set geolocation switch to match user's preferences
-                    toggleGeolocation.setChecked(myUser.getGeolocationEnabled());
+                    if (myUser != null)
+                        toggleGeolocation.setChecked(myUser.getIsGeolocationEnabled());
                 }
             }
         });

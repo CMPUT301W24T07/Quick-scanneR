@@ -86,10 +86,6 @@ public class MapActivity extends AppCompatActivity {
         map.setMultiTouchControls(true);
 
 
-        // display user location
-        displayUserGeolocation();
-
-
         // If a geo location is passed to the activity, display it.
         Intent intent = getIntent();
         String hashedLocation = intent.getStringExtra("geoHash");
@@ -99,7 +95,6 @@ public class MapActivity extends AppCompatActivity {
             // default location CCIS
             displayDefault();
         }
-
 
         // TODO: Still hardcoded coordinates so far.
         ArrayList<String> geoPoints = new ArrayList<>();

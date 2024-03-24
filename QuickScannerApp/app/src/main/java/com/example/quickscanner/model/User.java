@@ -82,7 +82,7 @@ public class User {
      *
      * @return isGeolocationEnabled The toggle value
      */
-    public boolean getGeolocationEnabled() {
+    public boolean getIsGeolocationEnabled() {
         return isGeolocationEnabled;
     }
 

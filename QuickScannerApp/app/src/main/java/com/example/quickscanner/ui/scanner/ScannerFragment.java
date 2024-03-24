@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -14,6 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.example.quickscanner.MainActivity;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,11 +31,15 @@ import android.widget.Toast;
 
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseController;
+import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.controller.QRScanner;
+import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.IOException;
+
+import ch.hsr.geohash.GeoHash;
 
 public class ScannerFragment extends Fragment {
 
@@ -42,11 +51,12 @@ public class ScannerFragment extends Fragment {
 
     private TextView textView;
     private QRScanner qrScanner;
-
+    private String hashedUserLocation;
 
     private Button galleryButton;
     private Button scanButton;
 
+    private FirebaseUserController firebaseUserController;
     private FirebaseController firebaseController;
 
     @SuppressLint("MissingInflatedId")
@@ -63,6 +73,7 @@ public class ScannerFragment extends Fragment {
         qrScanner = new QRScanner(getContext());
 
         firebaseController = new FirebaseController();
+        firebaseUserController = new FirebaseUserController();
 
         return view;
     }
@@ -72,6 +83,13 @@ public class ScannerFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 //        final String[] returnedText = new String[1];
         textView.setText("Ready to rock and roll");
+
+        // Get the Hashed Location from MainActivity
+        // Basically the location is pulled in Main Activity, instead of the fragment
+        // So you only have to pull it once.
+        hashedUserLocation = ((MainActivity) requireActivity()).MainActivityHashedUserLocation;
+
+
         //idk why it needs to make an intent array instead of a single intent object
         //but this is how it works so I'm not going to question it
         galleryButton.setOnClickListener(v -> {
@@ -107,6 +125,7 @@ public class ScannerFragment extends Fragment {
                 });
             });
         });
+
     }
 
     private boolean isValidQRCode(String qrCodeValue) {
@@ -215,14 +234,6 @@ public class ScannerFragment extends Fragment {
 
 
 
-//
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//
-//        textView.setText(returnedText);
-//
-//        // Start the QR code scanning process when the fragment becomes visible
-//
-//    }
+
+
 }
