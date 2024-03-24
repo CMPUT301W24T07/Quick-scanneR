@@ -1,5 +1,7 @@
 package com.example.quickscanner.controller;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -169,6 +171,7 @@ public class FirebaseAttendanceController
                 if (!isSignedUp && !isCheckedIn) {
                     // If the event is full, abort the transaction
                     if (event.getMaxSpots() != null && event.getTakenSpots() >= event.getMaxSpots()) {
+                        Log.d("testerrr","event is full");
                         throw new FirebaseFirestoreException(
                                 "Event is full",
                                 FirebaseFirestoreException.Code.ABORTED
@@ -178,19 +181,27 @@ public class FirebaseAttendanceController
                     // Increment the number of taken spots for the event
                     transaction.update(eventRef, "takenSpots", FieldValue.increment(1));
                     event.setTakenSpots(event.getTakenSpots() + 1);
+                    Log.d("testerrr","reached taken spots check");
 
                     // Increment the current attendance count
                     transaction.update(liveCountRef, "attendanceCount", FieldValue.increment(1));
+                    Log.d("testerrr","reached current attendance count check");
 
                     // Add a document to the sign-ups and check-ins collections
                     transaction.set(signUpRef, new HashMap<>());
+                    Log.d("testerrr","new document added");
+
+
                     //makes a hashmap to store the times checked in or other check in data
                     Map<String, Object> checkInData = new HashMap<>();
                     checkInData.put("timesCheckedIn", 1);
                     transaction.set(checkInRef, checkInData);
+                    Log.d("testerrr","new hashmap created");
 
                     // Add the event to the user's list of signed-up and checked-in events
                     transaction.update(userCheckInsRef, "eventIds", FieldValue.arrayUnion(eventId));
+                    Log.d("testerrr","event added to user check ins");
+
                 }
 
                 // If the user is signed up but not checked in
@@ -538,6 +549,8 @@ public class FirebaseAttendanceController
             return document.exists();
         });
     }
+
+
     /**
      * Converts a list of DocumentSnapshots to a list of objects of a specified class.
      *
