@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.quickscanner.MainActivity;
+import com.example.quickscanner.singletons.SettingsDataSingleton;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import androidx.annotation.NonNull;
@@ -84,10 +85,8 @@ public class ScannerFragment extends Fragment {
 //        final String[] returnedText = new String[1];
         textView.setText("Ready to rock and roll");
 
-        // Get the Hashed Location from MainActivity
-        // Basically the location is pulled in Main Activity, instead of the fragment
-        // So you only have to pull it once.
-        hashedUserLocation = ((MainActivity) requireActivity()).MainActivityHashedUserLocation;
+        // Get the Hashed Location from the Singleton
+        hashedUserLocation = SettingsDataSingleton.getInstance().getHashedGeoLocation();
         Toast.makeText(getContext(), "Hash Geolocation" + hashedUserLocation, Toast.LENGTH_SHORT).show();
 
 

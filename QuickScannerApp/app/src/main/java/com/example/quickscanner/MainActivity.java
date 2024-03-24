@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+import com.example.quickscanner.singletons.SettingsDataSingleton;
 import com.example.quickscanner.ui.my_events.MyEvents_Activity;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
@@ -37,10 +38,6 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.quickscanner.databinding.ActivityMainBinding;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -60,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
     private ListView eventsListView;
     private ArrayList<Event> eventsDataList;
     private FirebaseUserController fbUserController;
-    public String MainActivityHashedUserLocation;
 
 
 
@@ -73,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         fbUserController = new FirebaseUserController();
 
-
+        // create Singletons
+        initSingletons();
 
         // Check user sign-in status
         boolean isFirstSignIn = fbUserController.isFirstSignIn();
@@ -82,11 +79,9 @@ public class MainActivity extends AppCompatActivity {
             Log.e("Testing", "Entered the if statement");
             //creates an anonymous user if not signed in
             createUserAndSignIn();
-            Toast.makeText(this, "Hash Geolocation" + MainActivityHashedUserLocation, Toast.LENGTH_SHORT).show();
-
         } else {
             Log.e("Testing", "first signin not detected");
-            getHashedGeoLocation();
+            requestHashedGeolocation();
         }
 
 
@@ -161,47 +156,47 @@ public class MainActivity extends AppCompatActivity {
      *                                           */
 
     public void createUserAndSignIn() {
-            // Creates anonymous user
+        // Creates anonymous user
         fbUserController.createAnonymousUser().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    // If user creation is successful
-                    if (task.isSuccessful()) {
-                        User user = new User();
-                        String userId;
-                        userId = fbUserController.getCurrentUserUid();
-                        // Sets user UID
-                        user.setUid(userId);
-                        // Adds user to database
-                        fbUserController.addUser(user).addOnCompleteListener(task1 -> {
-                            // If user addition is successful
-                            if (task1.isSuccessful()) {
-                                // Logs success
-                                Log.d("Testing", "User added successfully");
-                                getHashedGeoLocation();
-                            } else {
-                                // Logs error
-                                Log.w("Testing", "Error adding user", task1.getException());
-                            }
-                        });
-                    } else {
-                        // Logs error
-                        Log.w("Testing", "Error creating anonymous user", task.getException());
-                    }
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                // If user creation is successful
+                if (task.isSuccessful()) {
+                    User user = new User();
+                    String userId;
+                    userId = fbUserController.getCurrentUserUid();
+                    // Sets user UID
+                    user.setUid(userId);
+                    // Adds user to database
+                    fbUserController.addUser(user).addOnCompleteListener(task1 -> {
+                        // If user addition is successful
+                        if (task1.isSuccessful()) {
+                            // Logs success
+                            Log.d("Testing", "User added successfully");
+                            requestHashedGeolocation();
+                        } else {
+                            // Logs error
+                            Log.w("Testing", "Error adding user", task1.getException());
+                        }
+                    });
+                } else {
+                    // Logs error
+                    Log.w("Testing", "Error creating anonymous user", task.getException());
                 }
-            });
+            }
+        });
     }
 
     /*                                          *
-    *            Geolocation Functions          *
-    *                                           */
+     *            Geolocation Functions          *
+     *                                           */
 
     /*
      *   This functions returns a hashed (String) version of geolocation
      *   If User or Phone has geolocation disabled, returns NULL.
      *   Otherwise, returns a hashed String
      */
-    private void getHashedGeoLocation() {
+    private void requestHashedGeolocation() {
         // get current user
         String uid = fbUserController.getCurrentUserUid();
         if (uid == null)
@@ -220,7 +215,8 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     // verify permissions are enabled
                     if (validGeolocationPermissions(user)) {
-                        MainActivityHashedUserLocation = getDeviceGeolocation(user);
+                        String tempgeo = getDeviceGeolocation(user);
+                        SettingsDataSingleton.getInstance().setHashedGeoLocation(tempgeo);
                         Log.w("Geolocation: ", "Successful pull");
                     }
                 }
@@ -274,6 +270,13 @@ public class MainActivity extends AppCompatActivity {
     public static String hashCoordinates(double latitude, double longitude) {
         GeoHash geoHash = GeoHash.withCharacterPrecision(latitude, longitude, 12); // int is precision
         return geoHash.toBase32();
+    }
+
+    /*
+     *   Singleton Initialization
+     */
+    protected void initSingletons(){
+        SettingsDataSingleton.initInstance();
     }
 
 
