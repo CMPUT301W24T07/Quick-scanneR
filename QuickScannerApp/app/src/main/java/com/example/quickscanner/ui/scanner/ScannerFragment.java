@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -14,6 +16,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.example.quickscanner.MainActivity;
+import com.example.quickscanner.singletons.SettingsDataSingleton;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,6 +38,7 @@ import com.example.quickscanner.controller.FirebaseQrCodeController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.controller.QRScanner;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.internal.api.FirebaseNoSignedInUserException;
@@ -47,6 +54,8 @@ import java.util.Objects;
     if user scans admin code, make them an admin
 * */
 
+import ch.hsr.geohash.GeoHash;
+
 public class ScannerFragment extends Fragment {
 
     private static final int REQUEST_CODE_GALLERY = 10;
@@ -57,11 +66,12 @@ public class ScannerFragment extends Fragment {
 
     private TextView textView;
     private QRScanner qrScanner;
-
+    private String hashedUserLocation;
 
     private Button galleryButton;
     private Button scanButton;
 
+    private FirebaseUserController firebaseUserController;
     private FirebaseController firebaseController;
     private FirebaseAttendanceController fbAttendanceController;
     private FirebaseUserController fbUserController;
@@ -86,6 +96,7 @@ public class ScannerFragment extends Fragment {
         fbUserController = new FirebaseUserController();
         fbQrCodeController = new FirebaseQrCodeController();
         fbEventController = new FirebaseEventController();
+        firebaseUserController = new FirebaseUserController();
 
         return view;
     }
@@ -95,6 +106,14 @@ public class ScannerFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 //        final String[] returnedText = new String[1];
         textView.setText("Ready to rock and roll");
+
+        // Example Usage: Get the Hashed Location from the Singleton
+        /*         - Note: This usage returns NULL if device permissions are disabled
+        *                  If permissions are enabled, returns hashed geolocation as a String
+        */
+        hashedUserLocation = SettingsDataSingleton.getInstance().getHashedGeoLocation();
+
+
         //idk why it needs to make an intent array instead of a single intent object
         //but this is how it works so I'm not going to question it
         galleryButton.setOnClickListener(v -> {
@@ -160,6 +179,7 @@ public class ScannerFragment extends Fragment {
                 });
             });
         });
+
     }
 
     private Void tryCheckIn(String attendee, Event event) {
@@ -282,14 +302,6 @@ public class ScannerFragment extends Fragment {
 //    }
 
 
-//
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//
-//        textView.setText(returnedText);
-//
-//        // Start the QR code scanning process when the fragment becomes visible
-//
-//    }
+
+
 }

@@ -51,12 +51,13 @@ import java.util.Objects;
 import ch.hsr.geohash.BoundingBox;
 import ch.hsr.geohash.GeoHash;
 
-/* Uses Open Street Maps to display user's
- *  check-in geolocation
- *  Credits: https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library-(Java)
- *           https://developer.android.com/training/permissions/requesting
- */
+
 public class MapActivity extends AppCompatActivity {
+    /* Uses Open Street Maps to display user's
+     *  check-in geolocation
+     *  Credits: https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library-(Java)
+     *           https://developer.android.com/training/permissions/requesting
+     */
 
     // References
     private MapView map = null;
@@ -86,10 +87,6 @@ public class MapActivity extends AppCompatActivity {
         map.setMultiTouchControls(true);
 
 
-        // display user location
-        displayUserGeolocation();
-
-
         // If a geo location is passed to the activity, display it.
         Intent intent = getIntent();
         String hashedLocation = intent.getStringExtra("geoHash");
@@ -99,7 +96,6 @@ public class MapActivity extends AppCompatActivity {
             // default location CCIS
             displayDefault();
         }
-
 
         // TODO: Still hardcoded coordinates so far.
         ArrayList<String> geoPoints = new ArrayList<>();

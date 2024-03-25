@@ -9,6 +9,10 @@ public class Event {
     public User organizer;
     public String time;
     public String location;
+
+
+
+    public String geoLocation;
     public String eventID;
     public String organizerID;
     public ArrayList<String> signUps = new ArrayList<>();
@@ -112,5 +116,13 @@ public class Event {
     public void setPromoQrCode(String promoQrCode)
     {
         this.promoQrCode = promoQrCode;
+    }
+
+    public String getGeoLocation() {
+        return geoLocation;
+    }
+
+    public void setGeoLocation(String geoLocation) {
+        this.geoLocation = geoLocation;
     }
 }

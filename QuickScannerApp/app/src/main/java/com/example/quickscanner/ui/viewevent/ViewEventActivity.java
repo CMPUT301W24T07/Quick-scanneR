@@ -183,14 +183,8 @@ public class ViewEventActivity extends AppCompatActivity {
                     throw new RuntimeException("No such Event");
                 }
                 event = gotEvent;
-                
 
 
-                // set geolocation switch to match event preferences.unsure if needed, so commented out
-                //if (documentSnapshot.contains("isGeolocationEnabled")) {
-                    // TODO: Remove later when Crystal deletes 'Parcelable' from Events
-               //   event.setGeolocationEnabled(documentSnapshot.getBoolean("isGeolocationEnabled"));
-               // }
                 boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
                 toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
                 event.setGeolocationEnabled(oldIsGeolocationEnabled);
@@ -378,7 +372,7 @@ public class ViewEventActivity extends AppCompatActivity {
                 return true;
             }
             // Add the hashed location
-            bundle.putString("geoHash", event.getLocation());
+            bundle.putString("geoHash", event.getGeoLocation());
             intent.putExtras(bundle);
             startActivity(intent);
             return true;
