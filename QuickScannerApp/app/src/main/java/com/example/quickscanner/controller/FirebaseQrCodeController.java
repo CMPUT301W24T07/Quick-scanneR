@@ -1,5 +1,7 @@
 package com.example.quickscanner.controller;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.example.quickscanner.model.Event;
@@ -115,7 +117,7 @@ public class FirebaseQrCodeController {
      */
     public Task<Event> getCheckInEventFromQr(String qrCode) {
         validateId(qrCode);
-        CollectionReference eventsRef = db.collection("events");
+        CollectionReference eventsRef = db.collection("Events");
         Query query = eventsRef.whereEqualTo("checkInQrCode", qrCode).limit(1);
         return query.get().continueWith(new Continuation<QuerySnapshot, Event>() {
             @Override
@@ -143,7 +145,7 @@ public class FirebaseQrCodeController {
      */
     public Task<Event> getPromoEventFromQr(String qrCode) {
         validateId(qrCode);
-        CollectionReference eventsRef = db.collection("events");
+        CollectionReference eventsRef = db.collection("Events");
         Query query = eventsRef.whereEqualTo("promoQrCode", qrCode).limit(1);
         return query.get().continueWith(new Continuation<QuerySnapshot, Event>() {
             @Override
@@ -154,6 +156,7 @@ public class FirebaseQrCodeController {
                         DocumentSnapshot document = querySnapshot.getDocuments().get(0);
                         return document.toObject(Event.class);
                     } else {
+                        Log.d("testerrrr","no event found in qrcode controller");
                         return null; // No event found with the provided QR code
                     }
                 } else {
@@ -174,7 +177,7 @@ public class FirebaseQrCodeController {
      */
     public Task<Boolean> isQrUnused(String qrCode) {
         validateId(qrCode);
-        CollectionReference eventsRef = db.collection("events");
+        CollectionReference eventsRef = db.collection("Events");
 
         // Create a query for the "checkInQrCode" field
         Query queryCheckIn = eventsRef.whereEqualTo("checkInQrCode", qrCode).limit(1);

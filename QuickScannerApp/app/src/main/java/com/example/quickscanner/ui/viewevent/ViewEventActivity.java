@@ -59,6 +59,9 @@ public class ViewEventActivity extends AppCompatActivity {
     // UI reference
     Switch toggleGeolocation;
 
+    private Event currentEvent;
+    private Bitmap qrCodeBitmap;
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,8 +120,6 @@ public class ViewEventActivity extends AppCompatActivity {
                         .show();
             }
         });
-
-        Bitmap qrCodeBitmap = generateQRCode(eventID);
 
 
         // Get a reference to the share button
@@ -192,8 +193,8 @@ public class ViewEventActivity extends AppCompatActivity {
                         .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
 
 
-                // Set the event data to the UI
-                Log.d("halpp",event.getName());
+                qrCodeBitmap = generateQRCode(event.getPromoQrCode());
+
                 setEventDataToUI(event);
 
             }
