@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -35,11 +36,24 @@ public class ProfileArrayAdapter extends ArrayAdapter<User> {
 
         User currentUser = mProfiles.get(position);
 
+        CheckBox checkBox = listItem.findViewById(R.id.profile_checkbox);
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            currentUser.setSelected(isChecked);
+            ((BrowseProfilesActivity) mContext).updateDeleteButtonVisibility();
+        });
+        checkBox.setFocusable(false);  // Prevents the checkbox from being selected when the list item is clicked
         TextView name = listItem.findViewById(R.id.profile_name);
         name.setText(currentUser.getUserProfile().getName());
 
-        // Add more fields as necessary
-
         return listItem;
+    }
+
+    public boolean isAnyUserSelected() {
+        for (User user : mProfiles) {
+            if (user.isSelected()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
@@ -124,7 +125,7 @@ public class FirebaseUserController
      * @return a Task that will be completed after list is fetched
      */
     public Task<List<User>> getUsers() {
-        Query query = usersRef.orderBy("name").limit(30);
+        Query query = usersRef.orderBy(FieldPath.documentId()).limit(30);
 
         Task<QuerySnapshot> task = query.get();
 
