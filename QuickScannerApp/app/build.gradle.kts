@@ -72,5 +72,7 @@ dependencies {
     implementation("com.caverock:androidsvg:1.4")
     implementation("org.apache.commons:commons-lang3:3.8.1")
     implementation("ch.hsr:geohash:1.4.0")
+    implementation("com.google.firebase:firebase-firestore:21.4.3")
+
 
 }
