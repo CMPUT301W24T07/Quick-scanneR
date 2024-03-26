@@ -53,14 +53,13 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         // Set the adapter to the ListView
         profileListView.setAdapter(profileAdapter);
         updateDeleteButtonVisibility();
-
         // Create FireStore Listener for Updates to the Profiles List.
         fbUserController.getUsers().addOnSuccessListener(users -> {
             profilesDataList.clear();  // removes current data
-            for (User user : users) { // set of documents
-                profilesDataList.add(user); // adds new data from db
-            }
+                profilesDataList.addAll(users); // adds new data from db
             profileAdapter.notifyDataSetChanged();
+        }).addOnFailureListener(e ->{
+            Log.e("Firestore failed to load users:", e.toString());
         });
 
         // Inside onCreate method
