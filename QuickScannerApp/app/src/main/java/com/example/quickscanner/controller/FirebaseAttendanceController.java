@@ -109,7 +109,9 @@ public class FirebaseAttendanceController
                     transaction.set(signUpRef, new HashMap<>());
 
                     // Add the event to the user's signed-up events
-                    transaction.update(userSignUpsRef, "eventIds", FieldValue.arrayUnion(eventId));
+                    Map<String, Object> userSignUpsData = new HashMap<>();
+                    userSignUpsData.put("eventIds", FieldValue.arrayUnion(eventId));
+                    transaction.set(userSignUpsRef, userSignUpsData, SetOptions.merge());
                 }
 
                 return null;
