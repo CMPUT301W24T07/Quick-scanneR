@@ -77,7 +77,6 @@ public class AttendingEventsFragment extends Fragment {
 
     // Joey Firestore References
     private FirebaseUserController fbUserController;
-    private FirebaseEventController fbEventController;
     private FirebaseAttendanceController fbAttendanceController;
 
     @Override
@@ -87,7 +86,6 @@ public class AttendingEventsFragment extends Fragment {
 
         // Firebase references
         fbUserController = new FirebaseUserController();
-        fbEventController = new FirebaseEventController();
         fbAttendanceController = new FirebaseAttendanceController();
 
 
@@ -110,25 +108,9 @@ public class AttendingEventsFragment extends Fragment {
         eventAdapter = new EventArrayAdapter(getContext(), eventsDataList);
         // Set the adapter to the ListView
         eventListView.setAdapter(eventAdapter);
-
-
-        // Fetch user data from Firebase.
-        fbUserController.getUserTask(fbUserController.getCurrentUserUid()).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                // Process the result when the user data retrieval is successful.
-                DocumentSnapshot document = task.getResult();
-                if (!document.exists())
-                    Log.w("error", "user document doesn't exist");
-                else {
-                    // Extract user information from the document.
-                    myUser = document.toObject(User.class);
-
-                }
-            }
-        });
-
+        String attendingId = fbUserController.getCurrentUserUid();
         // obtain filtered events, pertaining to the user.
-        fbAttendanceController.getUserSignedUpEvents(fbUserController.getCurrentUserUid())
+        fbAttendanceController.getUserSignedUpEvents(attendingId)
                 .addOnCompleteListener(new OnCompleteListener<List<Event>>() {
                     @Override
                     public void onComplete(@NonNull Task<List<Event>> task) {
