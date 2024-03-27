@@ -20,7 +20,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.quickscanner.R;
+import com.example.quickscanner.controller.FirebaseAttendanceController;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.FragmentEventsBinding;
 import com.example.quickscanner.model.Event;
@@ -44,6 +46,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class AttendingEventsFragment extends Fragment {
     /**
@@ -70,15 +73,12 @@ public class AttendingEventsFragment extends Fragment {
 
 
     // Firestore References
-    private FirebaseFirestore db;
     private FirebaseStorage idb;
-    private StorageReference storeRef;
-    private CollectionReference profileRef;
-    private CollectionReference eventsRef;
-    private CollectionReference imagesRef;
 
     // Joey Firestore References
     private FirebaseUserController fbUserController;
+    private FirebaseEventController fbEventController;
+    private FirebaseAttendanceController fbAttendanceController;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -86,11 +86,10 @@ public class AttendingEventsFragment extends Fragment {
 
 
         // Firebase references
-        db = FirebaseFirestore.getInstance(); // non-image db references
-        profileRef = db.collection("Profiles");
-        eventsRef = db.collection("Events");
-        imagesRef = db.collection("Images");
-        idb = FirebaseStorage.getInstance(); // image db references
+        fbUserController = new FirebaseUserController();
+        fbEventController = new FirebaseEventController();
+        fbAttendanceController = new FirebaseAttendanceController();
+
 
         // Joey Firebase References
         fbUserController = new FirebaseUserController();
@@ -129,26 +128,19 @@ public class AttendingEventsFragment extends Fragment {
         });
 
         // obtain filtered events, pertaining to the user.
-//        db.collection("Events")
-//            .whereIn("eventID", myUser.getSignedUpEvents())
-//            .get()
-//            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                @Override
-//                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                    if (task.isSuccessful()) {
-//                        for (QueryDocumentSnapshot doc : task.getResult()) {
-//                            Log.d(TAG, doc.getId() + " => " + doc.getData());
-//                            Event qryEvent = doc.toObject(Event.class);
-//                            //associate event ID with the retrieved event
-//                            qryEvent.setEventID(doc.getId());
-//                            eventsDataList.add((qryEvent)); // adds new data from db
-//                        }
-//                    } else {
-//                            Log.d(TAG, "Error getting documents: ", task.getException());
-//                    }
-//                    eventAdapter.notifyDataSetChanged();
-//                }
-//            });
+        fbAttendanceController.getUserSignedUpEvents(fbUserController.getCurrentUserUid())
+                .addOnCompleteListener(new OnCompleteListener<List<Event>>() {
+                    @Override
+                    public void onComplete(@NonNull Task<List<Event>> task) {
+                        if (task.isSuccessful()) {
+                            eventsDataList.clear();
+                            eventsDataList.addAll(task.getResult());
+                            eventAdapter.notifyDataSetChanged();
+                        } else {
+                            Log.d(TAG, "Error getting signed up events: ", task.getException());
+                        }
+                    }
+                });
 
 
         /*      Event ListView Click       */

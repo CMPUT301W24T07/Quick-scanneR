@@ -15,6 +15,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.Transaction;
 
@@ -355,9 +356,10 @@ public class FirebaseAttendanceController
      * This method performs the following operations:
      * 1. Fetches the user's signed-up events document.
      * 2. Retrieves the list of event IDs from the document.
-     * 3. Converts the event IDs to a list of tasks that fetch the corresponding DocumentSnapshots.
-     * 4. Waits for all tasks to complete.
-     * 5. Converts the DocumentSnapshots to Event objects.
+     * 3. Splits the list of event IDs into chunks of 10.
+     * 4. Converts the chunks to a list of tasks that fetch the corresponding QuerySnapshots.
+     * 5. Waits for all tasks to complete.
+     * 6. Converts the QuerySnapshots to Event objects.
      *
      * If the user has not signed up for any events, the method returns a task that resolves to an empty list.
      *
@@ -380,17 +382,37 @@ public class FirebaseAttendanceController
             List<String> eventIds = (List<String>) document.get("eventIds");
             if (eventIds == null) {
                 // If there are no event IDs, return an empty list
-                return Tasks.forResult(new ArrayList<Object>());
+                return Tasks.forResult(new ArrayList<Event>());
             }
 
-            // Convert the event IDs to a list of DocumentSnapshot tasks
-            List<Task<DocumentSnapshot>> tasks = arrayToDocList(eventIds);
+            // Split the event IDs into chunks of 10
+            List<List<String>> chunks = new ArrayList<>();
+            for (int i = 0; i < eventIds.size(); i += 10) {
+                int end = Math.min(i + 10, eventIds.size());
+                chunks.add(eventIds.subList(i, end));
+            }
+
+            // Convert the chunks to a list of QuerySnapshot tasks
+            List<Task<QuerySnapshot>> tasks = new ArrayList<>();
+            for (List<String> chunk : chunks) {
+                tasks.add(eventsRef.whereIn("eventID", chunk).get());
+            }
 
             // Wait for all tasks to complete
             return Tasks.whenAllSuccess(tasks);
         }).continueWith(task -> {
-            // Convert the DocumentSnapshots to Event objects
-            return convertToObject(task.getResult(), Event.class);
+            // Convert the QuerySnapshots to Event objects
+            List<Event> events = new ArrayList<>();
+            for (Object result : task.getResult()) {
+                QuerySnapshot querySnapshot = (QuerySnapshot) result;
+                for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+                    Event event = document.toObject(Event.class);
+                    if (event != null) {
+                        events.add(event);
+                    }
+                }
+            }
+            return events;
         });
     }
 
