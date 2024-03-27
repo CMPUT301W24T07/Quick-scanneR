@@ -201,4 +201,18 @@ public class FirebaseEventController
             }
         });
     }
+    public Task<List<Event>> getEventsByOrganizer(String organizerId) {
+        return eventsRef.whereEqualTo("organizerID", organizerId).get()
+                .continueWith(new Continuation<QuerySnapshot, List<Event>>() {
+                    @Override
+                    public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                        List<Event> eventList = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Event event = document.toObject(Event.class);
+                            eventList.add(event);
+                        }
+                        return eventList;
+                    }
+                });
+    }
 }

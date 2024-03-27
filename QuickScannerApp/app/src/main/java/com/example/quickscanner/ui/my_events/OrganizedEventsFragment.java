@@ -29,6 +29,8 @@ import com.example.quickscanner.ui.addevent.AddEventActivity;
 import com.example.quickscanner.ui.homepage_event.EventArrayAdapter;
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
@@ -42,6 +44,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class OrganizedEventsFragment extends Fragment {
     /**
@@ -56,8 +59,6 @@ public class OrganizedEventsFragment extends Fragment {
     ArrayList<Event> eventsDataList;
     ArrayAdapter<Event> eventAdapter;
 
-    // User references
-    User myUser;
 
 
     // DropDown click References
@@ -68,28 +69,19 @@ public class OrganizedEventsFragment extends Fragment {
 
 
     // Firestore References
-    private FirebaseFirestore db;
-    private FirebaseStorage idb;
     private StorageReference storeRef;
-    private CollectionReference profileRef;
-    private CollectionReference eventsRef;
-    private CollectionReference imagesRef;
 
     // Joey Firestore References
     private FirebaseUserController fbUserController;
+    private FirebaseEventController fbEventController;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        // Firebase references
-        db = FirebaseFirestore.getInstance(); // non-image db references
-        profileRef = db.collection("Profiles");
-        eventsRef = db.collection("Events");
-        imagesRef = db.collection("Images");
-        idb = FirebaseStorage.getInstance(); // image db references
 
         // Joey Firebase References
         fbUserController = new FirebaseUserController();
+        fbEventController = new FirebaseEventController();
 
         return inflater.inflate(R.layout.fragment_my_events, container, false);
 
@@ -107,29 +99,25 @@ public class OrganizedEventsFragment extends Fragment {
         eventAdapter = new EventArrayAdapter(getContext(), eventsDataList);
         // Set the adapter to the ListView
         eventListView.setAdapter(eventAdapter);
-
-
-        // obtain filtered events pertaining to the user.
-        db.collection("Events")
-                .whereEqualTo("organizerID", fbUserController.getCurrentUserUid())
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+        String orgId = fbUserController.getCurrentUserUid();
+        // Create FireStore Listener for Updates to the Events List.
+        fbEventController.getEventsByOrganizer(orgId)
+                .addOnSuccessListener(new OnSuccessListener<List<Event>>() {
                     @Override
-                    public void onEvent(@Nullable QuerySnapshot events, @Nullable FirebaseFirestoreException error) {
-                        // error handling
-                        if (error != null){
-                            Log.w(TAG, "organized events: listen failed. ", error);
-                        }
-                        // remove old data
+                    public void onSuccess(List<Event> events) {
+                        // Clear the old data
                         eventsDataList.clear();
-                        // populate list with new data
-                        for (QueryDocumentSnapshot event : events) {
-                            if (event.get("eventID") != null) {
-                                eventsDataList.add(event.toObject(Event.class));
-                            }
-                        }
-                        // update list view
-                        eventAdapter.notifyDataSetChanged();
 
+                        // Add the new events to the list
+                        eventsDataList.addAll(events);
+
+                        // Notify the adapter that the data has changed
+                        eventAdapter.notifyDataSetChanged();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "Error getting events", e);
                     }
                 });
 
