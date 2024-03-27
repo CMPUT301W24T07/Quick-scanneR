@@ -16,6 +16,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.List;
 /**
  * Controller for managing events in Firestore.
@@ -33,6 +34,19 @@ public class FirebaseEventController
         db = FirebaseFirestore.getInstance();
         eventsRef = db.collection("Events");
     }
+    /**
+     * Validates the ID of the user or event, throwing an IllegalArgumentException if the ID is null or empty.
+     *
+     * @param id The ID to validate. It should be a non-null and non-empty string.
+     * @throws IllegalArgumentException If the ID is null or empty.
+     */
+    private void validateId(String id)
+    {
+        if (id == null || id.isEmpty())
+        {
+            throw new IllegalArgumentException("ID cannot be null or empty in Event controller");
+        }
+    }
 
     /**
      * Adds new event to Firestore.
@@ -42,6 +56,7 @@ public class FirebaseEventController
      */
     public Task<DocumentReference> addEvent(Event event)
     {
+
         return eventsRef.add(event);
     }
 
@@ -81,6 +96,7 @@ public class FirebaseEventController
      */
     public Task<Void> deleteEvent(String eventId)
     {
+        validateId(eventId);
         return eventsRef.document(eventId).delete();
     }
 
@@ -117,6 +133,7 @@ public class FirebaseEventController
         });
     }
     public Task<List<Event>> continueGetEvents(String lastEventId) {
+        validateId(lastEventId);
         Task<DocumentSnapshot> lastEventTask = eventsRef.document(lastEventId).get();
 
         return lastEventTask.continueWithTask(new Continuation<DocumentSnapshot, Task<List<Event>>>() {
@@ -157,6 +174,7 @@ public class FirebaseEventController
      */
     public Task<Event> getEvent(String eventId)
     {
+        validateId(eventId);
         Task<DocumentSnapshot> task = eventsRef.document(eventId).get();
         return task.continueWithTask(new Continuation<DocumentSnapshot, Task<Event>>()
         {
@@ -182,20 +200,5 @@ public class FirebaseEventController
                 }
             }
         });
-    }
-
-
-    /**
-     * Retrieves specific event *Task* from Firestore.
-     * This is different from getEvents, as it does not return the object.
-     * Instead, it returns a task of pulling a snapshot of the document.
-     *
-     * @param eventId the ID of the event to retrieve
-     * @return a Task that will be completed once the event is fetched
-     */
-    public Task<DocumentSnapshot> getEventTask(String eventId)
-    {
-        return eventsRef.document(eventId).get();
-
     }
 }

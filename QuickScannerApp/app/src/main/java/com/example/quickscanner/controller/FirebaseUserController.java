@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
@@ -32,6 +33,19 @@ public class FirebaseUserController
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
         usersRef = db.collection("users");
+    }
+    /**
+     * Validates the ID of the user or event, throwing an IllegalArgumentException if the ID is null or empty.
+     *
+     * @param id The ID to validate. It should be a non-null and non-empty string.
+     * @throws IllegalArgumentException If the ID is null or empty.
+     */
+    private void validateId(String id)
+    {
+        if (id == null || id.isEmpty())
+        {
+            throw new IllegalArgumentException("ID cannot be null or empty in User controller");
+        }
     }
 
     /**
@@ -101,6 +115,7 @@ public class FirebaseUserController
      */
     public Task<Void> deleteUser(String userId)
     {
+        validateId(userId);
         return usersRef.document(userId).delete();
     }
 
@@ -110,7 +125,7 @@ public class FirebaseUserController
      * @return a Task that will be completed after list is fetched
      */
     public Task<List<User>> getUsers() {
-        Query query = usersRef.orderBy("name").limit(30);
+        Query query = usersRef.orderBy(FieldPath.documentId()).limit(30);
 
         Task<QuerySnapshot> task = query.get();
 
@@ -134,6 +149,7 @@ public class FirebaseUserController
         });
     }
     public Task<List<User>> continueGetUsers(String lastUserId) {
+        validateId(lastUserId);
         DocumentReference lastUserRef = usersRef.document(lastUserId);
         Task<DocumentSnapshot> lastUserTask = lastUserRef.get();
         return lastUserTask.continueWithTask(new Continuation<DocumentSnapshot, Task<List<User>>>() {
@@ -179,6 +195,7 @@ public class FirebaseUserController
      */
     public Task<User> getUser(String userId)
     {
+        validateId(userId);
         Task<DocumentSnapshot> task = usersRef.document(userId).get();
         return task.continueWithTask(new Continuation<DocumentSnapshot, Task<User>>() {
             @Override
@@ -208,6 +225,7 @@ public class FirebaseUserController
      */
     public Task<DocumentSnapshot> getUserTask(String userId)
     {
+        //TODO remove this and replace with other get user method
         return usersRef.document(userId).get();
     }
 }

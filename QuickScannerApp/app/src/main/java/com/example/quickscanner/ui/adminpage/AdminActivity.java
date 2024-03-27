@@ -24,6 +24,7 @@ public class AdminActivity extends AppCompatActivity {
 
         Button browseEventsButton = findViewById(R.id.BrowseEventsButton);
         Button browseProfilesButton = findViewById(R.id.BrowseProfilesButton);
+        Button browseImagesButton = findViewById(R.id.BrowseImagesButton);
 
         // back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -37,6 +38,13 @@ public class AdminActivity extends AppCompatActivity {
             Intent intent = new Intent(AdminActivity.this, BrowseProfilesActivity.class);
             startActivity(intent);
         });
+
+        browseImagesButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminActivity.this, BrowseImagesActivity.class);
+            startActivity(intent);
+        });
+
+
 
     }
 

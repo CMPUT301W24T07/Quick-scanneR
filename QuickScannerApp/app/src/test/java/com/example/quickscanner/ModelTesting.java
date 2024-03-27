@@ -60,7 +60,7 @@ public class ModelTesting {
         user.setGeolocationEnabled(false);
         // toggle geolocation
         user.toggleAllowsGeolocation();
-        assertEquals(true, user.getGeolocationEnabled());
+        assertEquals(true, user.getIsGeolocationEnabled());
     }
 
     /**

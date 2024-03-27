@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipe_refresh_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -69,7 +74,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/eventImage_image" />
+                app:layout_constraintTop_toBottomOf="@+id/location_textview" />
 
             <TextView
                 android:id="@+id/eventTime_text"
@@ -84,7 +89,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.052"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/eventDescription_text" />
+                app:layout_constraintTop_toBottomOf="@+id/eventImage_image" />
 
             <TextView
                 android:id="@+id/organiser_text"
@@ -100,7 +105,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.537"
                 app:layout_constraintStart_toEndOf="@+id/eventTime_text"
-                app:layout_constraintTop_toBottomOf="@+id/eventDescription_text" />
+                app:layout_constraintTop_toBottomOf="@+id/eventImage_image" />
 
             <TextView
                 android:id="@+id/location_textview"
@@ -117,17 +122,18 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/organiser_text" />
 
-            <ImageButton
-                android:id="@+id/generateQRbtn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="16dp"
-                android:src="@drawable/ic_qr_code_scanner_24"
+            <Button
+                android:id="@+id/sign_up_button"
+                android:layout_width="300dp"
+                android:layout_height= "70dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="12dp"
+                android:text="@string/sign_up_text"
+                android:textAllCaps="false"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/location_textview" />
+                app:layout_constraintTop_toBottomOf="@+id/eventDescription_text" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -166,4 +172,5 @@
 
 
 </RelativeLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

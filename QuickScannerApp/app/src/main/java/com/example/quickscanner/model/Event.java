@@ -7,22 +7,21 @@ public class Event {
     public String description;
     public String imagePath;
     public User organizer;
-
     public String time;
     public String location;
+
+
+
+    public String geoLocation;
     public String eventID;
     public String organizerID;
-
-
     public ArrayList<String> signUps = new ArrayList<>();
     public ArrayList<String> checkIns = new ArrayList<>();
-
     private boolean isGeolocationEnabled;
-
-
-
     public int takenSpots ;
     public Integer maxSpots;
+    public String checkInQrCode;
+    public String promoQrCode;
 
     public Event(String name, String description, String organizerID, String time, String location) {
         this.name = name;
@@ -77,6 +76,20 @@ public class Event {
     public Integer getMaxSpots() {return maxSpots;}
     public int getTakenSpots() {return takenSpots;}
 
+    public boolean isGeolocationEnabled()
+    {
+        return isGeolocationEnabled;
+    }
+
+    public String getCheckInQrCode()
+    {
+        return checkInQrCode;
+    }
+
+    public String getPromoQrCode()
+    {
+        return promoQrCode;
+    }
 
     // Setters
     public void setName(String name) {this.name = name;}
@@ -94,4 +107,22 @@ public class Event {
     public void setCheckIns(ArrayList<String> checkIns) {this.checkIns = checkIns;}
     public void setMaxSpots(Integer maxSpots) {this.maxSpots = maxSpots;}
     public void setTakenSpots(int takenSpots) {this.takenSpots = takenSpots;}
+
+    public void setCheckInQrCode(String checkInQrCode)
+    {
+        this.checkInQrCode = checkInQrCode;
+    }
+
+    public void setPromoQrCode(String promoQrCode)
+    {
+        this.promoQrCode = promoQrCode;
+    }
+
+    public String getGeoLocation() {
+        return geoLocation;
+    }
+
+    public void setGeoLocation(String geoLocation) {
+        this.geoLocation = geoLocation;
+    }
 }

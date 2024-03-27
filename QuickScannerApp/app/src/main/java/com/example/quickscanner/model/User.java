@@ -15,7 +15,8 @@ public class User {
     private ArrayList<String> checkedInEvents = new ArrayList<String>();
     private String Uid;
     private boolean isGeolocationEnabled;
-    private String testing = "This should show up";
+
+    private boolean selected;
 
     /**
      * Creates a User with a specified profile.
@@ -83,7 +84,7 @@ public class User {
      *
      * @return isGeolocationEnabled The toggle value
      */
-    public boolean getGeolocationEnabled() {
+    public boolean getIsGeolocationEnabled() {
         return isGeolocationEnabled;
     }
 
@@ -121,6 +122,8 @@ public class User {
     public void setOrganizedEvents(ArrayList<String> organizedEvents) {
         this.organizedEvents = organizedEvents;
     }
+
+
     public ArrayList<String> getSignedUpEvents() {
         return signedUpEvents;
     }
@@ -168,6 +171,10 @@ public class User {
     public int getOrganizedEventsSize() {
         return organizedEvents.size();
     }
+
+    public boolean isSelected() { return selected; }
+
+    public void setSelected(boolean selected) { this.selected = selected; }
 
 
 }

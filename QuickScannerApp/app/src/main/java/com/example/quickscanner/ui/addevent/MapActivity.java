@@ -1,18 +1,22 @@
 package com.example.quickscanner.ui.addevent;
 
-import android.Manifest;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.quickscanner.R;
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.api.IMapController;
@@ -21,17 +25,6 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
-
-
-import android.provider.Settings;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-
-import com.example.quickscanner.R;
-
 import org.osmdroid.views.overlay.Marker;
 
 import java.util.Objects;
@@ -46,11 +39,13 @@ import ch.hsr.geohash.GeoHash;
  */
 public class MapActivity extends AppCompatActivity {
 
+    // Should App Request permissions? Yes=1, No=0
+    private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
+
     // References
     private MapView map = null;
     private IMapController mapController;
     private String hashedLocation;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,14 +67,17 @@ public class MapActivity extends AppCompatActivity {
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
         map.setMultiTouchControls(true);
 
-        // Set center of the map
-        mapController.setCenter(new GeoPoint(53.5282, -113.525)); // CCIS
-
-        // If a geo location is passed to the activity, display it.
+        // Display Current Event Geolocation
         Intent intent = getIntent();
         String hashedLocation = intent.getStringExtra("geoHash");
-        if (!hashedLocation.isEmpty()){
+        if ((hashedLocation != null) && !hashedLocation.isEmpty()){
+            // If a geo location is passed to the activity, display it.
             createMarker(hashedLocation);
+            centerFromHash(hashedLocation);
+        } else {
+            // Center at a default location
+            displayDefault();
+            centerFromHash(hashCoordinates(53.5282,-113.5257));
         }
 
         // Allow user to touch on the map to set their event location
@@ -126,19 +124,39 @@ public class MapActivity extends AppCompatActivity {
      * @param hash: represents the latitude and longitude of a coordinate in String format.
      */
     public void createMarker(String hash){
+        GeoPoint point = decodeHash(hash);
+        Marker startMarker = new Marker(map);
+        startMarker.setPosition(point);
+        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+        map.getOverlays().add(startMarker);
+    }
+
+    /* Turns a coordinate string (hash) into latitude/longitude and places
+     * a corresponding marker on the map
+     * And then centers the map on the marker
+     * @param hash: represents the latitude and longitude of a coordinate in String format.
+     */
+    public void centerFromHash(String hash){
+        // decode hash
+        GeoPoint point = decodeHash(hash);
+        // center at location
+        mapController.setCenter(point);
+    }
+
+
+    /* Turns a coordinate string (hash) into latitude/longitude and places
+     * @param hash: represents the latitude and longitude of a coordinate in String format.
+     */
+    public GeoPoint decodeHash(String hash) {
         GeoHash geoHash = GeoHash.fromGeohashString(hash);
         BoundingBox boundingBox = geoHash.getBoundingBox();
         // Calculate the center of the bounding box
         double latitude = (boundingBox.getNorthLatitude() + boundingBox.getSouthLatitude()) / 2.0;
         double longitude = (boundingBox.getEastLongitude() + boundingBox.getWestLongitude()) / 2.0;
-        // Marker !!
-        GeoPoint point = new GeoPoint(latitude, longitude);
-        Marker startMarker = new Marker(map);
-        startMarker.setPosition(point);
-        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-        map.getOverlays().add(startMarker);
-
+        // return GeoPoint
+        return new GeoPoint(latitude, longitude);
     }
+
 
     /* Turns a latitude and longitude into a geo String
      */
@@ -159,6 +177,11 @@ public class MapActivity extends AppCompatActivity {
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
+    }
+
+    public void displayDefault() {
+        GeoPoint point = new GeoPoint(53.5282, -113.5257);
+        mapController.setCenter(point);
     }
 
 
@@ -188,29 +211,6 @@ public class MapActivity extends AppCompatActivity {
         intent.setData(uri);
         startActivity(intent);
     }
-
-
-
-    private ActivityResultLauncher<String[]> requestMultiplePermissionsLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
-                Boolean fineLocationGranted = permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
-                Boolean writeExternalStorageGranted = permissions.getOrDefault(Manifest.permission.WRITE_EXTERNAL_STORAGE, false);
-
-                if (fineLocationGranted != null && fineLocationGranted) {
-                    // ACCESS_FINE_LOCATION permission granted
-                } else {
-                    // ACCESS_FINE_LOCATION permission not granted
-                }
-
-                if (writeExternalStorageGranted != null && writeExternalStorageGranted) {
-                    // WRITE_EXTERNAL_STORAGE permission granted
-                } else {
-                    // WRITE_EXTERNAL_STORAGE permission not granted
-                }
-
-                // You can proceed with actions requiring these permissions
-                // Note: Consider user experience and app functionality if any or all permissions are denied
-            });
 
 
 
