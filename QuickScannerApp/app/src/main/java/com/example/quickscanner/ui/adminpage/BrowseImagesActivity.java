@@ -23,7 +23,7 @@ public class BrowseImagesActivity extends AppCompatActivity {
     ArrayList<Image> imagesDataList;
     ArrayAdapter<Image> imageAdapter;
 
-    // FirebaseController Reference
+    // FirebaseController References
     private FirebaseImageController fbImageController;
 
     @Override

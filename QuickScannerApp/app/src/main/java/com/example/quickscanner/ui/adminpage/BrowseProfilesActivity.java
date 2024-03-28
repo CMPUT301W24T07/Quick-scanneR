@@ -30,7 +30,7 @@ public class BrowseProfilesActivity extends AppCompatActivity {
     //check box functionality.
     ProfileArrayAdapter profileAdapter;
 
-    // FirebaseController Reference
+    // FirebaseController References
     private FirebaseUserController fbUserController;
 
     @Override
