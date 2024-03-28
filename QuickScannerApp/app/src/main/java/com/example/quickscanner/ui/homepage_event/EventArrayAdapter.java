@@ -66,7 +66,7 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
         eventDescription.setText(event.getDescription());
         eventLocation.setText(event.getLocation());
         // eventOrganizers.setText(event.getOrganizer().getUserProfile().getName());
-        eventTime.setText(event.getTime());
+        eventTime.setText(event.getTimeAsString());
 
         /* Return the populated, custom view ( which is a row in listview).
          i.e. returns a customized row in the events listview */
