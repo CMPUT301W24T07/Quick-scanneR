@@ -2,6 +2,8 @@ package com.example.quickscanner.ui.addevent;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -13,43 +15,37 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-
-import com.example.quickscanner.controller.FirebaseImageController;
-
-import com.example.quickscanner.MainActivity;
-import com.example.quickscanner.controller.FirebaseImageController;;
-
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseQrCodeController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
-import com.example.quickscanner.model.User;
-
-import com.example.quickscanner.ui.viewevent.ViewEventActivity;
-import com.google.gson.Gson;
-import com.example.quickscanner.ui.profile.ProfileActivity;
+import com.google.firebase.Timestamp;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 
 
 
-public class AddEventActivity extends AppCompatActivity {
+public class AddEventActivity extends AppCompatActivity
+{
     /* Uses Open Street Maps to display user's
      *  check-in geolocation
      *  Credits: https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library-(Java)
@@ -65,6 +61,19 @@ public class AddEventActivity extends AppCompatActivity {
     private EditText locationEditText;
     private EditText geolocationEditText;
     private EditText timeEditText;
+    private Timestamp eventTime;
+    private static final int MIN_YEAR = 2024;
+    private static final int MIN_MONTH = 5;
+    private static final int MIN_DAY = 6;
+
+    private static final int MAX_YEAR = 2024;
+    private static final int MAX_MONTH = 5;
+    private static final int MAX_DAY = 7;
+    private static final int MIN_HOUR = 8;
+    private static final int MIN_MINUTE = 0;
+    private static final int MAX_HOUR = 20;
+    private static final int MAX_MINUTE = 0;
+
 
     private ArrayAdapter<Event> eventAdapter;
     private List<Event> eventDataList = new ArrayList<>();
@@ -81,10 +90,13 @@ public class AddEventActivity extends AppCompatActivity {
     // Credit: https://developer.android.com/training/basics/intents/result
     ActivityResultLauncher<Intent> mapGetLocation = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
+            result ->
+            {
+                if (result.getResultCode() == Activity.RESULT_OK)
+                {
                     Intent data = result.getData();
-                    if (data != null) {
+                    if (data != null)
+                    {
                         String geoHash = data.getStringExtra("geoHash");
                         // Handle the location string
                         geolocationEditText.setText(geoHash);
@@ -95,7 +107,8 @@ public class AddEventActivity extends AppCompatActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_addevent);
         fbEventController = new FirebaseEventController();
@@ -111,6 +124,15 @@ public class AddEventActivity extends AppCompatActivity {
         locationEditText = findViewById(R.id.location_textview);
         geolocationEditText = findViewById(R.id.geolocation_textview);
         timeEditText = findViewById(R.id.time_textview);
+        timeEditText.setFocusable(false); // can't type, must interact with listener
+        timeEditText.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                showDateTimePicker();
+            }
+        });
 
         // Initialize the event data list and ArrayAdapter
         eventDataList = new ArrayList<>();
@@ -122,9 +144,11 @@ public class AddEventActivity extends AppCompatActivity {
         // Location Text Click behaviour
         geolocationEditText = findViewById(R.id.geolocation_textview);
         geolocationEditText.setFocusable(false); // can't type, must interact with listener
-        geolocationEditText.setOnClickListener(new View.OnClickListener() {
+        geolocationEditText.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 // Open map activity to choose your location
                 // Credit: https://developer.android.com/training/basics/intents/result
                 Intent intent = new Intent(AddEventActivity.this, MapActivity.class);
@@ -139,14 +163,16 @@ public class AddEventActivity extends AppCompatActivity {
 
         // Edit Button 1
         ImageButton editBtn1 = findViewById(R.id.editBtn1);
-        editBtn1.setOnClickListener(v -> showTextDialog("Edit Event Name", (dialog, which) -> {
+        editBtn1.setOnClickListener(v -> showTextDialog("Edit Event Name", (dialog, which) ->
+        {
             editedEventName = ((EditText) ((AlertDialog) dialog).findViewById(R.id.input)).getText().toString();
             eventNameEditText.setText(editedEventName);
         }));
 
         // Edit Button 2
         ImageButton editBtn2 = findViewById(R.id.editBtn2);
-        editBtn2.setOnClickListener(v -> showTextDialog("Edit Event Description", (dialog, which) -> {
+        editBtn2.setOnClickListener(v -> showTextDialog("Edit Event Description", (dialog, which) ->
+        {
             editedEventDescription = ((EditText) ((AlertDialog) dialog).findViewById(R.id.input)).getText().toString();
             eventDescriptionTextView.setText(editedEventDescription);
         }));
@@ -164,10 +190,13 @@ public class AddEventActivity extends AppCompatActivity {
 
         // Create Event Button
         Button createEventInsideBtn = findViewById(R.id.CreateEventInsideBtn);
-        createEventInsideBtn.setOnClickListener(v -> {
+        createEventInsideBtn.setOnClickListener(v ->
+        {
             // Check if necessary fields are filled
             if (editedEventName != null && !editedEventName.isEmpty() &&
-                    editedEventDescription != null && !editedEventDescription.isEmpty()) {
+                    editedEventDescription != null && !editedEventDescription.isEmpty() &&
+                    eventTime != null && locationEditText.getText() != null && !locationEditText.getText().toString().isEmpty())
+            {
 
                 // Retrieve the text from the EditText fields
                 String location = locationEditText.getText().toString();
@@ -175,7 +204,7 @@ public class AddEventActivity extends AppCompatActivity {
                 String time = timeEditText.getText().toString();
 
                 // Create an Event object with the edited values
-                Event newEvent = new Event(editedEventName, editedEventDescription, fbUserController.getCurrentUserUid(), time, location);
+                Event newEvent = new Event(editedEventName, editedEventDescription, fbUserController.getCurrentUserUid(), eventTime, location);
                 newEvent.setGeoLocation(geolocation);
 
                 // Add the event to the database
@@ -198,41 +227,46 @@ public class AddEventActivity extends AppCompatActivity {
     }
 
     // Add event to Firestore
-    private void addEventToFirestore(Event event) {
+    private void addEventToFirestore(Event event)
+    {
         fbEventController.addEvent(event)
-            .addOnSuccessListener(documentReference -> {
-                Log.d("AddEventActivity", "Event added with ID: " + documentReference.getId());
-                // additional actions if needed
-                event.setEventID(documentReference.getId());
+                .addOnSuccessListener(documentReference ->
+                {
+                    Log.d("AddEventActivity", "Event added with ID: " + documentReference.getId());
+                    // additional actions if needed
+                    event.setEventID(documentReference.getId());
 
-                if (eventImageMap != null) {
-                    event.setImagePath(event.getEventID() + "primary");
-                    ByteArrayOutputStream boas = new ByteArrayOutputStream();
-                    eventImageMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
-                    byte[] imageData = boas.toByteArray();
-                    fbImageController.uploadImage(event.getImagePath(), imageData);
-                }
+                    if (eventImageMap != null)
+                    {
+                        event.setImagePath(event.getEventID() + "primary");
+                        ByteArrayOutputStream boas = new ByteArrayOutputStream();
+                        eventImageMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
+                        byte[] imageData = boas.toByteArray();
+                        fbImageController.uploadImage(event.getImagePath(), imageData);
+                    }
 
 
-                //this should happen after qr code is added
+                    //this should happen after qr code is added
 //                // Pass the JSON string to the next activity
 //                Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
 //                intent.putExtra("eventJson", new Gson().toJson(event));
 //                startActivity(intent);
 
-            })
-            .addOnFailureListener(e -> {
-                Log.e("AddEventActivity", "Error adding event", e);
-                // Handle the error appropriately
-            });
+                })
+                .addOnFailureListener(e ->
+                {
+                    Log.e("AddEventActivity", "Error adding event", e);
+                    // Handle the error appropriately
+                });
 
         //promo qr code
         fbQrCodeController.addQrCode(fbUserController.getCurrentUserUid())
-                .addOnSuccessListener(documentReference -> {
+                .addOnSuccessListener(documentReference ->
+                {
                     Log.d("testerrrr", "QR code added with ID: " + documentReference.getId());
                     // additional actions if needed
                     event.setPromoQrCode(documentReference.getId());
-                    Log.d("testerrrr","event has set check in code: "+event.getPromoQrCode());
+                    Log.d("testerrrr", "event has set check in code: " + event.getPromoQrCode());
 
 
                     //show the event details page on this event
@@ -253,20 +287,22 @@ public class AddEventActivity extends AppCompatActivity {
 //                 finish();
 
                 })
-                .addOnFailureListener(e -> {
+                .addOnFailureListener(e ->
+                {
                     Log.e("AddEventActivity", "Error adding QR code", e);
                     // Handle the error appropriately
                 });
 
         //check in qr code
         fbQrCodeController.addQrCode(fbUserController.getCurrentUserUid())
-                .addOnSuccessListener(documentReference -> {
+                .addOnSuccessListener(documentReference ->
+                {
                     Log.d("testerrrr", "QR code added with ID: " + documentReference.getId());
                     // additional actions if needed
                     event.setCheckInQrCode(documentReference.getId());
 
-                    Log.d("testerrrr","event has set check in code: "+event.getCheckInQrCode());
-                    Log.d("uteeee","event is is: "+event.getEventID());
+                    Log.d("testerrrr", "event has set check in code: " + event.getCheckInQrCode());
+                    Log.d("uteeee", "event is is: " + event.getEventID());
                     addEventToUserOrganizedEvents(event.getEventID());
                     fbEventController.updateEvent(event);
                     finish();
@@ -279,23 +315,27 @@ public class AddEventActivity extends AppCompatActivity {
 
     }
 
-    private void addEventToUserOrganizedEvents(String eventId) {
+    private void addEventToUserOrganizedEvents(String eventId)
+    {
         // Get the current user's ID
         String currentUserId = fbUserController.getCurrentUserUid();
 
         // Retrieve the current user's data from Firestore
         fbUserController.getUser(currentUserId)
-                .addOnSuccessListener(user -> {
+                .addOnSuccessListener(user ->
+                {
                     // Add the new event's ID to the user's organizedEvents list
 
                     user.getOrganizedEvents().add(eventId);
 
                     // Update the user's data in Firestore
                     fbUserController.updateUser(user)
-                            .addOnSuccessListener(aVoid -> {
+                            .addOnSuccessListener(aVoid ->
+                            {
 //                                Log.d("uteeee", eventId.toString());
                             })
-                            .addOnFailureListener(e -> {
+                            .addOnFailureListener(e ->
+                            {
                                 Log.e("AddEventActivity", "Error updating user's organized events", e);
                             });
                 });
@@ -304,8 +344,10 @@ public class AddEventActivity extends AppCompatActivity {
 
 
     // Handles The Top Bar menu clicks
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        if (item.getItemId() == android.R.id.home)
+        {
             // Handle the Back button press
             finish();
             return true;
@@ -314,48 +356,95 @@ public class AddEventActivity extends AppCompatActivity {
 
     }
 
-    private void showTextDialog(String title, DialogInterface.OnClickListener positiveClickListener) {
+    private void showTextDialog(String title, DialogInterface.OnClickListener positiveClickListener)
+    {
         final EditText input = new EditText(this);
         input.setId(R.id.input); // Set the ID for the EditText
         new AlertDialog.Builder(this)
-            .setTitle(title)
-            .setView(input)
-            .setPositiveButton("OK", (dialog, which) -> {
-                if (title.equals("Edit Event Name")) {
-                    editedEventName = input.getText().toString();
-                    eventNameEditText.setText(editedEventName);
-                } else if (title.equals("Edit Event Description")) {
-                    editedEventDescription = input.getText().toString();
-                    eventDescriptionTextView.setText(editedEventDescription);
-                }
-            })
-            .setNegativeButton("Cancel", null)
-            .show();
+                .setTitle(title)
+                .setView(input)
+                .setPositiveButton("OK", (dialog, which) ->
+                {
+                    if (title.equals("Edit Event Name"))
+                    {
+                        editedEventName = input.getText().toString();
+                        eventNameEditText.setText(editedEventName);
+                    }
+                    else if (title.equals("Edit Event Description"))
+                    {
+                        editedEventDescription = input.getText().toString();
+                        eventDescriptionTextView.setText(editedEventDescription);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     // To pick an image from the gallery
-    private void pickImage() {
+    private void pickImage()
+    {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         resultLauncher.launch(intent);
     }
 
     // Register the result of the image picker
-    private void registerResult() {
+    private void registerResult()
+    {
         resultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Intent data = result.getData();
-                    Uri imageUri = data.getData();
-                    try {
-                        eventImageMap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                        // Set the selected image bitmap to the eventImageView
-                        eventImageView.setImageBitmap(eventImageMap); // Update this line
-                    } catch (Exception e) {
-                        Toast.makeText(AddEventActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                new ActivityResultContracts.StartActivityForResult(),
+                result ->
+                {
+                    if (result.getResultCode() == Activity.RESULT_OK)
+                    {
+                        Intent data = result.getData();
+                        Uri imageUri = data.getData();
+                        try
+                        {
+                            eventImageMap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                            // Set the selected image bitmap to the eventImageView
+                            eventImageView.setImageBitmap(eventImageMap); // Update this line
+                        } catch (Exception e)
+                        {
+                            Toast.makeText(AddEventActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
-            });
+                });
     }
 
+    private void showDateTimePicker() {
+        final Calendar currentDate = Calendar.getInstance();
+        final Calendar date = Calendar.getInstance();
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                date.set(year, monthOfYear, dayOfMonth);
+                showTimePicker(date); // Call the TimePickerDialog after a date is selected
+            }
+        }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+
+        Calendar minDate = Calendar.getInstance();
+        minDate.set(MIN_YEAR, MIN_MONTH, MIN_DAY);
+        datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
+
+        Calendar maxDate = Calendar.getInstance();
+        maxDate.set(MAX_YEAR, MAX_MONTH, MAX_DAY);
+        datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
+
+        datePickerDialog.show();
+    }
+
+    private void showTimePicker(final Calendar date) {
+        final Calendar currentDate = Calendar.getInstance();
+        new TimePickerDialog(AddEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                date.set(Calendar.MINUTE, minute);
+                Log.v("add_Event_activity", "time chosen:  " + date.getTime());
+                eventTime = new Timestamp(date.getTime());
+                timeEditText.setText(eventTime.toDate().toString());
+            }
+        }, currentDate.get(Calendar.HOUR_OF_DAY), currentDate.get(Calendar.MINUTE), false).show();
+    }
 }

@@ -301,7 +301,7 @@ public class ViewEventActivity extends AppCompatActivity
                 Log.e("ViewEventActivity", "Error fetching user data: " + e.getMessage());
             }
         });
-        binding.eventTimeText.setText(event.getTime());
+        binding.eventTimeText.setText(event.getTimeAsString());
         // Check if the current user is the organizer
         if (UiD.equals(event.getOrganizerID()))
         {
@@ -366,7 +366,7 @@ public class ViewEventActivity extends AppCompatActivity
         });
 
 
-        binding.eventTimeText.setText(event.getTime());
+        binding.eventTimeText.setText(event.getTimeAsString());
 
         Log.d("halpp", "Event ID is: " + eventID);
 

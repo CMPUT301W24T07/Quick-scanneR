@@ -40,12 +40,15 @@ import com.example.quickscanner.ui.adminpage.BrowseEventsActivity;
 import com.example.quickscanner.ui.adminpage.BrowseProfilesActivity;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.settings.SettingsActivity;
+import com.google.firebase.Timestamp;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Date;
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -82,8 +85,9 @@ public class IntentTesting {
      * @return User
      */
     public Event MockEvent(){
+        Timestamp timestamp = new Timestamp(new Date());
         Event event = new Event("Dylan's Event", "This is a mock event for testing", MockUser().getUid(),
-                "05,03,2001", "Edmonton");
+                timestamp, "Edmonton");
         return event;
     }
 
