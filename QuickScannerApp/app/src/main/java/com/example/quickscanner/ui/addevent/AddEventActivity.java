@@ -28,12 +28,16 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.quickscanner.MainActivity;
+
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseQrCodeController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.User;
+import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.google.firebase.Timestamp;
 
 import java.io.ByteArrayOutputStream;
