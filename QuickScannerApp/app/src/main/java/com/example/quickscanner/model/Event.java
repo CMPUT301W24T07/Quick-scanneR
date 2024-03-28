@@ -1,13 +1,17 @@
 package com.example.quickscanner.model;
 
+import com.google.firebase.Timestamp;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class Event {
     public String name;
     public String description;
     public String imagePath;
     public User organizer;
-    public String time;
+    public Timestamp time;
     public String location;
 
 
@@ -23,7 +27,7 @@ public class Event {
     public String checkInQrCode;
     public String promoQrCode;
 
-    public Event(String name, String description, String organizerID, String time, String location) {
+    public Event(String name, String description, String organizerID, Timestamp time, String location) {
         this.name = name;
         this.description = description;
         imagePath = "default.jpeg";
@@ -33,7 +37,7 @@ public class Event {
         this.takenSpots  = 0;
     }
 
-    public Event(String name, String description, String imagePath, String organizerID, String time, String location) {
+    public Event(String name, String description, String imagePath, String organizerID, Timestamp time, String location) {
         this.name = name;
         this.description = description;
         this.imagePath = imagePath;
@@ -62,7 +66,7 @@ public class Event {
     public String getDescription() {return description;}
     public String getImagePath() {return imagePath;}
     public User getOrganizer() {return organizer;}
-    public String getTime() {return time;}
+    public Timestamp getTime() {return time;}
     public String getLocation() {return location;}
     public String getEventID() {return eventID;}
     public String getOrganizerID() {return organizerID;}
@@ -96,7 +100,7 @@ public class Event {
     public void setDescription(String description) {this.description = description;}
     public void setImagePath(String imagePath) {this.imagePath = imagePath;}
     public void setOrganizer(User organizer) {this.organizer = organizer;}
-    public void setTime(String time) {this.time = time;}
+    public void setTime(Timestamp time) {this.time = time;}
     public void setLocation(String location) {this.location = location;}
     public void setEventID(String eventID) {this.eventID = eventID;}
     public void setOrganizerID(String organizerID) {this.organizerID = organizerID;}
@@ -125,4 +129,8 @@ public class Event {
     public void setGeoLocation(String geoLocation) {
         this.geoLocation = geoLocation;
     }
+        public String getTimeAsString() {
+            SimpleDateFormat date = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a", Locale.getDefault());
+            return date.format(this.time.toDate());
+        }
 }
