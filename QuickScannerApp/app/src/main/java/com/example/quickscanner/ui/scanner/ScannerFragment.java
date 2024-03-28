@@ -32,7 +32,6 @@ import android.widget.Toast;
 
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseAttendanceController;
-import com.example.quickscanner.controller.FirebaseController;
 import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.controller.FirebaseQrCodeController;
 import com.example.quickscanner.controller.FirebaseUserController;
@@ -72,7 +71,6 @@ public class ScannerFragment extends Fragment {
     private Button scanButton;
 
     private FirebaseUserController firebaseUserController;
-    private FirebaseController firebaseController;
     private FirebaseAttendanceController fbAttendanceController;
     private FirebaseUserController fbUserController;
     private FirebaseQrCodeController fbQrCodeController;
@@ -91,7 +89,6 @@ public class ScannerFragment extends Fragment {
 
         qrScanner = new QRScanner(getContext());
 
-        firebaseController = new FirebaseController();
         fbAttendanceController = new FirebaseAttendanceController();
         fbUserController = new FirebaseUserController();
         fbQrCodeController = new FirebaseQrCodeController();
@@ -205,37 +202,6 @@ public class ScannerFragment extends Fragment {
         return null;
     }
 
-    private boolean isValidQRCode(String qrCodeValue) {
-        // Perform validation logic here
-        // For example, check if the QR code corresponds to an event in the database
-        // Return true if valid, false otherwise
-        return qrCodeValue != null && !qrCodeValue.isEmpty(); // Placeholder logic, replace with actual validation
-    }
-
-    // Method to perform check-in for the current user
-//    private void checkInUser(String eventId) {
-//        // Get the current user's UID
-//        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-//
-//        // Call the checkIn method from FirebaseController to add the user to the check-ins array for the event
-//        //FirebaseController firebaseController = new FirebaseController();
-//        firebaseController.checkIn(eventId, userId);
-//
-//        // Inform the user that they have checked in successfully
-//        Toast.makeText(getContext(), "Checked in successfully!", Toast.LENGTH_SHORT).show();
-//
-//        // Launch MyEventsActivity and pass the event ID
-//        // TODO: Replace with the actual activity to launch
-//        /*
-//        Intent intent = new Intent(getContext(), MyEventsActivity.class);
-//        intent.putExtra("eventID", eventId);
-//        startActivity(intent);
-//         */
-//
-//        // Launch the event details activity
-//        launchEventDetails(getContext(), eventId);
-//    }
-
     private void launchEventDetails(Context context, String eventId) {
         // Create an Intent to start the event details activity
         Intent intent = new Intent(context, ViewEventActivity.class);
@@ -263,45 +229,4 @@ public class ScannerFragment extends Fragment {
             Toast.makeText(getActivity(), "Permission denied", Toast.LENGTH_SHORT).show();
         }
     }
-
-//    @Override
-//    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-//        // Check if the result comes from the gallery Intent
-//        if (requestCode == REQUEST_CODE_GALLERY && resultCode == Activity.RESULT_OK && data != null) {
-//            // Get the Uri of the selected image
-//            Uri imageUri = data.getData();
-//
-//            try {
-//                // Read QR code from the selected image
-//                String qrCodeValue = QRScanner.readQRCodeFromUri(requireContext(), imageUri);
-//                if (qrCodeValue != null && !qrCodeValue.isEmpty()) {
-//                    firebaseController.isValidEvent(qrCodeValue, new FirebaseController.EventValidationCallback() {
-//                        @Override
-//                        public void onValidationResult(boolean isValid) {
-//                            if (isValid) {
-//                                // Perform check-in for the current user
-//                                checkInUser(qrCodeValue);
-//                            } else {
-//                                // Display an error message indicating that the QR code is not related to the event
-//                                Toast.makeText(getContext(), "Invalid QR code for this app", Toast.LENGTH_SHORT).show();
-//                                textView.setText();
-//                            }
-//                        }
-//                    });
-//                } else {
-//                    // Handle the case when qrCodeValue is null or empty
-//                    Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_SHORT).show();
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//                Toast.makeText(requireContext(), "Error reading QR code", Toast.LENGTH_SHORT).show();
-//            }
-//        }
-//    }
-
-
-
-
 }

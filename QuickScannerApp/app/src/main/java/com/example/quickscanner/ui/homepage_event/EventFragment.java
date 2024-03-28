@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.databinding.FragmentEventsBinding;
 import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.model.Event;
@@ -65,12 +66,7 @@ public class EventFragment extends Fragment {
     private ImageView expandableArrow;
 
     // Firestore References
-    private FirebaseFirestore db;
-    private FirebaseStorage idb;
-    private StorageReference storeRef;
-    private CollectionReference profileRef;
-    private CollectionReference eventsRef;
-    private CollectionReference imagesRef;
+    private FirebaseEventController fbEventController;
 
 
 
@@ -83,11 +79,7 @@ public class EventFragment extends Fragment {
         View root = binding.getRoot();
 
         // Firebase references
-        db = FirebaseFirestore.getInstance(); // non-image db references
-        profileRef = db.collection("Profiles");
-        eventsRef = db.collection("Events");
-        imagesRef = db.collection("Images");
-        idb = FirebaseStorage.getInstance(); // image db references
+        fbEventController = new FirebaseEventController();
 
 
         return root;
@@ -110,26 +102,13 @@ public class EventFragment extends Fragment {
 
 
         // Create FireStore Listener for Updates to the Events List.
-        eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot querySnapshots,
-                                @Nullable FirebaseFirestoreException error) {
-                if (error != null) {
-                    Log.e("Firestore", error.toString());
-                    return;
-                }
-                if (querySnapshots != null) {
-                    eventsDataList.clear();  // removes current data
-                    for (QueryDocumentSnapshot doc : querySnapshots) { // set of documents
-                        Event qryEvent = doc.toObject(Event.class);
-
-                        //associate event ID with the retrieved event
-                        qryEvent.setEventID(doc.getId());
-
-                        eventsDataList.add((qryEvent)); // adds new data from db
-                    }
-                }
+        fbEventController.getEvents().addOnCompleteListener(events -> {
+            if (events.isSuccessful()) {
+                eventsDataList.clear();  // removes current data
+                eventsDataList.addAll(events.getResult());
                 eventAdapter.notifyDataSetChanged();
+            } else {
+                Log.e("Firestore Event Fragment", events.getException().toString());
             }
         });
 

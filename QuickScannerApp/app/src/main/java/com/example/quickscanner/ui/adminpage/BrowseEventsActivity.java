@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.quickscanner.R;
+import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.ui.homepage_event.EventArrayAdapter;
 import com.google.firebase.firestore.CollectionReference;
@@ -30,11 +31,11 @@ public class BrowseEventsActivity extends AppCompatActivity {
     ArrayAdapter<Event> eventAdapter;
 
     // Firestore References
-    private FirebaseFirestore db;
-    private CollectionReference eventsRef;
+    private FirebaseEventController fbEventController;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_browse_events);
 
@@ -42,8 +43,7 @@ public class BrowseEventsActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         // Firebase references
-        db = FirebaseFirestore.getInstance(); // non-image db references
-        eventsRef = db.collection("Events");
+        fbEventController = new FirebaseEventController();
 
         // Store view references
         eventListView = findViewById(R.id.BrowseEventsListView);
@@ -55,26 +55,19 @@ public class BrowseEventsActivity extends AppCompatActivity {
         eventListView.setAdapter(eventAdapter);
 
         // Create FireStore Listener for Updates to the Events List.
-        eventsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot querySnapshots,
-                                @Nullable FirebaseFirestoreException error) {
-                if (error != null) {
-                    Log.e("Firestore", error.toString());
-                    return;
-                }
-                if (querySnapshots != null) {
-                    eventsDataList.clear();  // removes current data
-                    for (QueryDocumentSnapshot doc : querySnapshots) { // set of documents
-                        Event qryEvent = doc.toObject(Event.class);
-
-                        //associate event ID with the retrieved event
-                        qryEvent.setEventID(doc.getId());
-
-                        eventsDataList.add((qryEvent)); // adds new data from db
-                    }
-                }
+        fbEventController.getEvents().addOnCompleteListener(events ->
+        {
+            if (events.isSuccessful())
+            {
+                // Clear the current list
+                eventsDataList.clear();
+                eventsDataList.addAll(events.getResult());
+                // Notify the adapter that the data has changed
                 eventAdapter.notifyDataSetChanged();
+            }
+            else
+            {
+                Log.d("BrowseEventsActivity", "Error getting documents: ", events.getException());
             }
         });
     }
