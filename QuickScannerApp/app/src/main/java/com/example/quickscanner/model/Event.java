@@ -13,6 +13,8 @@ public class Event {
     public User organizer;
     public Timestamp time;
     public String location;
+    private boolean selected;
+
 
 
 
@@ -133,4 +135,8 @@ public class Event {
             SimpleDateFormat date = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a", Locale.getDefault());
             return date.format(this.time.toDate());
         }
+
+    public boolean isSelected() {return selected;}
+
+    public void setSelected(boolean selected) {this.selected = selected;}
 }
