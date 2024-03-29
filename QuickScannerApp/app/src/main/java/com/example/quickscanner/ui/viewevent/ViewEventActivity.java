@@ -37,6 +37,7 @@ import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
+import com.example.quickscanner.ui.adminpage.BrowseEventsActivity;
 import com.example.quickscanner.ui.viewevent.map.MapActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -536,7 +537,37 @@ public class ViewEventActivity extends AppCompatActivity
         }
         else if(itemId == R.id.navigation_delete)
         {
-            Toast.makeText(this, "delete clicked", Toast.LENGTH_SHORT).show();
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Event")
+                    .setMessage("Are you sure you want to delete this Event?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                    {
+                        public void onClick(DialogInterface dialog, int whichButton)
+                        {
+                            fbEventController.deleteEvent(eventID)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>()
+                                    {
+                                        @Override
+                                        public void onSuccess(Void aVoid)
+                                        {
+                                            Toast.makeText(ViewEventActivity.this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
+                                            Intent intent = new Intent(ViewEventActivity.this, BrowseEventsActivity.class);
+                                            startActivity(intent);
+                                            finish();
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener()
+                                    {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e)
+                                        {
+                                            Toast.makeText(ViewEventActivity.this, "Failed to delete event", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
             return true;
         }
         else if (item.getItemId() == android.R.id.home)
