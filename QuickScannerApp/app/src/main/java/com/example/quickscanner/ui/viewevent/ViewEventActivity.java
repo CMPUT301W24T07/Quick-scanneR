@@ -534,6 +534,11 @@ public class ViewEventActivity extends AppCompatActivity
             startActivity(intent);
             return true;
         }
+        else if(itemId == R.id.navigation_delete)
+        {
+            Toast.makeText(this, "delete clicked", Toast.LENGTH_SHORT).show();
+            return true;
+        }
         else if (item.getItemId() == android.R.id.home)
         {
             // Handle the Back button press
