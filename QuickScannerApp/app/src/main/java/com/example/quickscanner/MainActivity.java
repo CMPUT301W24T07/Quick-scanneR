@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 import com.example.quickscanner.singletons.SettingsDataSingleton;
 import com.example.quickscanner.ui.my_events.MyEvents_Activity;
 import com.example.quickscanner.ui.profile.ProfileActivity;

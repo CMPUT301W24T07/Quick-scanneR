@@ -1,31 +1,35 @@
 package com.example.quickscanner.model;
 
+import android.util.Log;
+
 import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.TimeZone;
+import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 
 public class Event {
-    public String name;
-    public String description;
-    public String imagePath;
-    public User organizer;
-    public Timestamp time;
-    public String location;
+    private String name;
+    private String description;
+    private String imagePath;
+    private User organizer;
+    private Timestamp time;
+    private String location;
 
 
 
-    public String geoLocation;
-    public String eventID;
-    public String organizerID;
-    public ArrayList<String> signUps = new ArrayList<>();
-    public ArrayList<String> checkIns = new ArrayList<>();
+    private String geoLocation;
+    private String eventID;
+    private String organizerID;
+    private ArrayList<String> signUps = new ArrayList<>();
+    private ArrayList<String> checkIns = new ArrayList<>();
     private boolean isGeolocationEnabled;
-    public int takenSpots ;
-    public Integer maxSpots;
-    public String checkInQrCode;
-    public String promoQrCode;
+    private int takenSpots ;
+    private Integer maxSpots;
+    private String checkInQrCode;
+    private String promoQrCode;
 
     public Event(String name, String description, String organizerID, Timestamp time, String location) {
         this.name = name;
@@ -129,8 +133,18 @@ public class Event {
     public void setGeoLocation(String geoLocation) {
         this.geoLocation = geoLocation;
     }
-        public String getTimeAsString() {
-            SimpleDateFormat date = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a", Locale.getDefault());
-            return date.format(this.time.toDate());
-        }
+    public String getTimeAsString() {
+        String timeZone = ConferenceConfigSingleton.getInstance().getTimeZone();
+        //a log of all getters for conferenceconfigsingelton
+        Log.e("Event og", "Max Hour: " + ConferenceConfigSingleton.getInstance().getMaxHour());
+        Log.e("Event og", "Max Minute: " + ConferenceConfigSingleton.getInstance().getMaxMinute());
+        Log.e("Event og", "Max Year: " + ConferenceConfigSingleton.getInstance().getMaxYear());
+        Log.e("Event og", "Max Month: " + ConferenceConfigSingleton.getInstance().getMaxMonth());
+        Log.e("Event og", "Max Day: " + ConferenceConfigSingleton.getInstance().getMaxDay());
+        // log of whatever time zone is being used
+        Log.e("Event og", "Time zone: " + timeZone);
+        SimpleDateFormat date = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a", Locale.getDefault());
+        date.setTimeZone(TimeZone.getTimeZone(timeZone));
+        return date.format(this.time.toDate());
+    }
 }

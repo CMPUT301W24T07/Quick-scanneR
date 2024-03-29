@@ -27,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.quickscanner.ui.attendance.AttendanceActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseAttendanceController;
 import com.example.quickscanner.controller.FirebaseEventController;
@@ -271,7 +272,13 @@ public class ViewEventActivity extends AppCompatActivity
                                     });
                             fetchEventData();
                         } else if (buttonText.equals("Attendance Information")) {
-                            // Handle other button text cases here
+                            // Create an Intent to open the AttendanceActivity
+                            Intent intent = new Intent(ViewEventActivity.this,
+                                    AttendanceActivity.class);
+                            // Add the event ID to the intent
+                            intent.putExtra("eventID", eventID);
+                            // Start the AttendanceActivity
+                            startActivity(intent);
                         }
                     }
                 });
