@@ -25,6 +25,10 @@
         android:id="@+id/map"
         android:title="@string/map"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/navigation_delete"
+        android:title="@string/delete"
+        app:showAsAction="never" />
 
 
 

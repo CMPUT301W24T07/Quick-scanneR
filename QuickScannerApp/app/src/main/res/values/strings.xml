@@ -80,6 +80,7 @@
     <string name="qr_code_check_in">QR code (check in)</string>
     <string name="qr_code_promotional">QR code (Promotional)</string>
     <string name="map">Map</string>
+    <string name="delete">Delete</string>
     <string name="grant_permission"><![CDATA[This app needs location permission to function. You can grant them in app settings. Go to Permissions -> Location -> Allow.]]></string>
     <string name="enable_geolocation">Enable Geolocation First!</string>
     <string name="geopoint">GeoPoint</string>
