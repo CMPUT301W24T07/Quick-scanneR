@@ -1,12 +1,17 @@
 package com.example.quickscanner.model;
 
+import android.util.Log;
+
 import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.TimeZone;
+import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 
 public class Event {
+
     public String name;
     public String description;
     public String imagePath;
@@ -17,17 +22,16 @@ public class Event {
 
 
 
-
-    public String geoLocation;
-    public String eventID;
-    public String organizerID;
-    public ArrayList<String> signUps = new ArrayList<>();
-    public ArrayList<String> checkIns = new ArrayList<>();
+    private String geoLocation;
+    private String eventID;
+    private String organizerID;
+    private ArrayList<String> signUps = new ArrayList<>();
+    private ArrayList<String> checkIns = new ArrayList<>();
     private boolean isGeolocationEnabled;
-    public int takenSpots ;
-    public Integer maxSpots;
-    public String checkInQrCode;
-    public String promoQrCode;
+    private int takenSpots ;
+    private Integer maxSpots;
+    private String checkInQrCode;
+    private String promoQrCode;
 
     public Event(String name, String description, String organizerID, Timestamp time, String location) {
         this.name = name;
@@ -131,12 +135,14 @@ public class Event {
     public void setGeoLocation(String geoLocation) {
         this.geoLocation = geoLocation;
     }
-        public String getTimeAsString() {
-            SimpleDateFormat date = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a", Locale.getDefault());
-            return date.format(this.time.toDate());
-        }
 
     public boolean isSelected() {return selected;}
 
     public void setSelected(boolean selected) {this.selected = selected;}
+    public String getTimeAsString() {
+        String timeZone = ConferenceConfigSingleton.getInstance().getTimeZone();
+        SimpleDateFormat date = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a", Locale.getDefault());
+        date.setTimeZone(TimeZone.getTimeZone(timeZone));
+        return date.format(this.time.toDate());
+    }
 }

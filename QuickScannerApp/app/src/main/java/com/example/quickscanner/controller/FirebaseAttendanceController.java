@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+import com.google.android.datatransport.cct.internal.LogEvent;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
@@ -43,7 +44,7 @@ public class FirebaseAttendanceController
     {
         db = FirebaseFirestore.getInstance();
         eventsRef = db.collection("Events");
-        usersRef = db.collection("Users");
+        usersRef = db.collection("users");
     }
 
     /**

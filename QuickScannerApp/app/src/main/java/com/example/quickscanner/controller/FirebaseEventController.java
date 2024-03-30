@@ -1,7 +1,10 @@
 package com.example.quickscanner.controller;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
+import com.example.quickscanner.model.ConferenceConfig;
 import com.example.quickscanner.model.Event;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
@@ -25,6 +28,7 @@ public class FirebaseEventController
 {
     private final FirebaseFirestore db;
     private final CollectionReference eventsRef;
+    private final CollectionReference configRef;
 
     /**
      * Initializes Firestore and a reference to the "Events" collection.
@@ -33,6 +37,7 @@ public class FirebaseEventController
     {
         db = FirebaseFirestore.getInstance();
         eventsRef = db.collection("Events");
+        configRef = db.collection("config");
     }
     /**
      * Validates the ID of the user or event, throwing an IllegalArgumentException if the ID is null or empty.
@@ -141,7 +146,6 @@ public class FirebaseEventController
             public Task<List<Event>> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
                 DocumentSnapshot lastEvent = task.getResult();
                 Query query = eventsRef.orderBy("time").startAfter(lastEvent).limit(30);
-
                 Task<QuerySnapshot> queryTask = query.get();
 
                 return queryTask.continueWith(new Continuation<QuerySnapshot, List<Event>>() {
@@ -212,6 +216,37 @@ public class FirebaseEventController
                             eventList.add(event);
                         }
                         return eventList;
+                    }
+                });
+    }
+    public CollectionReference getEventsCollectionReference() {
+        return eventsRef;
+    }
+    public Task<ConferenceConfig> getConferenceConfig()
+    {
+        return configRef.document("ConferenceConfig")
+                .get()
+                .continueWithTask(new Continuation<DocumentSnapshot, Task<ConferenceConfig>>()
+                {
+                    @Override
+                    public Task<ConferenceConfig> then(@NonNull Task<DocumentSnapshot> task) throws Exception
+                    {
+                        if (task.isSuccessful())
+                        {
+                            DocumentSnapshot document = task.getResult();
+                            if (document.exists())
+                            {
+                                return Tasks.forResult(document.toObject(ConferenceConfig.class));
+                            }
+                            else
+                            {
+                                return Tasks.forException(new Exception("No such document"));
+                            }
+                        }
+                        else
+                        {
+                            return Tasks.forException(task.getException());
+                        }
                     }
                 });
     }

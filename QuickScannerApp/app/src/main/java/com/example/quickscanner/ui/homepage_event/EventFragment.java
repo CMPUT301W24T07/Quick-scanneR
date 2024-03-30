@@ -1,11 +1,7 @@
 package com.example.quickscanner.ui.homepage_event;
 
-import com.example.quickscanner.R;
-
 import android.content.Intent;
 import android.os.Bundle;
-import android.transition.AutoTransition;
-import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,29 +13,23 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.databinding.FragmentEventsBinding;
-import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.model.Event;
-import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.firestore.EventListener;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 
 public class EventFragment extends Fragment {
     /**
@@ -51,6 +41,7 @@ public class EventFragment extends Fragment {
 
     // EventList References
     ListView eventListView;
+
     LinearLayout eventLinearLayout;
     ArrayList<Event> eventsDataList;
     ArrayAdapter<Event> eventAdapter;
@@ -101,16 +92,29 @@ public class EventFragment extends Fragment {
         eventListView.setAdapter(eventAdapter);
 
 
-        // Create FireStore Listener for Updates to the Events List.
-        fbEventController.getEvents().addOnCompleteListener(events -> {
-            if (events.isSuccessful()) {
-                eventsDataList.clear();  // removes current data
-                eventsDataList.addAll(events.getResult());
-                eventAdapter.notifyDataSetChanged();
-            } else {
-                Log.e("Firestore Event Fragment", events.getException().toString());
-            }
-        });
+// Create Firestore Listener for real-time updates to the Events List.
+        fbEventController.getEventsCollectionReference()
+                .addSnapshotListener(new com.google.firebase.firestore.EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w("eventfragment listener", "Listen failed.", e);
+                            return;
+                        }
+
+                        if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                            eventsDataList.clear();  // removes current data
+                            for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                                Event event = doc.toObject(Event.class);
+                                eventsDataList.add(event);
+                            }
+                            eventAdapter.notifyDataSetChanged();
+                        } else {
+                            Log.d("eventfragment listener", "Current data: null");
+                        }
+                    }
+                });
 
 
 
