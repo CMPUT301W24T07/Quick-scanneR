@@ -45,7 +45,7 @@ public class SignedUpFragment extends Fragment
 
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            String eventId = bundle.getString("eventId", "");
+            String eventId = bundle.getString("eventID", "");
             fbAttendanceController.getEventSignUps(eventId).addOnSuccessListener(users -> {
                 signUpDataList.clear();
                 signUpDataList.addAll(users);

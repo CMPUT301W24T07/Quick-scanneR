@@ -3,12 +3,19 @@ package com.example.quickscanner.controller;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.example.quickscanner.model.Image;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.AggregateQuery;
+import com.google.firebase.firestore.AggregateQuerySnapshot;
+import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -35,8 +42,7 @@ public class FirebaseImageController
      * @param image the image to be added
      * @return a Task that will be completed once the image is added
      */
-    public Task<DocumentReference> addImage(Image image)
-    {
+    public Task<DocumentReference> addImage(Image image) {
         return imagesRef.add(image);
     }
 
@@ -55,13 +61,12 @@ public class FirebaseImageController
     /**
      * Deletes image from Firestore.
      *
-     * @param imageId the ID of the image to be deleted
+     * @param path the path of the image to be deleted
      * @return a Task that will be completed once the image is deleted
      */
-    public Task<Void> deleteImage(String imageId)
-    {
-        return imagesRef.document(imageId).delete();
-    }
+    /*public Task<Void> deleteImage(String path) {
+        //imagesRef.get()
+    }*/
 
     /**
      * Retrieves all images from Firestore.
@@ -94,8 +99,21 @@ public class FirebaseImageController
      * @return an UploadTask that can be used to monitor the upload
      */
     public UploadTask uploadImage(String path, byte[] imageData) {
-        StorageReference imageRef = idb.getReference().child(path);
-        return imageRef.putBytes(imageData);
+        StorageReference imageLocation = idb.getReference().child(path);
+
+        AggregateQuery imageQuery = imagesRef.whereEqualTo("URL", path).count();
+        imageQuery.get(AggregateSource.SERVER).addOnCompleteListener(task -> {
+           if (task.isSuccessful()) {
+               AggregateQuerySnapshot snapshot = task.getResult();
+               int documents = (int) snapshot.getCount();
+               if (documents == 0) {
+                   Image newImage = new Image();
+                   newImage.setImageUrl(path);
+                   addImage(newImage);
+               }
+           }
+        });
+        return imageLocation.putBytes(imageData);
     }
 
     /**

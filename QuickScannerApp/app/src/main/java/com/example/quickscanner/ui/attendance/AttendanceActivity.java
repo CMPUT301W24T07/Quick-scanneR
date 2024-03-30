@@ -70,26 +70,24 @@ public class AttendanceActivity extends AppCompatActivity
         Bundle bundle = new Bundle();
         bundle.putString("eventID", eventID); // Replace with your actual string
 
+        // kinda a hack fix but oh well
+        navController.navigate(R.id.navigation_signed_up, bundle);
+
         // Set up the OnNavigationItemSelectedListener
 
-        bottomNav.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener()
-        {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item)
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_signed_up)
             {
-                int itemId = item.getItemId();
-                if (itemId == R.id.navigation_signed_up)
-                {
-                    navController.navigate(R.id.navigation_signed_up, bundle);
-                    return true;
-                }
-                else if (itemId == R.id.navigation_checked_in)
-                {
-                    navController.navigate(R.id.navigation_checked_in, bundle);
-                    return true;
-                }
-                return false;
+                navController.navigate(R.id.navigation_signed_up, bundle);
+                return true;
             }
+            else if (itemId == R.id.navigation_checked_in)
+            {
+                navController.navigate(R.id.navigation_checked_in, bundle);
+                return true;
+            }
+            return false;
         });
     }
 }
