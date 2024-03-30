@@ -2,23 +2,31 @@ package com.example.quickscanner.ui.attendance;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 import com.example.quickscanner.R;
+import com.example.quickscanner.controller.FirebaseAttendanceController;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.EventListener;
+
 
 public class AttendanceActivity extends AppCompatActivity
 {
-    private SharedViewModel model;
+    private TextView liveAttendanceCount;
+    private FirebaseAttendanceController fbAttendanceController;
 
 
     @Override
@@ -30,6 +38,7 @@ public class AttendanceActivity extends AppCompatActivity
         String eventID = intent.getStringExtra("eventID");
 
 
+
         // Add the top bar (ActionBar)
         if (getSupportActionBar() != null)
         {
@@ -37,8 +46,30 @@ public class AttendanceActivity extends AppCompatActivity
             getSupportActionBar().setTitle("Attendance Information");
         }
 
+
+
         // Create bottom menu for Attendance Activity.
         createBottomMenu(eventID);
+        liveAttendanceCount = findViewById(R.id.live_attendance_count);
+        fbAttendanceController = new FirebaseAttendanceController();
+        DocumentReference liveCountRef = fbAttendanceController.getLiveCountRef(eventID);
+        liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("live count listener", "Listen failed.", e);
+                    return;
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    Long liveCount = snapshot.getLong("attendanceCount");
+                    liveAttendanceCount.setText("Live Attendance Count: " + liveCount);
+                } else {
+                    liveAttendanceCount.setText("Live Attendance Count: 0");
+                }
+            }
+        });
     }
 
     @Override
@@ -68,7 +99,7 @@ public class AttendanceActivity extends AppCompatActivity
 
         // Create the bundle
         Bundle bundle = new Bundle();
-        bundle.putString("eventID", eventID); // Replace with your actual string
+        bundle.putString("eventID", eventID);
 
         // kinda a hack fix but oh well
         navController.navigate(R.id.navigation_signed_up, bundle);
@@ -78,14 +109,21 @@ public class AttendanceActivity extends AppCompatActivity
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.navigation_signed_up)
-            {
-                navController.navigate(R.id.navigation_signed_up, bundle);
-                return true;
-            }
-            else if (itemId == R.id.navigation_checked_in)
-            {
-                navController.navigate(R.id.navigation_checked_in, bundle);
-                return true;
+            {   //log of id for navigation signed up
+                Log.d("ItemID", String.valueOf(itemId));
+                //log of id for navigation signed up
+                Log.d("ID for navigation signed up", String.valueOf(R.id.navigation_signed_up));
+                if (itemId == R.id.navigation_signed_up)
+                {
+                    navController.navigate(R.id.navigation_signed_up, bundle);
+                    return true;
+                }
+                else if (itemId == R.id.navigation_checked_in)
+                {
+                    navController.navigate(R.id.navigation_checked_in, bundle);
+                    return true;
+                }
+                return false;
             }
             return false;
         });

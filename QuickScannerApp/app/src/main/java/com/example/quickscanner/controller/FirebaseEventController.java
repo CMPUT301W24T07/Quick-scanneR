@@ -146,7 +146,6 @@ public class FirebaseEventController
             public Task<List<Event>> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
                 DocumentSnapshot lastEvent = task.getResult();
                 Query query = eventsRef.orderBy("time").startAfter(lastEvent).limit(30);
-
                 Task<QuerySnapshot> queryTask = query.get();
 
                 return queryTask.continueWith(new Continuation<QuerySnapshot, List<Event>>() {
