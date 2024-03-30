@@ -4,6 +4,8 @@
 
 package com.example.quickscanner.model;
 
+import com.example.quickscanner.controller.FirebaseImageController;
+
 /**
  * Represents a User's profile with name, email, website, and image URL.
  */
@@ -12,6 +14,7 @@ public class Profile {
     private String email;
     private String website;
     private String imageUrl;
+    private FirebaseImageController fbImageController;
 
     /**
      * Creates a Profile with specified name, email, website, and image URL.
@@ -36,6 +39,15 @@ public class Profile {
         this.email = "";
         this.website = "";
         this.imageUrl = "default.jpeg";
+    }
+
+    public String genereteProfilePicture(String userID) {
+        int sum = 0;
+        int pfpCount = 10;
+        for(int i = 0; i < userID.length(); i++) {
+            sum += (int)userID.charAt(i);
+        }
+        return String.valueOf(sum%pfpCount) + ".png";
     }
 
     /**
