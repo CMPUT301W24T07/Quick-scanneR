@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.MenuItem; // Import Menu class
 import androidx.annotation.NonNull;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -39,6 +40,7 @@ import java.util.Objects;
 public class ProfileActivity extends AppCompatActivity {
 
     Button editButton;
+    Button resetButton;
     EditText nameEdit;
     EditText emailEdit;
     EditText linkedinEdit;
@@ -91,6 +93,7 @@ public class ProfileActivity extends AppCompatActivity {
                     myProfile = myUser.getUserProfile();
 
                     editButton = findViewById(R.id.edit_button);
+                    resetButton = findViewById(R.id.reset_button);
                     nameEdit  = findViewById(R.id.nameEdit);
                     emailEdit = findViewById(R.id.emailEdit);
                     linkedinEdit  = findViewById(R.id.socialEdit);
@@ -110,6 +113,15 @@ public class ProfileActivity extends AppCompatActivity {
                             galleryIntent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                             activityResultLauncher.launch(galleryIntent);
                         }
+                    });
+
+                    resetButton.setOnClickListener(v -> {
+                        myProfile.setImageUrl(myProfile.genereteProfilePicture(myUser.getUid()));
+                        profileBitMap = null;
+                        fbImageController.downloadImage(myProfile.getImageUrl()).addOnCompleteListener(task1 -> {
+                            String url = String.valueOf(task1.getResult());
+                            Picasso.get().load(url).into(profileImage);
+                        });
                     });
 
                     boolean isAdmin = getIntent().getBooleanExtra("isAdmin", false);
@@ -138,6 +150,7 @@ public class ProfileActivity extends AppCompatActivity {
                                 nameEdit.setInputType(TYPE_CLASS_TEXT);
                                 emailEdit.setInputType(TYPE_CLASS_TEXT);
                                 linkedinEdit.setInputType(TYPE_CLASS_TEXT);
+                                resetButton.setVisibility(View.VISIBLE);
                                 editMode = !editMode;
                                 editButton.setText("Save");
                             } else {
@@ -158,6 +171,7 @@ public class ProfileActivity extends AppCompatActivity {
                                 nameEdit.setInputType(TYPE_NULL);
                                 emailEdit.setInputType(TYPE_NULL);
                                 linkedinEdit.setInputType(TYPE_NULL);
+                                resetButton.setVisibility(View.INVISIBLE);
                                 editMode = !editMode;
                                 editButton.setText("Edit");
                             }
