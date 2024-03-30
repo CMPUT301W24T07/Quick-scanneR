@@ -168,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
                     userId = fbUserController.getCurrentUserUid();
                     // Sets user UID
                     user.setUid(userId);
+                    user.getUserProfile().setImageUrl(user.getUserProfile().genereteProfilePicture(user.getUid()));
                     // Adds user to database
                     fbUserController.addUser(user).addOnCompleteListener(task1 -> {
                         // If user addition is successful

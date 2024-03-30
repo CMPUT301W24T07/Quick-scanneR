@@ -11,12 +11,14 @@ import java.util.TimeZone;
 import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 
 public class Event {
-    private String name;
-    private String description;
-    private String imagePath;
-    private User organizer;
-    private Timestamp time;
-    private String location;
+
+    public String name;
+    public String description;
+    public String imagePath;
+    public User organizer;
+    public Timestamp time;
+    public String location;
+    private boolean selected;
 
 
 
@@ -133,6 +135,10 @@ public class Event {
     public void setGeoLocation(String geoLocation) {
         this.geoLocation = geoLocation;
     }
+
+    public boolean isSelected() {return selected;}
+
+    public void setSelected(boolean selected) {this.selected = selected;}
     public String getTimeAsString() {
         String timeZone = ConferenceConfigSingleton.getInstance().getTimeZone();
         SimpleDateFormat date = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a", Locale.getDefault());
