@@ -124,54 +124,39 @@ public class ScannerFragment extends Fragment {
             }
         });
 
-        scanButton.setOnClickListener(v ->
-        {
+        scanButton.setOnClickListener(v -> {
             // Scan the QR code
-            qrScanner.scanQRCode(qrCodeValue ->
-            {
+            qrScanner.scanQRCode(qrCodeValue -> {
                 String usedId = fbUserController.getCurrentUserUid();
-                //get the event the qr is used for check ins in
 
-                fbQrCodeController.getCheckInEventFromQr(qrCodeValue).addOnCompleteListener(task ->
-                {
-                    //if it doesnt error
+                // Check if it's a check-in QR code
+                fbQrCodeController.getCheckInEventFromQr(qrCodeValue).addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Event event = task.getResult();
-
-                        //check code was found to correspond to an event
                         if (event != null) {
-                            Log.d("testerrr","Check-in code recognised, event not null");
-                            //if it is, try checking in with it.
-                            textView.setText(qrCodeValue);
+                            // If it's a check-in QR code, try checking in
                             tryCheckIn(usedId, event);
-                        }
-                        else {
-                            //if it wasnt found, check if it was a promo code
-                            fbQrCodeController.getPromoEventFromQr(qrCodeValue).addOnCompleteListener(promotask ->
-                            {
-                                if (promotask.isSuccessful()) {
-                                    Event promoEvent = promotask.getResult();
-
-                                    //if it was found, do whatever gets it to event details.
+                        } else {
+                            // If it's not a check-in code, try to get it as a promo code
+                            fbQrCodeController.getPromoEventFromQr(qrCodeValue).addOnCompleteListener(promoTask -> {
+                                if (promoTask.isSuccessful()) {
+                                    Event promoEvent = promoTask.getResult();
                                     if (promoEvent != null) {
-                                        //do whatever gets it to event details.
+                                        // If it's a promo code, launch event details
                                         launchEventDetails(getContext(), promoEvent.getEventID());
-                                        Log.d("testerrr","event name: "+promoEvent.getName());
                                     } else {
-                                        Log.d("testerrr","event is null");
-                                        //if it wasnt found, tell the user that the qr code is invalid
-
-//                                        todo: here we would check if the code is an admin code
-
-                                        Toast.makeText(getContext(),
-                                                "EEEEENIUSSSSSSS",
-                                                Toast.LENGTH_LONG).show();
-
-                                        textView.setText(qrCodeValue);
+                                        // If it's neither a check-in nor a promo code, show error message
+                                        Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_LONG).show();
                                     }
+                                } else {
+                                    // If there was an error getting promo event, show error message
+                                    Toast.makeText(getContext(), "Error getting promo event", Toast.LENGTH_LONG).show();
                                 }
                             });
                         }
+                    } else {
+                        // If there was an error getting check-in event, show error message
+                        Toast.makeText(getContext(), "Error getting check-in event", Toast.LENGTH_LONG).show();
                     }
                 });
             });
@@ -227,6 +212,61 @@ public class ScannerFragment extends Fragment {
             openGallery();
         } else {
             Toast.makeText(getActivity(), "Permission denied", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Scan image from the gallery when click the select from gallery button
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Check if the result comes from the gallery Intent
+        if (requestCode == REQUEST_CODE_GALLERY && resultCode == Activity.RESULT_OK && data != null) {
+            // Get the Uri of the selected image
+            Uri imageUri = data.getData();
+
+            try {
+                // Read QR code from the selected image
+                String qrCodeValue = QRScanner.readQRCodeFromUri(requireContext(), imageUri);
+                if (qrCodeValue != null && !qrCodeValue.isEmpty()) {
+                    // Check if it's a check-in QR code
+                    fbQrCodeController.getCheckInEventFromQr(qrCodeValue).addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Event checkInEvent = task.getResult();
+                            if (checkInEvent != null) {
+                                // If it's a check-in QR code, try checking in
+                                tryCheckIn(fbUserController.getCurrentUserUid(), checkInEvent);
+                            } else {
+                                // If it's not a check-in QR code, try to get it as a promo code
+                                fbQrCodeController.getPromoEventFromQr(qrCodeValue).addOnCompleteListener(promoTask -> {
+                                    if (promoTask.isSuccessful()) {
+                                        Event promoEvent = promoTask.getResult();
+                                        if (promoEvent != null) {
+                                            // If it's a promo code, launch event details
+                                            launchEventDetails(getContext(), promoEvent.getEventID());
+                                        } else {
+                                            // If it's neither a check-in nor a promo code, show error message
+                                            Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_LONG).show();
+                                        }
+                                    } else {
+                                        // If there was an error getting promo event, show error message
+                                        Toast.makeText(getContext(), "Error getting promo event", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+                        } else {
+                            // If there was an error getting check-in event, show error message
+                            Toast.makeText(getContext(), "Error getting check-in event", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } else {
+                    // Handle the case when qrCodeValue is null or empty
+                    Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_SHORT).show();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(requireContext(), "Error reading QR code", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }
