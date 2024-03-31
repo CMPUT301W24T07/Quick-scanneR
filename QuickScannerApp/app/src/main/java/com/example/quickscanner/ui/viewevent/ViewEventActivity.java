@@ -111,7 +111,7 @@ public class ViewEventActivity extends AppCompatActivity
         if (inputBundle != null)
         {
             eventID = inputBundle.getString("eventID");
-            Log.d("Beans", eventID);
+//            Log.d("Beans", eventID);
         }
         if (eventID != null)
         {
@@ -304,6 +304,7 @@ public class ViewEventActivity extends AppCompatActivity
         binding.eventTitleText.setText(event.getName());
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
+        binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
         fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>()
         {
             public void onSuccess(User user)
@@ -312,6 +313,20 @@ public class ViewEventActivity extends AppCompatActivity
                 {
                     //disable this organiser text line if creating new event crashes
                     binding.organiserText.setText(user.getUserProfile().getName());
+
+                    Log.d("halpp", "Organiser name is: " + user.getUserProfile().getName());
+
+
+                    //SIDDHARTH HERE PAY ATTENTION
+                    //TODO: set the profile picture of the organiser
+
+//                    Profile organizerProfile = organizer.getUserProfile();
+
+                    // Get the URL of the organizer's profile picture
+                    fbImageController.downloadImage(user.getUserProfile().getImageUrl()).addOnCompleteListener(task1 -> {
+                        String url = String.valueOf(task1.getResult());
+                        Picasso.get().load(url).into(binding.organiserProfilePicture);
+                    });
                 }
                 else
                 {
