@@ -85,4 +85,5 @@
     <string name="enable_geolocation">Enable Geolocation First!</string>
     <string name="geopoint">GeoPoint</string>
     <string name="sign_up_text">sign up to attend event</string>
+    <string name="profile_name">Profile Name</string>
 </resources>

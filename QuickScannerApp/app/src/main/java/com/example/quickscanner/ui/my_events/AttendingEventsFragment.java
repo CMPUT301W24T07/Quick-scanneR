@@ -72,8 +72,6 @@ public class AttendingEventsFragment extends Fragment {
     User myUser;
 
 
-    // Firestore References
-    private FirebaseStorage idb;
 
     // Joey Firestore References
     private FirebaseUserController fbUserController;
@@ -87,10 +85,6 @@ public class AttendingEventsFragment extends Fragment {
         // Firebase references
         fbUserController = new FirebaseUserController();
         fbAttendanceController = new FirebaseAttendanceController();
-
-
-        // Joey Firebase References
-        fbUserController = new FirebaseUserController();
 
         return inflater.inflate(R.layout.fragment_my_events, container, false);
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/attendance_navigation"
+    app:startDestination="@+id/navigation_signed_up">
+
+    <fragment
+        android:id="@+id/navigation_signed_up"
+        android:name="com.example.quickscanner.ui.attendance.SignedUpFragment"
+        android:label="signed_up"
+        tools:layout="@layout/fragment_attendance" />
+
+    <fragment
+        android:id="@+id/navigation_checked_in"
+        android:name="com.example.quickscanner.ui.attendance.CheckedInFragment"
+        android:label="checked_in"
+        tools:layout="@layout/fragment_attendance" />
+
+</navigation>

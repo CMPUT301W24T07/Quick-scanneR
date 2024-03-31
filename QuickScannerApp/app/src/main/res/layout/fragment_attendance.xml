@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.attendance.AttendanceFragment">
+
+        <TextView
+            android:id="@+id/empty_sign_up"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="No current signed up Attendees"
+            android:gravity="center"
+            android:visibility="gone"/>
+        <TextView
+            android:id="@+id/empty_check_in"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="No current checked in Attendees"
+            android:gravity="center"
+            android:visibility="gone"/>
+
+        <ListView
+            android:id="@+id/user_listview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contextClickable="true"
+            android:textAlignment="viewEnd"
+            android:textFilterEnabled="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.333"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</RelativeLayout>
