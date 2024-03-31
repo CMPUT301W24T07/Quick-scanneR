@@ -414,6 +414,7 @@ public class AddEventActivity extends AppCompatActivity
 
     private void showDateTimePicker() {
         final Calendar date = Calendar.getInstance();
+        final Calendar currentDate = Calendar.getInstance();
 
         // Use ConferenceConfigSingleton to get the min and max dates
         Calendar minDate = Calendar.getInstance();
@@ -422,6 +423,9 @@ public class AddEventActivity extends AppCompatActivity
         Calendar maxDate = Calendar.getInstance();
         maxDate.set(configSingleton.getMaxYear(), configSingleton.getMaxMonth(), configSingleton.getMaxDay());
 
+        if (currentDate.after(minDate)) {
+            minDate = currentDate;
+        }
         // Set the min and max dates for the DatePickerDialog
         DatePickerDialog datePickerDialog = new DatePickerDialog(AddEventActivity.this, new DatePickerDialog.OnDateSetListener() {
             @Override
@@ -446,14 +450,21 @@ public class AddEventActivity extends AppCompatActivity
 
         // Sets the min and max times for the TimePickerDialog
         TimePickerDialog timePickerDialog = new TimePickerDialog(AddEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
+
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                date.set(Calendar.MINUTE, minute);
+                if (date.before(currentDate))
+                {
+                    Toast.makeText(AddEventActivity.this, "Time has passed, choose a different time.", Toast.LENGTH_LONG).show();
+                    showTimePicker(date);
+                }
                 if (hourOfDay < minHour || hourOfDay > maxHour || (hourOfDay == minHour && minute < minMinute) || (hourOfDay == maxHour && minute > maxMinute)) {
                     Toast.makeText(AddEventActivity.this, "Invalid time. Please select a time between " + formatTime(minHour, minMinute) + " and " + formatTime(maxHour, maxMinute) + ".", Toast.LENGTH_LONG).show();
                     showTimePicker(date);
                 } else {
-                    date.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                    date.set(Calendar.MINUTE, minute);
+
                     eventTime = new Timestamp(date.getTime());
                     timeEditText.setText(formatDateTime(date));
                 }

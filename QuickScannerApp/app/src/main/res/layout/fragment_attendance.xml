@@ -9,11 +9,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.attendance.AttendanceFragment">
+
         <TextView
             android:id="@+id/empty_sign_up"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="No current signed up Attendees"
+            android:gravity="center"
+            android:visibility="gone"/>
+        <TextView
+            android:id="@+id/empty_check_in"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="No current checked in Attendees"
             android:gravity="center"
             android:visibility="gone"/>
 

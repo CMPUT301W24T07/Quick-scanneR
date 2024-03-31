@@ -19,6 +19,7 @@ public class Event {
     public Timestamp time;
     public String location;
     private boolean selected;
+    ConferenceConfigSingleton configSingleton;
 
 
 
@@ -140,8 +141,14 @@ public class Event {
 
     public void setSelected(boolean selected) {this.selected = selected;}
     public String getTimeAsString() {
+        configSingleton = ConferenceConfigSingleton.getInstance();
+        if (configSingleton == null) {
+            Log.e("Event", "ConferenceConfigSingleton is null");
+            return "";
+        }
         String timeZone = ConferenceConfigSingleton.getInstance().getTimeZone();
         SimpleDateFormat date = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a", Locale.getDefault());
+
         date.setTimeZone(TimeZone.getTimeZone(timeZone));
         return date.format(this.time.toDate());
     }

@@ -2,7 +2,6 @@ package com.example.quickscanner.ui.homepage_event;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,12 +23,12 @@ import com.example.quickscanner.model.Event;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
-import java.util.EventListener;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class EventFragment extends Fragment {
     /**
@@ -45,6 +44,9 @@ public class EventFragment extends Fragment {
     LinearLayout eventLinearLayout;
     ArrayList<Event> eventsDataList;
     ArrayAdapter<Event> eventAdapter;
+    private Timer timer;
+    private TimerTask timerTask;
+
 
 
     // Button References
@@ -58,6 +60,7 @@ public class EventFragment extends Fragment {
 
     // Firestore References
     private FirebaseEventController fbEventController;
+    private ListenerRegistration eventListListenerReg;
 
 
 
@@ -80,10 +83,10 @@ public class EventFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        FragmentEventsBinding binding = FragmentEventsBinding.bind(view);
 
         // Store view references
-        eventListView = view.findViewById(R.id.event_listview);
-        eventLinearLayout = view.findViewById(R.id.EventFragmentContent_Layout);
+        eventListView = binding.eventListview;
 
         // Initialize the event data list and ArrayAdapter
         eventsDataList = new ArrayList<Event>();
@@ -92,29 +95,9 @@ public class EventFragment extends Fragment {
         eventListView.setAdapter(eventAdapter);
 
 
-// Create Firestore Listener for real-time updates to the Events List.
-        fbEventController.getEventsCollectionReference()
-                .addSnapshotListener(new com.google.firebase.firestore.EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w("eventfragment listener", "Listen failed.", e);
-                            return;
-                        }
-
-                        if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
-                            eventsDataList.clear();  // removes current data
-                            for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
-                                Event event = doc.toObject(Event.class);
-                                eventsDataList.add(event);
-                            }
-                            eventAdapter.notifyDataSetChanged();
-                        } else {
-                            Log.d("eventfragment listener", "Current data: null");
-                        }
-                    }
-                });
+        // Create Firestore Listener for real-time updates to the Events List.
+        eventListListenerReg = fbEventController.setupEventListListener(eventsDataList, eventAdapter);
+        setupTimeListener(eventsDataList, eventAdapter);
 
 
 
@@ -146,15 +129,63 @@ public class EventFragment extends Fragment {
             requireContext().startActivity(intent);
         }
     });
-
-
     }
 
+    private void setupTimeListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter)
+    {
+        timerTask = new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                // Check the top event in the list
+                while (!eventsDataList.isEmpty() && eventsDataList.get(0).getTime().compareTo(Timestamp.now()) <= 0)
+                {
+                    // If the event's time is before the current time, remove it from the list
+                    if (!eventsDataList.isEmpty()) {
+                        eventsDataList.remove(0);
+                    }
+                }
+
+                // Notify the adapter of the changes
+                // Notify the adapter of the changes on the main thread
+                eventListView.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        eventAdapter.notifyDataSetChanged();
+                    }
+                });
+
+                // Start the time listener
+                timer = new Timer();
+                // Get the number of milliseconds until the next minute
+                long delay = 60000 - (System.currentTimeMillis() % 60000);
+                // Add the current second to the delay
+                delay += System.currentTimeMillis() % 1000;
+                // Schedule the task to run at the same second of the next minute, and then every minute after that
+                timer.schedule(timerTask, delay, 60000);
+            }
+        };
+    }
 
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        // Stop the time listener when the view is destroyed
+        if (timer != null)
+        {
+            timer.cancel();
+            timerTask.cancel();
+        }
+        if (eventListListenerReg != null)
+        {
+            eventListListenerReg.remove();
+            eventListListenerReg = null;
+        }
+
         binding = null;
     }
 

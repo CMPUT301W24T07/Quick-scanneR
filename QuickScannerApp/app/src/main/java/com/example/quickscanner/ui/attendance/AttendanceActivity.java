@@ -21,12 +21,14 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.ListenerRegistration;
 
 
 public class AttendanceActivity extends AppCompatActivity
 {
     private TextView liveAttendanceCount;
     private FirebaseAttendanceController fbAttendanceController;
+    private ListenerRegistration liveCountListenerReg;
 
 
     @Override
@@ -52,25 +54,9 @@ public class AttendanceActivity extends AppCompatActivity
         createBottomMenu(eventID);
         liveAttendanceCount = findViewById(R.id.live_attendance_count);
         fbAttendanceController = new FirebaseAttendanceController();
-        DocumentReference liveCountRef = fbAttendanceController.getLiveCountRef(eventID);
-        liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("live count listener", "Listen failed.", e);
-                    return;
-                }
-
-                if (snapshot != null && snapshot.exists()) {
-                    Long liveCount = snapshot.getLong("attendanceCount");
-                    liveAttendanceCount.setText("Live Attendance Count: " + liveCount);
-                } else {
-                    liveAttendanceCount.setText("Live Attendance Count: 0");
-                }
-            }
-        });
+        liveCountListenerReg = fbAttendanceController.setupLiveCountListener(eventID, liveAttendanceCount);
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -101,31 +87,32 @@ public class AttendanceActivity extends AppCompatActivity
         Bundle bundle = new Bundle();
         bundle.putString("eventID", eventID);
 
-        // kinda a hack fix but oh well
+        // needed to send bundle for first load.
         navController.navigate(R.id.navigation_signed_up, bundle);
 
         // Set up the OnNavigationItemSelectedListener
 
         bottomNav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.navigation_signed_up)
-            {   //log of id for navigation signed up
-                Log.d("ItemID", String.valueOf(itemId));
-                //log of id for navigation signed up
-                Log.d("ID for navigation signed up", String.valueOf(R.id.navigation_signed_up));
-                if (itemId == R.id.navigation_signed_up)
-                {
-                    navController.navigate(R.id.navigation_signed_up, bundle);
-                    return true;
-                }
-                else if (itemId == R.id.navigation_checked_in)
-                {
-                    navController.navigate(R.id.navigation_checked_in, bundle);
-                    return true;
-                }
+            String itemTitle = String.valueOf(item.getTitle());
+
+            if (itemTitle.equals("Signed Up Attendees")) {
+                navController.navigate(R.id.navigation_signed_up, bundle);
+                return true;
+            } else if (itemTitle.equals("Checked In Attendees")) {
+                navController.navigate(R.id.navigation_checked_in, bundle);
+                return true;
+            } else {
+                Log.d("Navigation", "Unexpected item title: " + itemTitle);
                 return false;
             }
-            return false;
         });
     }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (liveCountListenerReg != null) {
+            liveCountListenerReg.remove();
+        }
+    }
+
 }

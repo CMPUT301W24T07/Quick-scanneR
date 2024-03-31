@@ -1,21 +1,30 @@
 package com.example.quickscanner.controller;
 
 import android.util.Log;
+import android.view.View;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+import com.example.quickscanner.ui.attendance.CheckInAdapter;
+import com.example.quickscanner.ui.attendance.SignUpAdapter;
 import com.google.android.datatransport.cct.internal.LogEvent;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.Transaction;
@@ -39,12 +48,14 @@ public class FirebaseAttendanceController
     private final FirebaseFirestore db;
     private final CollectionReference eventsRef;
     private final CollectionReference usersRef;
+    private final FirebaseUserController fbUserController;
 
     public FirebaseAttendanceController()
     {
         db = FirebaseFirestore.getInstance();
         eventsRef = db.collection("Events");
         usersRef = db.collection("users");
+        fbUserController = new FirebaseUserController();
     }
 
     /**
@@ -108,7 +119,9 @@ public class FirebaseAttendanceController
                     event.setTakenSpots(event.getTakenSpots() + 1);
 
                     // Add a document to the signUps subcollection
-                    transaction.set(signUpRef, new HashMap<>());
+                    Map<String, Object> signUpData = new HashMap<>();
+                    signUpData.put("signUpTime", FieldValue.serverTimestamp());
+                    transaction.set(signUpRef, signUpData);
 
                     // Add the event to the user's signed-up events
                     Map<String, Object> userSignUpsData = new HashMap<>();
@@ -351,6 +364,19 @@ public class FirebaseAttendanceController
             }
         });
     }
+    //gets the times checked in for a user
+    public Task<String> getTimesCheckedIn(String userId) {
+        validateId(userId);
+        DocumentReference userRef =usersRef.document(userId);
+        return userRef.collection("Attendance").document("checkedInEvents").get().continueWith(task -> {
+            DocumentSnapshot document = task.getResult();
+            if (document.exists()) {
+                return document.get("timesCheckedIn").toString();
+            } else {
+                return "0";
+            }
+        });
+    }
     /**
      * Fetches the events a user has signed up for.
      *
@@ -489,35 +515,188 @@ public class FirebaseAttendanceController
             return convertToObject(task.getResult(), User.class);
         });
     }
-
-    /**
-     * Fetches the list of users who are checked in to a specific event.
-     *
-     * @param eventId The ID of the event.
-     * @return A Task that resolves to a list of User objects.
-     */
-    public Task<List<User>> getEventCheckIns(String eventId) {
-        // Validate the event ID
+    public ListenerRegistration setupSignUpListListener(String eventId, ArrayList<User> signUpDataList, SignUpAdapter adapter, TextView emptyList, ListView listView)
+    {
         validateId(eventId);
+        return getEventSignUpsCollectionReference(eventId)
+                //TODO make people sign out so this wont break stuff
+                //.orderBy("signUpTime")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w("SignUpFragment", "Listen failed.", e);
+                            return;
+                        }
+                        //loading.setVisibility(View.VISIBLE);
+                        if (queryDocumentSnapshots != null) {
+                            if (queryDocumentSnapshots.isEmpty()) {
+                                listView.setVisibility(View.GONE);
+                                emptyList.setVisibility(View.VISIBLE);
+                            }
+                            for (DocumentChange docChange : queryDocumentSnapshots.getDocumentChanges()) {
+                                switch (docChange.getType()) {
+                                    case ADDED:
+                                        // A new document has been added, add it to the list
+                                        fbUserController.getUser(docChange.getDocument().getId())
+                                                .addOnSuccessListener(user -> {
+                                                    signUpDataList.add(user);
+                                                    adapter.notifyDataSetChanged();
+                                                    updateVisibility();
+                                                });
+                                        break;
+                                    case MODIFIED:
+                                        // New case for handling modifications
+                                        fbUserController.getUser(docChange.getDocument().getId())
+                                                .addOnSuccessListener(user -> {
+                                                    int index = signUpDataList.indexOf(user);
+                                                    if (index != -1) {
+                                                        User oldUser = signUpDataList.get(index);
+                                                        // Check if the image or name has changed
+                                                        if (!oldUser.getUserProfile().getImageUrl().equals(user.getUserProfile().getImageUrl()) ||
+                                                                !oldUser.getUserProfile().getName().equals(user.getUserProfile().getName())) {
+                                                            // Replace the old user with the new one
+                                                            signUpDataList.set(index, user);
+                                                            adapter.notifyDataSetChanged();
+                                                            updateVisibility();
+                                                        }
+                                                    }
+                                                });
+                                        break;
+                                    case REMOVED:
+                                        // A document has been removed, remove it from the list
+                                        fbUserController.getUser(docChange.getDocument().getId())
+                                                .addOnSuccessListener(user -> {
+                                                    signUpDataList.remove(user);
+                                                    adapter.notifyDataSetChanged();
+                                                    updateVisibility();
+                                                });
+                                        break;
+                                }
+                            }
 
-        // Reference to the event's check-ins collection
-        CollectionReference eventCheckInsRef = eventsRef.document(eventId).collection("checkIns");
+                            //loading.setVisibility(View.GONE);
+                        } else {
+                            Log.d("SignUpFragment", "Current data: null");
+                        }
+                    }
+                    private void updateVisibility()
+                    {
+                        if (signUpDataList.isEmpty())
+                        {
+                            listView.setVisibility(View.GONE);
+                            emptyList.setVisibility(View.VISIBLE);
+                        }
+                        else
+                        {
+                            listView.setVisibility(View.VISIBLE);
+                            emptyList.setVisibility(View.GONE);
+                        }
+                    }
+                });
+                }
 
-        // Fetch the documents in the collection and continue with the task
-        return eventCheckInsRef.get().continueWithTask(task -> {
-            List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
-            for (DocumentSnapshot document : task.getResult().getDocuments()) {
-                // Fetch the user data using the document ID
-                Task<DocumentSnapshot> userTask = usersRef.document(document.getId()).get();
-                tasks.add(userTask);
-            }
 
-            // Wait for all the user data to be fetched
-            return Tasks.whenAllSuccess(tasks);
-        }).continueWith(task -> {
-            // Convert the DocumentSnapshots to User objects
-            return convertToObject(task.getResult(), User.class);
-        });
+    public ListenerRegistration setupCheckInListListener(String eventId, ArrayList<User> checkInDataList, CheckInAdapter adapter, TextView emptyList, ListView listView) {
+        validateId(eventId);
+         return getEventCheckInsCollectionReference(eventId)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w("CheckInFragment", "Listen failed.", e);
+                            return;
+                        }
+
+                        if (queryDocumentSnapshots != null) {
+                            if(queryDocumentSnapshots.isEmpty())
+                            {
+                                emptyList.setVisibility(View.VISIBLE);
+                            }
+                            for (DocumentChange docChange : queryDocumentSnapshots.getDocumentChanges()) {
+                                switch (docChange.getType()) {
+                                    case ADDED:
+                                        // A new document has been added, add it to the list
+                                        fbUserController.getUser(docChange.getDocument().getId())
+                                                .addOnSuccessListener(user -> {
+                                                    checkInDataList.add(user);
+                                                    adapter.notifyDataSetChanged();
+                                                    updateVisibility();
+                                                });
+
+                                        break;
+                                    case MODIFIED:
+                                        // An existing document has been modified, update it in the list
+                                        fbUserController.getUser(docChange.getDocument().getId())
+                                                .addOnSuccessListener(user -> {
+                                                    int index = checkInDataList.indexOf(user);
+                                                    if (index != -1) {
+                                                        User oldUser = checkInDataList.get(index);
+                                                        // Check if the image or name has changed
+                                                        if (!oldUser.getUserProfile().getImageUrl().equals(user.getUserProfile().getImageUrl()) ||
+                                                                !oldUser.getUserProfile().getName().equals(user.getUserProfile().getName())) {
+                                                            // Replace the old user with the new one
+                                                            checkInDataList.set(index, user);
+                                                            adapter.notifyDataSetChanged();
+                                                            updateVisibility();
+                                                        }
+                                                    }
+                                                });
+                                        break;
+                                    case REMOVED:
+                                        // A document has been removed, remove it from the list
+                                        fbUserController.getUser(docChange.getDocument().getId())
+                                                .addOnSuccessListener(user -> {
+                                                    checkInDataList.remove(user);
+                                                    adapter.notifyDataSetChanged();
+                                                    updateVisibility();
+                                                });
+                                        break;
+                                }
+                            }
+                        } else {
+                            Log.d("CheckInFragment", "Current data: null");
+                        }
+                    }
+                    private void updateVisibility()
+                    {
+                        if (checkInDataList.isEmpty())
+                        {
+                            listView.setVisibility(View.GONE);
+                            emptyList.setVisibility(View.VISIBLE);
+                        }
+                        else
+                        {
+                            listView.setVisibility(View.VISIBLE);
+                            emptyList.setVisibility(View.GONE);
+                        }
+                    }
+
+                });
+    }
+    //method to get reference to live count collection for specific event
+    public ListenerRegistration setupLiveCountListener(String eventId, TextView timesCheckedInTextView) {
+        validateId(eventId);
+        DocumentReference liveCountRef = getLiveCountRef(eventId);
+         return liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w("CheckInFragment", "Listen failed.", e);
+                            return;
+                        }
+
+                        Long liveCount = 0L;
+                        if (snapshot != null && snapshot.exists()) {
+                            Long temp = snapshot.getLong("liveCount");
+                            if (temp != null) {
+                                liveCount = temp;
+                            }
+                        }
+                        timesCheckedInTextView.setText("Live Attendance Count: " + liveCount);
+                    }
+                });
     }
 
     /**
@@ -538,6 +717,11 @@ public class FirebaseAttendanceController
             DocumentSnapshot document = task.getResult();
             return document.getLong("attendanceCount");
         });
+    }
+    // method that gives reference to live count collection for specfici event
+    public DocumentReference getLiveCountRef(String eventId) {
+        validateId(eventId);
+        return eventsRef.document(eventId).collection("liveCounts").document("currentAttendance");
     }
     /**
      * Checks if a user is checked in to a specific event.
@@ -587,6 +771,16 @@ public class FirebaseAttendanceController
             // Return true if the document exists (i.e., the user is signed up), false otherwise
             return document.exists();
         });
+    }
+    //method to get an events signed up user collection reference
+    public CollectionReference getEventSignUpsCollectionReference(String eventId) {
+        validateId(eventId);
+        return eventsRef.document(eventId).collection("signUps");
+    }
+    //method to get an events checked in user collection reference
+    public CollectionReference getEventCheckInsCollectionReference(String eventId) {
+        validateId(eventId);
+        return eventsRef.document(eventId).collection("checkIns");
     }
 
 

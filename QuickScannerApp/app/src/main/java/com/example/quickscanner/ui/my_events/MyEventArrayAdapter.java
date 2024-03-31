@@ -15,7 +15,7 @@ import com.example.quickscanner.model.Event;
 
 import java.util.ArrayList;
 
-public class EventArrayAdapter extends ArrayAdapter<Event> {
+public class MyEventArrayAdapter extends ArrayAdapter<Event> {
     /*
         This Array Adapter customizes the presentation of the Events list
     */
@@ -31,7 +31,7 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
     TextView eventTime;
 
 
-    public EventArrayAdapter(Context context, ArrayList<Event> events){
+    public MyEventArrayAdapter(Context context, ArrayList<Event> events){
         super(context,0, events);
         this.events = events;
         this.context = context;

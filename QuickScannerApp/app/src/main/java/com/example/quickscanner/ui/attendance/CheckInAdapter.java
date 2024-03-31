@@ -13,7 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.quickscanner.R;
+import com.example.quickscanner.controller.FirebaseAttendanceController;
 import com.example.quickscanner.controller.FirebaseImageController;
+import com.example.quickscanner.databinding.AttendanceCheckInContentBinding;
 import com.example.quickscanner.databinding.AttendanceSignUpContentBinding;
 import com.example.quickscanner.model.User;
 import com.squareup.picasso.Callback;
@@ -21,12 +23,13 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class SignUpAdapter extends ArrayAdapter<User> {
+public class CheckInAdapter extends ArrayAdapter<User> {
     private Context mContext;
     private ArrayList<User> mAttendees;
     private FirebaseImageController fbImageController;
+    private FirebaseAttendanceController fbAttendanceController;
 
-    public SignUpAdapter(@NonNull Context context, ArrayList<User> attendees) {
+    public CheckInAdapter(@NonNull Context context, ArrayList<User> attendees) {
         super(context, R.layout.attendance_sign_up_content, attendees);
         this.mContext = context;
         this.mAttendees = attendees;
@@ -35,24 +38,30 @@ public class SignUpAdapter extends ArrayAdapter<User> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        AttendanceSignUpContentBinding binding;
+        AttendanceCheckInContentBinding binding;
         View view;
         if(convertView == null) {
-            binding = AttendanceSignUpContentBinding.inflate(LayoutInflater.from(mContext), parent, false);
+            binding = AttendanceCheckInContentBinding.inflate(LayoutInflater.from(mContext), parent, false);
             view = binding.getRoot();
             view.setTag(binding);
         } else {
-            binding = (AttendanceSignUpContentBinding) convertView.getTag();
+            binding = (AttendanceCheckInContentBinding) convertView.getTag();
             view = convertView;
         }
+        fbAttendanceController = new FirebaseAttendanceController();
+        ProgressBar loadingSpinner = binding.loadCheckIn;
+        loadingSpinner.setVisibility(View.VISIBLE);
 
         User curAttendees = mAttendees.get(position);
         String currentName = curAttendees.getUserProfile().getName();
         String profilePicturePath = curAttendees.getUserProfile().getImageUrl();
-        ProgressBar loadingSpinner = binding.loadSignUp;
-        loadingSpinner.setVisibility(View.VISIBLE);
-
-
+        fbAttendanceController.getTimesCheckedIn(curAttendees.getUid()).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                String timesCheckedIn = task.getResult();
+                TextView timesCheckedInTextView = binding.timesCheckedIn;
+                timesCheckedInTextView.setText(String.valueOf(timesCheckedIn));
+            }
+        });
         TextView name = binding.attendeeName;
         ImageView profilePicture = binding.profilePictureSignUp;
         if (currentName == null || currentName.trim().isEmpty()) {
