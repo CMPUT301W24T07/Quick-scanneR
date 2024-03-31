@@ -32,20 +32,24 @@ import com.example.quickscanner.MainActivity;
 
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseQrCodeController;
 import com.example.quickscanner.controller.FirebaseUserController;
+import com.example.quickscanner.model.ConferenceConfig;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.google.firebase.Timestamp;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
-
+import java.util.TimeZone;
 
 
 public class AddEventActivity extends AppCompatActivity
@@ -66,22 +70,14 @@ public class AddEventActivity extends AppCompatActivity
     private EditText geolocationEditText;
     private EditText timeEditText;
     private Timestamp eventTime;
-    private static final int MIN_YEAR = 2024;
-    private static final int MIN_MONTH = 5;
-    private static final int MIN_DAY = 6;
-
-    private static final int MAX_YEAR = 2024;
-    private static final int MAX_MONTH = 5;
-    private static final int MAX_DAY = 7;
-    private static final int MIN_HOUR = 8;
-    private static final int MIN_MINUTE = 0;
-    private static final int MAX_HOUR = 20;
-    private static final int MAX_MINUTE = 0;
+    private String minTime;
+    private String maxTime;
 
 
     private ArrayAdapter<Event> eventAdapter;
     private List<Event> eventDataList = new ArrayList<>();
     private ActivityResultLauncher<Intent> resultLauncher;
+    private ConferenceConfigSingleton configSingleton;
     private FirebaseEventController fbEventController;
     private FirebaseImageController fbImageController;
     private FirebaseUserController fbUserController;
@@ -119,6 +115,7 @@ public class AddEventActivity extends AppCompatActivity
         fbImageController = new FirebaseImageController();
         fbUserController = new FirebaseUserController();
         fbQrCodeController = new FirebaseQrCodeController();
+        configSingleton = ConferenceConfigSingleton.getInstance();
 
         // Initialize views
         eventDescriptionTextView = findViewById(R.id.EventDescription);
@@ -208,7 +205,8 @@ public class AddEventActivity extends AppCompatActivity
                 String time = timeEditText.getText().toString();
 
                 // Create an Event object with the edited values
-                Event newEvent = new Event(editedEventName, editedEventDescription, fbUserController.getCurrentUserUid(), eventTime, location);
+                Event newEvent = new Event(editedEventName, editedEventDescription,
+                        fbUserController.getCurrentUserUid(), eventTime, location);
                 newEvent.setGeoLocation(geolocation);
 
                 // Add the event to the database
@@ -236,7 +234,8 @@ public class AddEventActivity extends AppCompatActivity
         fbEventController.addEvent(event)
                 .addOnSuccessListener(documentReference ->
                 {
-                    Log.d("AddEventActivity", "Event added with ID: " + documentReference.getId());
+                    Log.d("AddEventActivity", "Event added with ID: " +
+                            documentReference.getId());
                     // additional actions if needed
                     event.setEventID(documentReference.getId());
 
@@ -340,7 +339,8 @@ public class AddEventActivity extends AppCompatActivity
                             })
                             .addOnFailureListener(e ->
                             {
-                                Log.e("AddEventActivity", "Error updating user's organized events", e);
+                                Log.e("AddEventActivity",
+                                        "Error updating user's organized events", e);
                             });
                 });
 
@@ -409,46 +409,97 @@ public class AddEventActivity extends AppCompatActivity
                             eventImageView.setImageBitmap(eventImageMap); // Update this line
                         } catch (Exception e)
                         {
-                            Toast.makeText(AddEventActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AddEventActivity.this, "Error: " +
+                                    e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
     }
 
     private void showDateTimePicker() {
-        final Calendar currentDate = Calendar.getInstance();
         final Calendar date = Calendar.getInstance();
+        final Calendar currentDate = Calendar.getInstance();
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+        // Use ConferenceConfigSingleton to get the min and max dates
+        Calendar minDate = Calendar.getInstance();
+        minDate.set(configSingleton.getMinYear(), configSingleton.getMinMonth(), configSingleton.getMinDay());
+
+        Calendar maxDate = Calendar.getInstance();
+        maxDate.set(configSingleton.getMaxYear(), configSingleton.getMaxMonth(), configSingleton.getMaxDay());
+
+        if (currentDate.after(minDate)) {
+            minDate = currentDate;
+        }
+        // Set the min and max dates for the DatePickerDialog
+        DatePickerDialog datePickerDialog = new DatePickerDialog(AddEventActivity.this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 date.set(year, monthOfYear, dayOfMonth);
-                showTimePicker(date); // Call the TimePickerDialog after a date is selected
+                showTimePicker(date);
             }
-        }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
-
-        Calendar minDate = Calendar.getInstance();
-        minDate.set(MIN_YEAR, MIN_MONTH, MIN_DAY);
+        }, minDate.get(Calendar.YEAR), minDate.get(Calendar.MONTH), minDate.get(Calendar.DATE));
         datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
-
-        Calendar maxDate = Calendar.getInstance();
-        maxDate.set(MAX_YEAR, MAX_MONTH, MAX_DAY);
         datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
-
         datePickerDialog.show();
     }
 
     private void showTimePicker(final Calendar date) {
         final Calendar currentDate = Calendar.getInstance();
-        new TimePickerDialog(AddEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
+
+        // Uses ConferenceConfigSingleton to get the min and max times
+        int minHour = configSingleton.getMinHour();
+        int minMinute = configSingleton.getMinMinute();
+        int maxHour = configSingleton.getMaxHour();
+        int maxMinute = configSingleton.getMaxMinute();
+
+        // Sets the min and max times for the TimePickerDialog
+        TimePickerDialog timePickerDialog = new TimePickerDialog(AddEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
+
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                 date.set(Calendar.HOUR_OF_DAY, hourOfDay);
                 date.set(Calendar.MINUTE, minute);
-                Log.v("add_Event_activity", "time chosen:  " + date.getTime());
-                eventTime = new Timestamp(date.getTime());
-                timeEditText.setText(eventTime.toDate().toString());
+                if (date.before(currentDate))
+                {
+                    Toast.makeText(AddEventActivity.this, "Time has passed, choose a different time.", Toast.LENGTH_LONG).show();
+                    showTimePicker(date);
+                }
+                if (hourOfDay < minHour || hourOfDay > maxHour || (hourOfDay == minHour && minute < minMinute) || (hourOfDay == maxHour && minute > maxMinute)) {
+                    Toast.makeText(AddEventActivity.this, "Invalid time. Please select a time between " + formatTime(minHour, minMinute) + " and " + formatTime(maxHour, maxMinute) + ".", Toast.LENGTH_LONG).show();
+                    showTimePicker(date);
+                } else {
+
+                    eventTime = new Timestamp(date.getTime());
+                    timeEditText.setText(formatDateTime(date));
+                }
             }
-        }, currentDate.get(Calendar.HOUR_OF_DAY), currentDate.get(Calendar.MINUTE), false).show();
+        }, currentDate.get(Calendar.HOUR_OF_DAY), currentDate.get(Calendar.MINUTE), false);
+        timePickerDialog.show();
     }
+
+    private String formatTime(int hour, int minute) {
+        // creates calendar object
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+
+        // simple date format that outputs the hour in 12-hour format, the minute,
+        // and if its AM or PM
+        SimpleDateFormat date = new SimpleDateFormat("h:mm a", Locale.getDefault());
+
+        // Sets the time zone from ConferenceConfigSingleton
+        date.setTimeZone(TimeZone.getTimeZone(configSingleton.getTimeZone()));
+        // returns formatted time as string
+        return date.format(calendar.getTime());
+    }
+    private String formatDateTime(Calendar date) {
+        // simple date format that outputs the date and time
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a", Locale.getDefault());
+
+        // Sets the time zone from ConferenceConfigSingleton
+        dateFormat.setTimeZone(TimeZone.getTimeZone(configSingleton.getTimeZone()));
+        // returns formatted date and time as string
+        return dateFormat.format(date.getTime());
+    }
+
 }

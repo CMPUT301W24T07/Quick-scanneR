@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 import com.example.quickscanner.singletons.SettingsDataSingleton;
 import com.example.quickscanner.ui.my_events.MyEvents_Activity;
 import com.example.quickscanner.ui.profile.ProfileActivity;
@@ -167,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
                     userId = fbUserController.getCurrentUserUid();
                     // Sets user UID
                     user.setUid(userId);
+                    user.getUserProfile().setImageUrl(user.getUserProfile().genereteProfilePicture(user.getUid()));
                     // Adds user to database
                     fbUserController.addUser(user).addOnCompleteListener(task1 -> {
                         // If user addition is successful

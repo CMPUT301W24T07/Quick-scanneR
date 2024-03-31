@@ -30,7 +30,7 @@ public class BrowseProfilesActivity extends AppCompatActivity {
     //check box functionality.
     ProfileArrayAdapter profileAdapter;
 
-    // FirebaseController Reference
+    // FirebaseController References
     private FirebaseUserController fbUserController;
 
     @Override
@@ -76,7 +76,7 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         deleteButton.setOnClickListener(v -> {
             new AlertDialog.Builder(BrowseProfilesActivity.this)
                     .setTitle("Delete Profiles")
-                    .setMessage("Are you sure you want to delete these profiles?")
+                    .setMessage("Are you sure you want to delete these Profile(s)?")
                     .setPositiveButton("Yes", (dialog, which) -> deleteSelectedProfiles())
                     .setNegativeButton("Cancel", null)
                     .show();

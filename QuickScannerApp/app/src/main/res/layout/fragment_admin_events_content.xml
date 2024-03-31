@@ -6,17 +6,23 @@
     android:id="@+id/EventFragmentContent_Row"
     android:layout_height="wrap_content">
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/EventFragmentContent_itemClicked"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
+        <CheckBox
+            android:id="@+id/admin_event_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical" />
 
         <ImageView
             android:id="@+id/EventFragment_Image"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical"
             android:src="@drawable/baseline_catching_pokemon_24" />
 
         <LinearLayout
@@ -61,7 +67,7 @@
             android:contentDescription="@string/expandable_arrow"
             android:src="@drawable/baseline_catching_pokemon_24" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:visibility="gone"

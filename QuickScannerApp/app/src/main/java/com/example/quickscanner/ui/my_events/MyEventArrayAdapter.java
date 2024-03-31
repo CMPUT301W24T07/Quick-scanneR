@@ -1,24 +1,21 @@
-package com.example.quickscanner.ui.homepage_event;
+package com.example.quickscanner.ui.my_events;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import java.util.ArrayList;
 
 import com.example.quickscanner.R;
-import com.example.quickscanner.controller.FirebaseImageController;
-import com.example.quickscanner.model.*;
-import com.squareup.picasso.Picasso;
+import com.example.quickscanner.model.Event;
 
-public class EventArrayAdapter extends ArrayAdapter<Event> {
+import java.util.ArrayList;
+
+public class MyEventArrayAdapter extends ArrayAdapter<Event> {
     /*
         This Array Adapter customizes the presentation of the Events list
     */
@@ -32,11 +29,9 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
     TextView eventLocation;
     TextView eventOrganizers;
     TextView eventTime;
-    ImageView eventImage;
-    //ProgressBar imageLoading;
 
 
-    public EventArrayAdapter(Context context, ArrayList<Event> events){
+    public MyEventArrayAdapter(Context context, ArrayList<Event> events){
         super(context,0, events);
         this.events = events;
         this.context = context;
@@ -46,29 +41,36 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        View view;
+        /*
+            Responsible for creating the View for each row in the ListView.
+            Called for each item(row) in the listview.
+        * */
+        View view = convertView;
 
-        if(convertView == null){
+        if(view == null){
+            /*  If recycled view is null, inflates with custom (*_context.xml) layout. */
             view = LayoutInflater.from(context).inflate(R.layout.fragment_events_content, parent,false);
         }
-        else{
-            view = convertView;
-        }
+
         /* Gets the Event object at a given row (position) */
         Event event = events.get(position);
-        //ProgressBar imageLoading = view.findViewById(R.id.image_loading);
 
+        // Elements from the custom (*_context.xml) view
         eventName = view.findViewById(R.id.EventFragment_Name_text);
-        eventImage = view.findViewById(R.id.EventFragment_Image);
-        eventTime = view.findViewById(R.id.EventFragment_Time);
         eventDescription = view.findViewById(R.id.EventFragment_LongDescription);
         eventLocation = view.findViewById(R.id.EventFragment_Location);
+        // eventOrganizers = view.findViewById(R.id.EventFragment_Organizers_text);
+        eventTime = view.findViewById(R.id.EventFragment_Time);
+
+        // Set values of Elements from the custom (*_context.xml) view
         eventName.setText(event.getName());
         eventDescription.setText(event.getDescription());
         eventLocation.setText(event.getLocation());
+        // eventOrganizers.setText(event.getOrganizer().getUserProfile().getName());
         eventTime.setText(event.getTimeAsString());
 
-
+        /* Return the populated, custom view ( which is a row in listview).
+         i.e. returns a customized row in the events listview */
         return view;
     }
 }

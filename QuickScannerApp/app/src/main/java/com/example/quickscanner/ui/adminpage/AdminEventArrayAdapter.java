@@ -1,21 +1,23 @@
-package com.example.quickscanner.ui.my_events;
+package com.example.quickscanner.ui.adminpage;
 
 import android.content.Context;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.example.quickscanner.R;
-import com.example.quickscanner.model.Event;
+import com.example.quickscanner.model.*;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.util.ArrayList;
-
-public class EventArrayAdapter extends ArrayAdapter<Event> {
+public class AdminEventArrayAdapter extends ArrayAdapter<Event> {
     /*
         This Array Adapter customizes the presentation of the Events list
     */
@@ -31,7 +33,8 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
     TextView eventTime;
 
 
-    public EventArrayAdapter(Context context, ArrayList<Event> events){
+
+    public AdminEventArrayAdapter(Context context, ArrayList<Event> events){
         super(context,0, events);
         this.events = events;
         this.context = context;
@@ -49,7 +52,7 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
 
         if(view == null){
             /*  If recycled view is null, inflates with custom (*_context.xml) layout. */
-            view = LayoutInflater.from(context).inflate(R.layout.fragment_events_content, parent,false);
+            view = LayoutInflater.from(context).inflate(R.layout.fragment_admin_events_content, parent,false);
         }
 
         /* Gets the Event object at a given row (position) */
@@ -71,6 +74,24 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
 
         /* Return the populated, custom view ( which is a row in listview).
          i.e. returns a customized row in the events listview */
+
+        CheckBox checkBox = view.findViewById(R.id.admin_event_checkbox);
+        checkBox.setFocusable(false);
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            events.get(position).setSelected(isChecked);
+            ((BrowseEventsActivity) context).updateDeleteButtonVisibility();
+        });
+        checkBox.setChecked(events.get(position).isSelected());
         return view;
     }
+
+    public boolean isAnyEventSelected() {
+        for (Event event : events) {
+            if (event.isSelected()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

@@ -11,6 +11,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.viewevent.ViewEventActivity">
+    <RelativeLayout
+        android:id="@+id/contentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -128,7 +132,7 @@
                 android:layout_height= "70dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="12dp"
-                android:text="@string/sign_up_text"
+                android:text=" "
                 android:textAllCaps="false"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -169,6 +173,15 @@
         android:layout_marginBottom="16dp"
         android:contentDescription="makeAnnouncementButton"
         android:src="@android:drawable/ic_popup_reminder" />
+    </RelativeLayout>
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"/>
+
 
 
 </RelativeLayout>

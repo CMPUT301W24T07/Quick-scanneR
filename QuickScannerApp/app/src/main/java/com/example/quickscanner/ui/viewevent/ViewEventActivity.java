@@ -16,8 +16,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -25,16 +27,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.quickscanner.ui.attendance.AttendanceActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseAttendanceController;
-import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseEventController;
+import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseQrCodeController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.ActivityVieweventBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.QRCodeDialogFragment;
+import com.example.quickscanner.ui.adminpage.BrowseEventsActivity;
 import com.example.quickscanner.ui.viewevent.map.MapActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -58,10 +62,14 @@ public class ViewEventActivity extends AppCompatActivity
     private FirebaseAttendanceController fbAttendanceController;
     private Event event;
     private ActivityVieweventBinding binding;
+    private ProgressBar loading;
+    private RelativeLayout contentLayout;
+
 
     private FirebaseQrCodeController fbQRCodeController;
     // UI reference
     Switch toggleGeolocation;
+
 
     private Event currentEvent;
     private Bitmap qrCodeBitmap;
@@ -81,6 +89,10 @@ public class ViewEventActivity extends AppCompatActivity
         fbUserController = new FirebaseUserController();
         fbAttendanceController = new FirebaseAttendanceController();
         toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
+        loading = findViewById(R.id.loading);
+        contentLayout = findViewById(R.id.contentLayout);
+        loading.setVisibility(View.VISIBLE);
+        contentLayout.setVisibility(View.GONE);
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -222,6 +234,7 @@ public class ViewEventActivity extends AppCompatActivity
                         .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
                 qrCodeBitmap = generateQRCode(event.getPromoQrCode());
                 setEventDataToUI(event, UiD);
+
                 binding.signUpButton.setOnClickListener(new View.OnClickListener()
                 {
 
@@ -260,11 +273,24 @@ public class ViewEventActivity extends AppCompatActivity
                                     });
                             fetchEventData();
                         } else if (buttonText.equals("Attendance Information")) {
-                            // Handle other button text cases here
+                            // Create an Intent to open the AttendanceActivity
+                            Intent intent = new Intent(ViewEventActivity.this,
+                                    AttendanceActivity.class);
+                            // Add the event ID to the intent
+                            intent.putExtra("eventID", eventID);
+                            // Start the AttendanceActivity
+                            startActivity(intent);
                         }
                     }
                 });
 
+            }
+        }).addOnFailureListener(new OnFailureListener()
+        {
+            @Override
+            public void onFailure(@NonNull Exception e)
+            {
+                Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
             }
         });
 
@@ -363,6 +389,8 @@ public class ViewEventActivity extends AppCompatActivity
                 Log.d("halppp", "Document not retrieved, setting default image");
                 binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
             }
+            loading.setVisibility(View.GONE);
+            contentLayout.setVisibility(View.VISIBLE);
         });
 
 
@@ -512,6 +540,41 @@ public class ViewEventActivity extends AppCompatActivity
             bundle.putString("geoHash", event.getGeoLocation());
             intent.putExtras(bundle);
             startActivity(intent);
+            return true;
+        }
+        else if(itemId == R.id.navigation_delete)
+        {
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Event")
+                    .setMessage("Are you sure you want to delete this Event?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                    {
+                        public void onClick(DialogInterface dialog, int whichButton)
+                        {
+                            fbEventController.deleteEvent(eventID)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>()
+                                    {
+                                        @Override
+                                        public void onSuccess(Void aVoid)
+                                        {
+                                            Toast.makeText(ViewEventActivity.this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
+                                            Intent intent = new Intent(ViewEventActivity.this, BrowseEventsActivity.class);
+                                            startActivity(intent);
+                                            finish();
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener()
+                                    {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e)
+                                        {
+                                            Toast.makeText(ViewEventActivity.this, "Failed to delete event", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
             return true;
         }
         else if (item.getItemId() == android.R.id.home)
