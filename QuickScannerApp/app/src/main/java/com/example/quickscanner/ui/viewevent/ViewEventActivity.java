@@ -229,6 +229,7 @@ public class ViewEventActivity extends AppCompatActivity
 
     }
 
+    
     private void showOrganiserDetailsDialog() {
 
         Dialog dialog = new Dialog(this);
@@ -240,56 +241,47 @@ public class ViewEventActivity extends AppCompatActivity
         TextView organiserName = dialog.findViewById(R.id.dialog_organiser_name);
         TextView organiserEmail = dialog.findViewById(R.id.dialog_organiser_email);
         TextView organiserLinkedIn = dialog.findViewById(R.id.dialog_organiser_linkedin);
+        ProgressBar progressBar = dialog.findViewById(R.id.progressBar);
 
-        fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>()
-        {
-            public void onSuccess(User user)
-            {
-                if (user != null && user.getUserProfile() != null)
-                {
-                    //disable this organiser text line if creating new event crashes
-//                    binding.organiserText.setText(user.getUserProfile().getName());
-                    // this code exists to underline the organiser's name
-                    SpannableString content = new SpannableString(user.getUserProfile().getName());
-                    content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
-                    organiserName.setText(content);
-                    organiserEmail.setText(user.getUserProfile().getEmail());
-                    organiserLinkedIn.setText(user.getUserProfile().getWebsite());
+        progressBar.setVisibility(View.VISIBLE);
 
-
-                    Log.d("halpp", "Organiser name is: " + user.getUserProfile().getName());
-
-
-                    //SIDDHARTH HERE PAY ATTENTION
-                    //TODO: set the profile picture of the organiser
-
-//                    Profile organizerProfile = organizer.getUserProfile();
+        fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
+            public void onSuccess(User user) {
+                if (user != null && user.getUserProfile() != null) {
+                    // Set the organiser details
 
                     // Get the URL of the organizer's profile picture
                     fbImageController.downloadImage(user.getUserProfile().getImageUrl()).addOnCompleteListener(task1 -> {
                         String url = String.valueOf(task1.getResult());
-                        Picasso.get().load(url).into(organiserProfilePicture);
+                        Picasso.get().load(url).into(organiserProfilePicture, new com.squareup.picasso.Callback() {
+                            @Override
+                            public void onSuccess() {
+                                progressBar.setVisibility(View.GONE);
+                                organiserName.setText(user.getUserProfile().getName());
+                                organiserEmail.setText(user.getUserProfile().getEmail());
+                                organiserLinkedIn.setText(user.getUserProfile().getWebsite());
+
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                progressBar.setVisibility(View.GONE);
+                            }
+                        });
                     });
-                }
-                else
-                {
+                } else {
                     Log.d("halpp", "Document not retrieved, setting default image");
                     binding.organiserText.setText("Unknown");
                 }
             }
-        }).addOnFailureListener(new OnFailureListener()
-        {
+        }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(@NonNull Exception e)
-            {
+            public void onFailure(@NonNull Exception e) {
                 Log.e("ViewEventActivity", "Error fetching user data: " + e.getMessage());
             }
         });
 
         dialog.show();
-
-
-
     }
 
     // Fetches the event data from Firestore
