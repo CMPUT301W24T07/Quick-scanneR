@@ -1,13 +1,17 @@
 package com.example.quickscanner.controller;
 
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.ConferenceConfig;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.ui.homepage_event.EventArrayAdapter;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -16,6 +20,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -50,6 +55,7 @@ public class FirebaseEventController
         eventsRef = db.collection("Events");
         configRef = db.collection("config");
     }
+
     /**
      * Validates the ID of the user or event, throwing an IllegalArgumentException if the ID is null or empty.
      *
@@ -79,7 +85,7 @@ public class FirebaseEventController
     /**
      * Updates existing event in Firestore. AND merges new Fields.
      * NOTE: this does not update checked in or signed up users.
-     *  you must use signUp and checkIn methods for that.
+     * you must use signUp and checkIn methods for that.
      * use signUp and checkIn methods for that.
      *
      * @param event the event to be updated
@@ -117,7 +123,8 @@ public class FirebaseEventController
     }
 
 
-    public Task<List<Event>> getEvents() {
+    public Task<List<Event>> getEvents()
+    {
         Query query = eventsRef.orderBy("time").limit(30);
 
         Task<QuerySnapshot> task = query.get();
@@ -148,31 +155,42 @@ public class FirebaseEventController
             }
         });
     }
-    public Task<List<Event>> continueGetEvents(String lastEventId) {
+
+    public Task<List<Event>> continueGetEvents(String lastEventId)
+    {
         validateId(lastEventId);
         Task<DocumentSnapshot> lastEventTask = eventsRef.document(lastEventId).get();
 
-        return lastEventTask.continueWithTask(new Continuation<DocumentSnapshot, Task<List<Event>>>() {
+        return lastEventTask.continueWithTask(new Continuation<DocumentSnapshot, Task<List<Event>>>()
+        {
             @Override
-            public Task<List<Event>> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
+            public Task<List<Event>> then(@NonNull Task<DocumentSnapshot> task) throws Exception
+            {
                 DocumentSnapshot lastEvent = task.getResult();
                 Query query = eventsRef.orderBy("time").startAfter(lastEvent).limit(30);
                 Task<QuerySnapshot> queryTask = query.get();
 
-                return queryTask.continueWith(new Continuation<QuerySnapshot, List<Event>>() {
+                return queryTask.continueWith(new Continuation<QuerySnapshot, List<Event>>()
+                {
                     @Override
-                    public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-                        if (task.isSuccessful()) {
+                    public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception
+                    {
+                        if (task.isSuccessful())
+                        {
                             QuerySnapshot querySnapshot = task.getResult();
                             List<Event> events = new ArrayList<>();
-                            if (querySnapshot != null) {
-                                for (QueryDocumentSnapshot document : querySnapshot) {
+                            if (querySnapshot != null)
+                            {
+                                for (QueryDocumentSnapshot document : querySnapshot)
+                                {
                                     Event event = document.toObject(Event.class);
                                     events.add(event);
                                 }
                             }
                             return events;
-                        } else {
+                        }
+                        else
+                        {
                             throw task.getException();
                         }
                     }
@@ -216,34 +234,136 @@ public class FirebaseEventController
             }
         });
     }
-    /**
-     * Retrieves a list of events from Firestore by the organizer ID.
-     *
-     * @param organizerId The ID of the organizer.
-     * @return a Task that completes with a list of Event objects.
-     */
-    public Task<List<Event>> getEventsByOrganizer(String organizerId) {
-        return eventsRef.whereEqualTo("organizerID", organizerId).get()
-                .continueWith(new Continuation<QuerySnapshot, List<Event>>() {
+
+    public ListenerRegistration setUpOrganizedEventsListener(String orgId, ArrayList<Event> eventsDataList, ArrayAdapter<Event> eventAdapter, TextView emptyEvents, ListView listView)
+    {
+        //log saying that the orgId is being passed
+        return eventsRef.whereEqualTo("organizerID", orgId)
+                .orderBy("time", Query.Direction.ASCENDING)
+                .addSnapshotListener(new EventListener<QuerySnapshot>()
+                {
                     @Override
-                    public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-                        List<Event> eventList = new ArrayList<>();
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Event event = document.toObject(Event.class);
-                            eventList.add(event);
+                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots,
+                                        @Nullable FirebaseFirestoreException e)
+                    {
+                        //log stating in on event
+                        if (e != null)
+                        {
+                            Log.e("SetUpOrganizedEventsListener", "Error getting events", e);
+                            return;
                         }
-                        return eventList;
+                        if (queryDocumentSnapshots != null)
+                        {
+                            if(queryDocumentSnapshots.isEmpty())
+                            {
+                                listView.setVisibility(View.GONE);
+                                emptyEvents.setVisibility(View.VISIBLE);
+                            }
+
+
+                        for (DocumentChange docChange : queryDocumentSnapshots.getDocumentChanges())
+                        {
+                            switch (docChange.getType())
+                            {
+                                case ADDED:
+                                    // A new document has been added, add it to the list
+                                    Event newEvent = docChange.getDocument().toObject(Event.class);
+                                    eventsDataList.add(newEvent);
+                                    updateVisibility();
+                                    break;
+                                case MODIFIED:
+                                    // An existing document has been modified, update it in the list
+                                    Event modifiedEvent = docChange.getDocument().toObject(Event.class);
+                                    int index = eventsDataList.indexOf(modifiedEvent);
+                                    if (index != -1)
+                                    {
+                                        eventsDataList.set(index, modifiedEvent);
+                                    }
+                                    updateVisibility();
+                                    break;
+                                case REMOVED:
+                                    // A document has been removed, remove it from the list
+                                    Event removedEvent = docChange.getDocument().toObject(Event.class);
+                                    eventsDataList.remove(removedEvent);
+                                    updateVisibility();
+                                    break;
+                            }
+                        }
+                    }else {
+                            Log.e("SetUpOrganizedEventsListener", "queryDocumentSnapshots is null");
+                        }
+
+                        // Notify the adapter that the data has changed
+                        eventAdapter.notifyDataSetChanged();
+                    }
+                    private void updateVisibility()
+                    {
+                        if (eventsDataList.isEmpty())
+                        {
+                            listView.setVisibility(View.GONE);
+                            emptyEvents.setVisibility(View.VISIBLE);
+                        }
+                        else
+                        {
+                            listView.setVisibility(View.VISIBLE);
+                            emptyEvents.setVisibility(View.GONE);
+                        }
                     }
                 });
     }
-    /**
-     * Returns a reference to the Firestore collection of events.
-     *
-     * @return a CollectionReference pointing to the "Events" collection in Firestore.
-     */
-    public CollectionReference getEventsCollectionReference() {
-        return eventsRef;
+    public ListenerRegistration setupAttendListListener(String userId, ArrayList<Event> signedUpEventsList, ArrayAdapter<Event> adapter, TextView emptyList, ListView listView) {
+        validateId(userId);
+        DocumentReference userSignUpsRef = db.collection("users").document(userId).collection("Attendance").document("signedUpEvents");
+
+        return userSignUpsRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("UserSignedUpEvents", "Listen failed.", e);
+                    return;
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    List<String> eventIds = (List<String>) snapshot.get("eventIds");
+                    if (eventIds == null || eventIds.isEmpty()) {
+                        listView.setVisibility(View.GONE);
+                        emptyList.setVisibility(View.VISIBLE);
+                    } else {
+                        // Handle added events
+                        for (String eventId : eventIds) {
+                            getEvent(eventId)
+                                    .addOnSuccessListener(event -> {
+                                        if (!signedUpEventsList.contains(event)) {
+                                            signedUpEventsList.add(event);
+                                            adapter.notifyDataSetChanged();
+                                            updateVisibility();
+                                        }
+                                    });
+                        }
+
+                        // Handle removed events
+                        signedUpEventsList.removeIf(event -> !eventIds.contains(event.getEventID()));
+                        adapter.notifyDataSetChanged();
+                        updateVisibility();
+                    }
+                } else {
+                    Log.d("UserSignedUpEvents", "Current data: null");
+                }
+            }
+
+            private void updateVisibility() {
+                if (signedUpEventsList.isEmpty()) {
+                    listView.setVisibility(View.GONE);
+                    emptyList.setVisibility(View.VISIBLE);
+                } else {
+                    listView.setVisibility(View.VISIBLE);
+                    emptyList.setVisibility(View.GONE);
+                }
+            }
+        });
     }
+
+
     /**
      * Sets up a Firestore listener for real-time updates to the events list.
      *
@@ -274,7 +394,7 @@ public class FirebaseEventController
      * @param eventAdapter The ArrayAdapter to notify of changes. This adapter should be connected to the UI.
      */
     public ListenerRegistration setupEventListListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter) {
-         return getEventsCollectionReference().addSnapshotListener(new com.google.firebase.firestore.EventListener<QuerySnapshot>() {
+         return eventsRef.addSnapshotListener(new com.google.firebase.firestore.EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots,
                                 @Nullable FirebaseFirestoreException e) {

@@ -92,9 +92,14 @@ public class FirebaseAttendanceController
         validateId(userId);
         validateId(eventId);
         final DocumentReference eventRef = eventsRef.document(eventId);
+        CollectionReference eventAnnouncementsRef = eventRef.collection("Announcements");
         final DocumentReference signUpRef = eventRef.collection("signUps").document(userId);
         final DocumentReference userRef = db.collection("users").document(userId);
         final DocumentReference userSignUpsRef = userRef.collection("Attendance").document("signedUpEvents");
+        final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
+
+        return eventAnnouncementsRef.get().continueWithTask(task -> {
+                    final List<DocumentSnapshot> announcementDocs = task.getResult().getDocuments();
 
         return db.runTransaction(new Transaction.Function<Void>() {
             @Nullable
@@ -127,10 +132,22 @@ public class FirebaseAttendanceController
                     Map<String, Object> userSignUpsData = new HashMap<>();
                     userSignUpsData.put("eventIds", FieldValue.arrayUnion(eventId));
                     transaction.set(userSignUpsRef, userSignUpsData, SetOptions.merge());
+
+
+                    // For each document in the Announcements subcollection,
+                    // add a document with the same ID and data to the Announcements
+                    // subcollection of the user
+                    for (DocumentSnapshot announcementDoc : announcementDocs) {
+                        DocumentReference userAnnouncementRef = userAnnouncementsRef.document(announcementDoc.getId());
+                        if (announcementDoc.exists()) {
+                            transaction.set(userAnnouncementRef, announcementDoc.getData());
+                        }
+                    }
                 }
 
                 return null;
             }
+        });
         });
     }
     /**
@@ -340,6 +357,7 @@ public class FirebaseAttendanceController
         final DocumentReference userRef = db.collection("users").document(userId);
         final DocumentReference userSignUpsRef = userRef.collection("Attendance")
                 .document("signedUpEvents");
+        final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
 
         return db.runTransaction(new Transaction.Function<Void>() {
             @Nullable
@@ -358,6 +376,22 @@ public class FirebaseAttendanceController
 
                     // Remove the event from the user's signed-up events
                     transaction.update(userSignUpsRef, "eventIds", FieldValue.arrayRemove(eventId));
+
+                    // Fetch all the announcements related to the event from the user's Announcements subcollection
+                    userAnnouncementsRef.whereEqualTo("eventId", eventId).get().addOnCompleteListener(task ->
+                    {
+                        if (task.isSuccessful())
+                        {
+                            for (DocumentSnapshot document : task.getResult())
+                            {
+                                // Delete the announcement document
+                                if (document.exists())
+                                {
+                                    transaction.delete(userAnnouncementsRef.document(document.getId()));
+                                }
+                            }
+                        }
+                    });
                 }
 
                 return null;
@@ -518,7 +552,7 @@ public class FirebaseAttendanceController
     public ListenerRegistration setupSignUpListListener(String eventId, ArrayList<User> signUpDataList, SignUpAdapter adapter, TextView emptyList, ListView listView)
     {
         validateId(eventId);
-        return getEventSignUpsCollectionReference(eventId)
+        return eventsRef.document(eventId).collection("signUps")
                 //TODO make people sign out so this wont break stuff
                 //.orderBy("signUpTime")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -565,6 +599,8 @@ public class FirebaseAttendanceController
                                         break;
                                     case REMOVED:
                                         // A document has been removed, remove it from the list
+                                        // log saying i got to removed
+
                                         fbUserController.getUser(docChange.getDocument().getId())
                                                 .addOnSuccessListener(user -> {
                                                     signUpDataList.remove(user);
@@ -599,7 +635,7 @@ public class FirebaseAttendanceController
 
     public ListenerRegistration setupCheckInListListener(String eventId, ArrayList<User> checkInDataList, CheckInAdapter adapter, TextView emptyList, ListView listView) {
         validateId(eventId);
-         return getEventCheckInsCollectionReference(eventId)
+         return eventsRef.document(eventId).collection("checkIns")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
@@ -772,16 +808,8 @@ public class FirebaseAttendanceController
             return document.exists();
         });
     }
-    //method to get an events signed up user collection reference
-    public CollectionReference getEventSignUpsCollectionReference(String eventId) {
-        validateId(eventId);
-        return eventsRef.document(eventId).collection("signUps");
-    }
-    //method to get an events checked in user collection reference
-    public CollectionReference getEventCheckInsCollectionReference(String eventId) {
-        validateId(eventId);
-        return eventsRef.document(eventId).collection("checkIns");
-    }
+
+
 
 
     /**

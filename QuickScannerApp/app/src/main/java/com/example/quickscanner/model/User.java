@@ -1,6 +1,7 @@
 package com.example.quickscanner.model;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Represents a User with a profile, admin status, and lists of events they're organizing or attending.
@@ -175,6 +176,13 @@ public class User {
     public boolean isSelected() { return selected; }
 
     public void setSelected(boolean selected) { this.selected = selected; }
+    //needed to allow the listener to notice that things have been removed, to tell they are the same
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(Uid, user.Uid);
+    }
 
 
 }
