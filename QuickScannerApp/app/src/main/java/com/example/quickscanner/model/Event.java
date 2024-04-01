@@ -7,6 +7,7 @@ import com.google.firebase.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
 import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 
@@ -151,5 +152,12 @@ public class Event {
 
         date.setTimeZone(TimeZone.getTimeZone(timeZone));
         return date.format(this.time.toDate());
+    }
+    //needed so when the listener is called it can tell if the event is the same
+    @Override
+    public boolean equals(Object compare) {
+        if (compare == null || getClass() != compare.getClass()) return false;
+        Event event = (Event) compare;
+        return Objects.equals(eventID, event.eventID);
     }
 }
