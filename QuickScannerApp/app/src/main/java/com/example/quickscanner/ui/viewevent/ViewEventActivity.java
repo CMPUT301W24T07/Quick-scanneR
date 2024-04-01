@@ -260,11 +260,6 @@ public class ViewEventActivity extends AppCompatActivity
                     Log.d("halpp", "Organiser name is: " + user.getUserProfile().getName());
 
 
-                    //SIDDHARTH HERE PAY ATTENTION
-                    //TODO: set the profile picture of the organiser
-
-//                    Profile organizerProfile = organizer.getUserProfile();
-
                     // Get the URL of the organizer's profile picture
                     fbImageController.downloadImage(user.getUserProfile().getImageUrl()).addOnCompleteListener(task1 -> {
                         String url = String.valueOf(task1.getResult());
