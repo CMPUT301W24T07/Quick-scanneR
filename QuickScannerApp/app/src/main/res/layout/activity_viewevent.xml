@@ -128,6 +128,7 @@
                 android:paddingTop="20dp"
                 android:paddingEnd="10dp"
                 android:text="Organiser Name"
+                android:textColor="#03A9F4"
                 android:textSize="25sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/organiserProfilePicture"
