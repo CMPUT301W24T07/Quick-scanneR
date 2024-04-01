@@ -3,6 +3,7 @@ package com.example.quickscanner.ui.viewevent;
 import static android.content.ContentValues.TAG;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,14 +11,18 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.RelativeLayout;
 
@@ -103,6 +108,18 @@ public class ViewEventActivity extends AppCompatActivity
             }
         });
 
+        // Set click listeners
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create and show the custom dialog
+                showOrganiserDetailsDialog();
+            }
+        };
+
+        binding.organiserProfilePicture.setOnClickListener(listener);
+        binding.organiserText.setOnClickListener(listener);
+
         // Display Back Button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
@@ -111,7 +128,7 @@ public class ViewEventActivity extends AppCompatActivity
         if (inputBundle != null)
         {
             eventID = inputBundle.getString("eventID");
-            Log.d("Beans", eventID);
+//            Log.d("Beans", eventID);
         }
         if (eventID != null)
         {
@@ -212,6 +229,69 @@ public class ViewEventActivity extends AppCompatActivity
 
     }
 
+    private void showOrganiserDetailsDialog() {
+
+        Dialog dialog = new Dialog(this);
+
+        dialog.setContentView(R.layout.dialog_organiser_details);
+
+        //get references for all views
+        ImageView organiserProfilePicture = dialog.findViewById(R.id.dialog_organiser_profile_picture);
+        TextView organiserName = dialog.findViewById(R.id.dialog_organiser_name);
+        TextView organiserEmail = dialog.findViewById(R.id.dialog_organiser_email);
+        TextView organiserLinkedIn = dialog.findViewById(R.id.dialog_organiser_linkedin);
+
+        fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>()
+        {
+            public void onSuccess(User user)
+            {
+                if (user != null && user.getUserProfile() != null)
+                {
+                    //disable this organiser text line if creating new event crashes
+//                    binding.organiserText.setText(user.getUserProfile().getName());
+                    // this code exists to underline the organiser's name
+                    SpannableString content = new SpannableString(user.getUserProfile().getName());
+                    content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+                    organiserName.setText(content);
+                    organiserEmail.setText(user.getUserProfile().getEmail());
+                    organiserLinkedIn.setText(user.getUserProfile().getWebsite());
+
+
+                    Log.d("halpp", "Organiser name is: " + user.getUserProfile().getName());
+
+
+                    //SIDDHARTH HERE PAY ATTENTION
+                    //TODO: set the profile picture of the organiser
+
+//                    Profile organizerProfile = organizer.getUserProfile();
+
+                    // Get the URL of the organizer's profile picture
+                    fbImageController.downloadImage(user.getUserProfile().getImageUrl()).addOnCompleteListener(task1 -> {
+                        String url = String.valueOf(task1.getResult());
+                        Picasso.get().load(url).into(organiserProfilePicture);
+                    });
+                }
+                else
+                {
+                    Log.d("halpp", "Document not retrieved, setting default image");
+                    binding.organiserText.setText("Unknown");
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener()
+        {
+            @Override
+            public void onFailure(@NonNull Exception e)
+            {
+                Log.e("ViewEventActivity", "Error fetching user data: " + e.getMessage());
+            }
+        });
+
+        dialog.show();
+
+
+
+    }
+
     // Fetches the event data from Firestore
     private void fetchEventData()
     {
@@ -304,6 +384,7 @@ public class ViewEventActivity extends AppCompatActivity
         binding.eventTitleText.setText(event.getName());
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
+        binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
         fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>()
         {
             public void onSuccess(User user)
@@ -311,7 +392,25 @@ public class ViewEventActivity extends AppCompatActivity
                 if (user != null && user.getUserProfile() != null)
                 {
                     //disable this organiser text line if creating new event crashes
-                    binding.organiserText.setText(user.getUserProfile().getName());
+//                    binding.organiserText.setText(user.getUserProfile().getName());
+                    // this code exists to underline the organiser's name
+                    SpannableString content = new SpannableString(user.getUserProfile().getName());
+                    content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+                    binding.organiserText.setText(content);
+
+                    Log.d("halpp", "Organiser name is: " + user.getUserProfile().getName());
+
+
+                    //SIDDHARTH HERE PAY ATTENTION
+                    //TODO: set the profile picture of the organiser
+
+//                    Profile organizerProfile = organizer.getUserProfile();
+
+                    // Get the URL of the organizer's profile picture
+                    fbImageController.downloadImage(user.getUserProfile().getImageUrl()).addOnCompleteListener(task1 -> {
+                        String url = String.valueOf(task1.getResult());
+                        Picasso.get().load(url).into(binding.organiserProfilePicture);
+                    });
                 }
                 else
                 {
