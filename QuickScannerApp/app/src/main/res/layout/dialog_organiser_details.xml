@@ -7,12 +7,13 @@
 
     <ProgressBar
         android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toBottomOf="@id/dialog_organiser_profile_picture"
+        app:layout_constraintEnd_toEndOf="@id/dialog_organiser_profile_picture"
+        app:layout_constraintStart_toStartOf="@id/dialog_organiser_profile_picture"
+        app:layout_constraintTop_toTopOf="@id/dialog_organiser_profile_picture" />
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:padding="20dp"
@@ -20,21 +21,22 @@
         android:layout_width="200dp"
         android:layout_height="200dp"
         tools:src="@drawable/ic_launcher_background"
+        app:layout_constraintBottom_toTopOf="@id/dialog_organiser_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-
         android:id="@+id/dialog_organiser_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         tools:text="Organiser Name"
         android:textSize="30sp"
         android:padding="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/dialog_organiser_email"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dialog_organiser_profile_picture" />
+        app:layout_constraintTop_toBottomOf="@id/dialog_organiser_profile_picture" />
 
     <TextView
         android:id="@+id/dialog_organiser_email"
@@ -43,17 +45,19 @@
         tools:text="Organiser Email"
         android:textSize="25sp"
         android:padding="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/dialog_organiser_linkedin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dialog_organiser_name" />
+        app:layout_constraintTop_toBottomOf="@id/dialog_organiser_name" />
 
     <TextView
-        android:padding="20dp"
         android:id="@+id/dialog_organiser_linkedin"
+        android:padding="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         tools:text="Organiser LinkedIn"
         android:textSize="25sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dialog_organiser_email" />

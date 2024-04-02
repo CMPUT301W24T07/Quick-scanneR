@@ -8,13 +8,17 @@ import android.widget.TextView;
 import com.example.quickscanner.AnnouncementArrayAdapter;
 import com.example.quickscanner.model.Announcement;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class FirebaseAnnouncementController
 {
@@ -48,54 +52,79 @@ public class FirebaseAnnouncementController
     /**
      * Adds an announcement to both the event's and user's "Announcements" sub-collections.
      * The same ID is used for the announcement in both collections.
-     * @param eventID The ID of the event.
-     * @param userID The ID of the user.
+     * @param eventId The ID of the event.
      * @param announcement The announcement to be added.
      * @return A Task representing the operation of adding the announcement to both collections.
      */
-    public Task<Void> addAnnouncement(String eventID, String userID, Announcement announcement) {
-        validateId(eventID);
-        validateId(userID);
-        return db.runTransaction(transaction -> {
-            // Create a new document in the event's "Announcements" collection
-            DocumentReference newEventAnnouncementRef = eventsRef.document(eventID).collection("Announcements").document();
-            transaction.set(newEventAnnouncementRef, announcement);
+    public Task<List<String>> addAnnouncement(String eventId, Announcement announcement, List<String> userIds) {
+        validateId(eventId);
+        for (String userId : userIds) {
+            validateId(userId);
+        }
+        TaskCompletionSource<List<String>> taskCompletionSource = new TaskCompletionSource<>();
 
-            // Create a new document with the same ID in the user's "Announcements" collection
-            DocumentReference newUserAnnouncementRef = usersRef.document(userID).collection("Announcements").document(newEventAnnouncementRef.getId());
-            transaction.set(newUserAnnouncementRef, announcement);
+        // Attempt to add the announcement to the event
+        DocumentReference eventAnnouncementRef = eventsRef.document(eventId)
+                .collection("Announcements").document();
 
-            return null;
+        eventAnnouncementRef.set(announcement).addOnSuccessListener(aVoid -> {
+            // If adding to the event succeeds, proceed with users
+            processUserAnnouncements(userIds, announcement, taskCompletionSource);
+        }).addOnFailureListener(e -> {
+            // If adding to the event fails, resolve the task with the entire list of user IDs
+            taskCompletionSource.setResult(userIds);
+        });
+
+        return taskCompletionSource.getTask();
+    }
+
+    private void processUserAnnouncements(List<String> userIds, Announcement announcement, TaskCompletionSource<List<String>> taskCompletionSource) {
+        final int MAX_BATCH_SIZE = 500;
+        List<Task<Void>> taskList = new ArrayList<>();
+        List<String> failedUserIds = new ArrayList<>();
+        if (userIds.isEmpty()) {
+            // If there are no users to process, resolve the task with an empty list
+            taskCompletionSource.setResult(new ArrayList<>());
+            return;
+        }
+        // Process each user in different parts to avoid exceeding the batch limit
+        for (int i = 0; i < userIds.size(); i += MAX_BATCH_SIZE) {
+            int end = Math.min(userIds.size(), i + MAX_BATCH_SIZE);
+            List<String> subList = userIds.subList(i, end);
+
+
+
+            //write each batch to the database in the users collection.
+            WriteBatch batch = db.batch();
+            for (String userId : subList) {
+                DocumentReference userRef = usersRef.document(userId)
+                        .collection("Announcements").document();
+                batch.set(userRef, announcement);
+            }
+            //if writing fails, add the user to the failedUserIds list
+            Task<Void> batchTask = batch.commit().addOnFailureListener(e -> {
+                // Collect user IDs from failed batches
+                failedUserIds.addAll(subList);
+            });
+            //otherwise add the task to the taskList
+            taskList.add(batchTask);
+        }
+
+        // Wait for all batches to complete
+        Tasks.whenAllComplete(taskList).addOnCompleteListener(task -> {
+            if (failedUserIds.isEmpty()) {
+                // If there are no failures, resolve with an empty list indicating success
+                taskCompletionSource.setResult(new ArrayList<>());
+            } else {
+                // If some user operations failed, resolve with the list of failed user IDs
+                taskCompletionSource.setResult(failedUserIds);
+            }
         });
     }
-    /**
-     * Deletes an announcement from both the event's and user's "Announcements" sub-collections.
-     * @param eventID The ID of the event.
-     * @param userID The ID of the user.
-     * @param announcementID The ID of the announcement to be deleted.
-     * @return A Task representing the operation of deleting the announcement from both collections.
-     */
-    public Task<Void> deleteAnnouncement(String eventID, String userID, String announcementID) {
-        validateId(eventID);
-        validateId(userID);
-        validateId(announcementID);
+    public ListenerRegistration setupAnnouncementListListener(String userid, ArrayList<Announcement> announcementDataList, AnnouncementArrayAdapter adapter, TextView emptyAnnouncement, ListView listView) {
+        validateId(userid);
 
-        return db.runTransaction(transaction -> {
-            // Delete the document from the event's "Announcements" collection
-            DocumentReference eventAnnouncementRef = eventsRef.document(eventID).collection("Announcements").document(announcementID);
-            transaction.delete(eventAnnouncementRef);
-
-            // Delete the document from the user's "Announcements" collection
-            DocumentReference userAnnouncementRef = usersRef.document(userID).collection("Announcements").document(announcementID);
-            transaction.delete(userAnnouncementRef);
-
-            return null;
-        });
-    }
-    public ListenerRegistration setupAnnouncementListListener(String eventID, ArrayList<Announcement> announcementDataList, AnnouncementArrayAdapter adapter, TextView emptyAnnouncement, ListView listView) {
-        validateId(eventID);
-
-        return eventsRef.document(eventID).collection("Announcements")
+        return usersRef.document(userid).collection("Announcements")
                 .addSnapshotListener((value, error) -> {
                     if (error != null) {
                         Log.e("FirebaseAnnouncementController", "Error getting announcements", error);
@@ -111,15 +140,18 @@ public class FirebaseAnnouncementController
                         switch (dc.getType()) {
                             case ADDED:
                                 Announcement newAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                announcementDataList.add(newAnnouncement);
+                                announcementDataList.add(0, newAnnouncement);
                                 break;
                             case MODIFIED:
                                 Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                int index = announcementDataList.indexOf(modifiedAnnouncement);
-                                if (index != -1) {
-                                    announcementDataList.set(index, modifiedAnnouncement);
+                                for (int i = 0; i < announcementDataList.size(); i++)
+                                {
+                                    if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId()))
+                                    {
+                                        announcementDataList.set(i, modifiedAnnouncement);
+                                        break;
+                                    }
                                 }
-                                break;
                             case REMOVED:
                                 Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
                                 announcementDataList.remove(removedAnnouncement);
@@ -127,8 +159,6 @@ public class FirebaseAnnouncementController
                         }
                     }
 
-                    // Sort the list based on the 'time' field
-                    announcementDataList.sort((a1, a2) -> a2.getTime().compareTo(a1.getTime()));
 
                     //this is how we check if the list is empty or not
                     //if it is empty, we show the no annoucements to view text

@@ -8,6 +8,7 @@ public class Announcement {
     private String message;
     private String eventName;
     private String eventID;
+    private String id;
     private Timestamp time;
 
 
@@ -34,6 +35,11 @@ public class Announcement {
     {
         return eventID;
     }
+    public String getId() {
+        return id;
+    }
+
+
 
     public void setMessage(String message) {
         this.message = message;
@@ -48,5 +54,8 @@ public class Announcement {
     public void setEventID(String eventID)
     {
         this.eventID = eventID;
+    }
+    public void setId(String id) {
+        this.id = id;
     }
 }
