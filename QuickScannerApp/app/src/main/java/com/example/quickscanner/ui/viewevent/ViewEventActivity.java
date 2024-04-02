@@ -69,6 +69,7 @@ public class ViewEventActivity extends AppCompatActivity
     private ActivityVieweventBinding binding;
     private ProgressBar loading;
     private RelativeLayout contentLayout;
+    private Integer  loadCount;
 
 
     private FirebaseQrCodeController fbQRCodeController;
@@ -98,11 +99,23 @@ public class ViewEventActivity extends AppCompatActivity
         contentLayout = findViewById(R.id.contentLayout);
         loading.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.GONE);
+        binding.signUpButton.setVisibility(View.GONE);
+        loadCount = 5;
+        Log.d("LoadCount", "Decrementing loadCount, current value: " + loadCount);
+
+
+
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 // Refresh the event data
+                loadCount = 5;
+                loading.setVisibility(View.VISIBLE);
+                contentLayout.setVisibility(View.GONE);
+                binding.signUpButton.setVisibility(View.GONE);
+                Log.d("LoadCount", "Decrementing loadCount, current value: " + loadCount);
+
                 fetchEventData();
                 swipeRefreshLayout.setRefreshing(false);
             }
@@ -251,15 +264,18 @@ public class ViewEventActivity extends AppCompatActivity
                     // Set the organiser details
 
                     // Get the URL of the organizer's profile picture
+                    if (user.getUserProfile().getImageUrl() == null || user.getUserProfile().getImageUrl().isEmpty())
+                    {
+                        //TODO: set default image to our default. i forget what the path is.
+                        user.getUserProfile().setImageUrl("default.jpeg");
+                    }
                     fbImageController.downloadImage(user.getUserProfile().getImageUrl()).addOnCompleteListener(task1 -> {
                         String url = String.valueOf(task1.getResult());
                         Picasso.get().load(url).into(organiserProfilePicture, new com.squareup.picasso.Callback() {
                             @Override
                             public void onSuccess() {
                                 progressBar.setVisibility(View.GONE);
-                                organiserName.setText(user.getUserProfile().getName());
-                                organiserEmail.setText(user.getUserProfile().getEmail());
-                                organiserLinkedIn.setText(user.getUserProfile().getWebsite());
+
 
                             }
 
@@ -267,8 +283,33 @@ public class ViewEventActivity extends AppCompatActivity
                             public void onError(Exception e) {
                                 progressBar.setVisibility(View.GONE);
                             }
+
                         });
                     });
+                    if (user.getUserProfile().getName() == null || user.getUserProfile().getName().isEmpty())
+                    {
+                        organiserName.setText("Anonymous Organizer");
+                    }
+                    else
+                    {
+                        organiserName.setText(user.getUserProfile().getName());
+                    }
+                    if (user.getUserProfile().getEmail() == null || user.getUserProfile().getEmail().isEmpty())
+                    {
+                        organiserEmail.setText("No email provided");
+                    }
+                    else
+                    {
+                        organiserEmail.setText(user.getUserProfile().getEmail());
+                    }
+                    if (user.getUserProfile().getWebsite() == null || user.getUserProfile().getWebsite().isEmpty())
+                    {
+                        organiserLinkedIn.setText("No LinkedIn provided");
+                    }
+                    else
+                    {
+                        organiserLinkedIn.setText(user.getUserProfile().getWebsite());
+                    }
                 } else {
                     Log.d("halpp", "Document not retrieved, setting default image");
                     binding.organiserText.setText("Unknown");
@@ -287,6 +328,7 @@ public class ViewEventActivity extends AppCompatActivity
     // Fetches the event data from Firestore
     private void fetchEventData()
     {
+
         String UiD = fbUserController.getCurrentUserUid();
         fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<Event>()
         {
@@ -355,6 +397,7 @@ public class ViewEventActivity extends AppCompatActivity
                         }
                     }
                 });
+                decrementLoadCount("event");
 
             }
         }).addOnFailureListener(new OnFailureListener()
@@ -402,14 +445,15 @@ public class ViewEventActivity extends AppCompatActivity
                     fbImageController.downloadImage(user.getUserProfile().getImageUrl()).addOnCompleteListener(task1 -> {
                         String url = String.valueOf(task1.getResult());
                         Picasso.get().load(url).into(binding.organiserProfilePicture);
+                        decrementLoadCount("org pic");
                     });
                 }
-                else
-                {
-                    Log.d("halpp", "Document not retrieved, setting default image");
-                    binding.organiserText.setText("Unknown");
-                }
+                decrementLoadCount("user");
+
             }
+
+
+
         }).addOnFailureListener(new OnFailureListener()
         {
             @Override
@@ -423,6 +467,7 @@ public class ViewEventActivity extends AppCompatActivity
         if (UiD.equals(event.getOrganizerID()))
         {
             binding.signUpButton.setText("Attendance Information");
+            decrementLoadCount("button attend");
         }
         else
         {
@@ -458,6 +503,7 @@ public class ViewEventActivity extends AppCompatActivity
                                         .getColor(ViewEventActivity.this, R.color.purple_500));
                             }
                         }
+                        decrementLoadCount("button");
                     }
                     else
                     {
@@ -474,14 +520,15 @@ public class ViewEventActivity extends AppCompatActivity
             {
                 String url = String.valueOf(task1.getResult());
                 Picasso.get().load(url).into(binding.eventImageImage);
+
             }
             else
             {
                 Log.d("halppp", "Document not retrieved, setting default image");
                 binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
             }
-            loading.setVisibility(View.GONE);
-            contentLayout.setVisibility(View.VISIBLE);
+            decrementLoadCount("event image again?");
+
         });
 
 
@@ -504,6 +551,7 @@ public class ViewEventActivity extends AppCompatActivity
                 Log.d("halppp", "Document not retrieved, setting default image");
                 binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
             }
+            decrementLoadCount("event image");
         });
 
     }
@@ -526,7 +574,18 @@ public class ViewEventActivity extends AppCompatActivity
             QRCodeDialogFragment.newInstance(eventID).show(getSupportFragmentManager(), "QRCodeDialogFragment");
         }
     }
-
+    private void showContent() {
+        loading.setVisibility(View.GONE);
+        binding.signUpButton.setVisibility(View.VISIBLE);
+        contentLayout.setVisibility(View.VISIBLE);
+    }
+    private synchronized void decrementLoadCount(String location) {
+        loadCount--;
+        Log.d(TAG, "loadCount after decrement " + location + " : " + loadCount); // Corrected to log after decrement
+        if (loadCount == 0) {
+            showContent();
+        }
+    }
 //    // Handles The Top Bar menu clicks
 //    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 //        if (item.getItemId() == android.R.id.home) {
@@ -711,6 +770,7 @@ public class ViewEventActivity extends AppCompatActivity
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
 
 }
 
