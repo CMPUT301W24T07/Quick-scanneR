@@ -31,8 +31,11 @@ import com.google.firebase.firestore.Transaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -549,6 +552,115 @@ public class FirebaseAttendanceController
             return convertToObject(task.getResult(), User.class);
         });
     }
+    //get the list of users who have checked in to a specific event
+    public Task<List<User>> getEventCheckIns(String eventId) {
+        // Validate the event ID
+        validateId(eventId);
+        // Reference to the event's sign-ups collection
+        CollectionReference eventSignUpsRef = eventsRef.document(eventId).collection("checkIns");
+
+        // Fetch the documents in the collection and continue with the task
+        return eventSignUpsRef.get().continueWithTask(task -> {
+            List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+            for (DocumentSnapshot document : task.getResult().getDocuments()) {
+                // Fetch the user data using the document ID
+                Task<DocumentSnapshot> userTask = usersRef.document(document.getId()).get();
+                tasks.add(userTask);
+            }
+
+            // Wait for all the user data to be fetched
+            return Tasks.whenAllSuccess(tasks);
+        }).continueWith(task -> {
+            // Convert the DocumentSnapshots to User objects
+            return convertToObject(task.getResult(), User.class);
+        });
+    }
+    public Task<List<User>> getEventAttendees(String eventId) {
+        // Validates the event ID
+        validateId(eventId);
+
+        // References to the event's sign-ups and check-ins collections
+        CollectionReference eventSignUpsRef = eventsRef.document(eventId).collection("signUps");
+        CollectionReference eventCheckInsRef = eventsRef.document(eventId).collection("checkIns");
+
+        // Initializes a set to hold unique user IDs
+        HashSet<String> uniqueUserIds = new HashSet<>();
+
+        // Fetchs the documents in both collections
+        Task<QuerySnapshot> signUpDocumentsTask = eventSignUpsRef.get();
+        Task<QuerySnapshot> checkInDocumentsTask = eventCheckInsRef.get();
+
+        return Tasks.whenAllComplete(signUpDocumentsTask, checkInDocumentsTask).continueWithTask(task -> {
+            // Checks sign-up documents and adds user IDs to the set
+            if (signUpDocumentsTask.isSuccessful()) {
+                for (DocumentSnapshot document : signUpDocumentsTask.getResult().getDocuments()) {
+                    uniqueUserIds.add(document.getId());
+                }
+            }
+
+            // Checks check-in documents and adds user IDs to the set
+            if (checkInDocumentsTask.isSuccessful()) {
+                for (DocumentSnapshot document : checkInDocumentsTask.getResult().getDocuments()) {
+                    uniqueUserIds.add(document.getId());
+                }
+            }
+
+            // fetchs user details for all unique IDs
+            List<Task<DocumentSnapshot>> userTasks = new ArrayList<>();
+            for (String userId : uniqueUserIds) {
+                userTasks.add(usersRef.document(userId).get());
+            }
+
+            // Waits for all user data to be fetched
+            return Tasks.whenAllSuccess(userTasks);
+        }).continueWith(task -> {
+            // Converts the DocumentSnapshots to User objects
+            List<User> users = new ArrayList<>();
+            for (Object result : task.getResult()) {
+                DocumentSnapshot snapshot = (DocumentSnapshot) result;
+                User user = snapshot.toObject(User.class);
+                users.add(user);
+            }
+            return users;
+        });
+    }
+    public Task<List<String>> getEventAttendeeIds(String eventId) {
+        // Validates the event ID
+        validateId(eventId);
+
+        // References to the event's sign-ups and check-ins collections
+        CollectionReference eventSignUpsRef = eventsRef.document(eventId).collection("signUps");
+        CollectionReference eventCheckInsRef = eventsRef.document(eventId).collection("checkIns");
+
+        // Initializes a set to hold unique user IDs
+        HashSet<String> uniqueUserIds = new HashSet<>();
+
+        // Fetches the documents in both collections
+        Task<QuerySnapshot> signUpDocumentsTask = eventSignUpsRef.get();
+        Task<QuerySnapshot> checkInDocumentsTask = eventCheckInsRef.get();
+
+        return Tasks.whenAllComplete(signUpDocumentsTask, checkInDocumentsTask).continueWithTask(task -> {
+            // Checks sign-up documents and adds user IDs to the set
+            if (signUpDocumentsTask.isSuccessful()) {
+                for (DocumentSnapshot document : signUpDocumentsTask.getResult().getDocuments()) {
+                    uniqueUserIds.add(document.getId());
+                }
+            }
+
+            // Checks check-in documents and adds user IDs to the set
+            if (checkInDocumentsTask.isSuccessful()) {
+                for (DocumentSnapshot document : checkInDocumentsTask.getResult().getDocuments()) {
+                    uniqueUserIds.add(document.getId());
+                }
+            }
+
+            // At this point, uniqueUserIds contains all unique user IDs
+            // Convert the set to a list to match the expected return type
+            List<String> uniqueUserIdsList = new ArrayList<>(uniqueUserIds);
+            return Tasks.forResult(uniqueUserIdsList);
+        });
+    }
+
     public ListenerRegistration setupSignUpListListener(String eventId, ArrayList<User> signUpDataList, SignUpAdapter adapter, TextView emptyList, ListView listView)
     {
         validateId(eventId);

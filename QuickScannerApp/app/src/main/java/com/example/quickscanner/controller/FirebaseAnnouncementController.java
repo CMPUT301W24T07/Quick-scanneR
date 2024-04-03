@@ -16,6 +16,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.WriteBatch;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class FirebaseAnnouncementController
     private final CollectionReference eventsRef;
 
     private final CollectionReference usersRef;
+    private FirebaseAttendanceController fbAttendanceController;
 
     /**
      * Constructor for FirebaseAnnouncementController.
@@ -36,6 +38,7 @@ public class FirebaseAnnouncementController
         db = FirebaseFirestore.getInstance();
         eventsRef = db.collection("Events");
         usersRef = db.collection("users");
+        fbAttendanceController = new FirebaseAttendanceController();
     }
     /**
      * Validates the provided ID.
@@ -50,73 +53,98 @@ public class FirebaseAnnouncementController
         }
     }
     /**
-     * Adds an announcement to both the event's and user's "Announcements" sub-collections.
-     * The same ID is used for the announcement in both collections.
-     * @param eventId The ID of the event.
-     * @param announcement The announcement to be added.
-     * @return A Task representing the operation of adding the announcement to both collections.
+     * Attempts to add an announcement to a specific event and then notifies the event's attendees.
+     * First, it fetches the event attendee IDs. If successful, it proceeds to add the announcement
+     * to the event's "Announcements" collection. Regardless of the outcome, it attempts to notify
+     * attendees by processing the announcements for each user.
+     *
+     * @param eventId The unique identifier of the event to add the announcement to.
+     * @param announcement The {@link Announcement} object containing the announcement details.
+     * @return A {@link Task} that resolves to a list of strings. On success, this list is empty,
+     * indicating that the announcement was added and processed successfully. If fetching attendees fails,
+     * the list contains just the eventId to indicate failure in fetching attendees. If adding the
+     * announcement fails but fetching attendee IDs succeeds, the list returns the user IDs to indicate
+     * the intended recipients of the failed announcement.
      */
-    public Task<List<String>> addAnnouncement(String eventId, Announcement announcement, List<String> userIds) {
+    public Task<List<String>> addAnnouncement(String eventId, Announcement announcement) {
         validateId(eventId);
-        for (String userId : userIds) {
-            validateId(userId);
-        }
         TaskCompletionSource<List<String>> taskCompletionSource = new TaskCompletionSource<>();
-
-        // Attempt to add the announcement to the event
-        DocumentReference eventAnnouncementRef = eventsRef.document(eventId)
-                .collection("Announcements").document();
-
-        eventAnnouncementRef.set(announcement).addOnSuccessListener(aVoid -> {
-            // If adding to the event succeeds, proceed with users
-            processUserAnnouncements(userIds, announcement, taskCompletionSource);
+        fbAttendanceController.getEventAttendeeIds(eventId).addOnSuccessListener(userIds -> {
+            DocumentReference eventAnnouncementRef = eventsRef.document(eventId)
+                    .collection("Announcements").document();
+            // attempts to add the announcement to the event
+            eventAnnouncementRef.set(announcement).addOnSuccessListener(aVoid -> {
+                // If adding the announcement succeeds, proceeds as normal
+                processUserAnnouncements(userIds, announcement, taskCompletionSource);
+            }).addOnFailureListener(e -> {
+                Log.e("FirebaseAnnouncementController", "Error getting event attendees while adding ", e);
+                // If adding the announcement fails, returns the list of user IDs as the result
+                taskCompletionSource.setResult(userIds);
+            });
         }).addOnFailureListener(e -> {
-            // If adding to the event fails, resolve the task with the entire list of user IDs
-            taskCompletionSource.setResult(userIds);
+            //if it fails to get event, it returns the eventId in the list to signify that
+            Log.e("FirebaseAnnouncementController", "Error getting user ids while adding, returning event. ", e);
+            List<String> failureIndicator = new ArrayList<>();
+            failureIndicator.add(eventId);
+            taskCompletionSource.setResult(failureIndicator);
         });
 
         return taskCompletionSource.getTask();
     }
+    /**
+     * Processes announcements for a batch of users. This method handles the distribution of
+     * the announcement to each user's "Announcements" collection in Firestore. It manages
+     * batch processing to avoid exceeding Firestore's batch size limits.
+     *
+     * The method divides the user IDs into manageable batches and attempts to write the announcement
+     * to each user's document. If any batch fails, the IDs from that batch are collected for reporting.
+     *
+     * @param userIds A list of user IDs representing the recipients of the announcement.
+     * @param announcement The {@link Announcement} object to be distributed.
+     * @param taskCompletionSource A {@link TaskCompletionSource} used to signal the completion
+     *                             of the announcement processing, either successfully or with a list
+     *                             of user IDs that failed to be notified.
+     */
 
     private void processUserAnnouncements(List<String> userIds, Announcement announcement, TaskCompletionSource<List<String>> taskCompletionSource) {
         final int MAX_BATCH_SIZE = 500;
         List<Task<Void>> taskList = new ArrayList<>();
         List<String> failedUserIds = new ArrayList<>();
         if (userIds.isEmpty()) {
-            // If there are no users to process, resolve the task with an empty list
+            // If there are no users to process, resolves the task with an empty list
             taskCompletionSource.setResult(new ArrayList<>());
             return;
         }
-        // Process each user in different parts to avoid exceeding the batch limit
+        // Process's each user in different parts to avoid exceeding the batch limit
         for (int i = 0; i < userIds.size(); i += MAX_BATCH_SIZE) {
             int end = Math.min(userIds.size(), i + MAX_BATCH_SIZE);
             List<String> subList = userIds.subList(i, end);
 
 
 
-            //write each batch to the database in the users collection.
+            //writes each batch to the database in the users collection.
             WriteBatch batch = db.batch();
             for (String userId : subList) {
                 DocumentReference userRef = usersRef.document(userId)
                         .collection("Announcements").document();
                 batch.set(userRef, announcement);
             }
-            //if writing fails, add the user to the failedUserIds list
+            //if writing fails, adds the user to the failedUserIds list
             Task<Void> batchTask = batch.commit().addOnFailureListener(e -> {
-                // Collect user IDs from failed batches
+                // Collects user IDs from failed batches
                 failedUserIds.addAll(subList);
             });
-            //otherwise add the task to the taskList
+            //otherwise adds the task to the taskList
             taskList.add(batchTask);
         }
 
         // Wait for all batches to complete
         Tasks.whenAllComplete(taskList).addOnCompleteListener(task -> {
             if (failedUserIds.isEmpty()) {
-                // If there are no failures, resolve with an empty list indicating success
+                // If there are no failures, resolves with an empty list indicating success
                 taskCompletionSource.setResult(new ArrayList<>());
             } else {
-                // If some user operations failed, resolve with the list of failed user IDs
+                // If some user operations failed, resolves with the list of failed user IDs
                 taskCompletionSource.setResult(failedUserIds);
             }
         });
