@@ -3,11 +3,13 @@
     <item
         android:id="@+id/action_signed_up"
         android:title="Signed Up Attendees"
+        android:icon="@drawable/attending_event"
         app:showAsAction="never"/>
 
     <item
         android:id="@+id/action_checked_in"
         android:title="Checked In Attendees"
+        android:icon="@drawable/checked_in"
         app:showAsAction="never"
         />
 </menu>
