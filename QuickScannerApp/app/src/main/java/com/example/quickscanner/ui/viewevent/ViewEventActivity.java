@@ -18,6 +18,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.RelativeLayout;
 
@@ -415,26 +416,26 @@ public class ViewEventActivity extends AppCompatActivity
             }
         });
 
+        fbAttendanceController.getLiveCount(eventID).addOnSuccessListener(new OnSuccessListener<Long>() {
+            @Override
+            public void onSuccess(Long count) {
+                TextView attendanceNumTextView = findViewById(R.id.attendanceNum);
+                if (count != null) {
+                    attendanceNumTextView.setText("Attendance: " + count);
+                } else {
+                    attendanceNumTextView.setText("Attendance: 0"); // Display default value if count is null
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("ViewEventActivity", "Error fetching attendance count: " + e.getMessage());
+            }
+        });
+
     }
 
 
-//        }).addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
-//            }
-//        });
-
-
-    private void showQRCodeDialog()
-    {
-        // Check if the event object is available
-        if (event != null)
-        {
-            // Create and show the QR code dialog fragment
-            QRCodeDialogFragment.newInstance(eventID).show(getSupportFragmentManager(), "QRCodeDialogFragment");
-        }
-    }
 
 //    // Handles The Top Bar menu clicks
 //    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
