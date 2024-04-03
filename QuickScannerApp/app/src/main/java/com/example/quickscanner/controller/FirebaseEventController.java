@@ -407,7 +407,7 @@ public class FirebaseEventController
                     for (DocumentChange changes : queryDocumentSnapshots.getDocumentChanges()) {
                         switch (changes.getType()) {
                             case ADDED:
-                                    Event newEvent = changes.getDocument().toObject(Event.class);
+                                Event newEvent = changes.getDocument().toObject(Event.class);
                                 eventsDataList.add(newEvent);
                                 break;
                             case MODIFIED:
