@@ -16,13 +16,13 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.WriteBatch;
+
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FirebaseAnnouncementController
-{
+public class FirebaseAnnouncementController {
     private final FirebaseFirestore db;
     private final CollectionReference eventsRef;
 
@@ -33,32 +33,32 @@ public class FirebaseAnnouncementController
      * Constructor for FirebaseAnnouncementController.
      * Initializes Firestore database instance and references to "Events" and "users" collections.
      */
-    public FirebaseAnnouncementController()
-    {
+    public FirebaseAnnouncementController() {
         db = FirebaseFirestore.getInstance();
         eventsRef = db.collection("Events");
         usersRef = db.collection("users");
         fbAttendanceController = new FirebaseAttendanceController();
     }
+
     /**
      * Validates the provided ID.
+     *
      * @param id The ID to be validated.
      * @throws IllegalArgumentException if the ID is null or empty.
      */
-    private void validateId(String id)
-    {
-        if (id == null || id.isEmpty())
-        {
+    private void validateId(String id) {
+        if (id == null || id.isEmpty()) {
             throw new IllegalArgumentException("ID cannot be null or empty in Attendance controller");
         }
     }
+
     /**
      * Attempts to add an announcement to a specific event and then notifies the event's attendees.
      * First, it fetches the event attendee IDs. If successful, it proceeds to add the announcement
      * to the event's "Announcements" collection. Regardless of the outcome, it attempts to notify
      * attendees by processing the announcements for each user.
      *
-     * @param eventId The unique identifier of the event to add the announcement to.
+     * @param eventId      The unique identifier of the event to add the announcement to.
      * @param announcement The {@link Announcement} object containing the announcement details.
      * @return A {@link Task} that resolves to a list of strings. On success, this list is empty,
      * indicating that the announcement was added and processed successfully. If fetching attendees fails,
@@ -91,16 +91,17 @@ public class FirebaseAnnouncementController
 
         return taskCompletionSource.getTask();
     }
+
     /**
      * Processes announcements for a batch of users. This method handles the distribution of
      * the announcement to each user's "Announcements" collection in Firestore. It manages
      * batch processing to avoid exceeding Firestore's batch size limits.
-     *
+     * <p>
      * The method divides the user IDs into manageable batches and attempts to write the announcement
      * to each user's document. If any batch fails, the IDs from that batch are collected for reporting.
      *
-     * @param userIds A list of user IDs representing the recipients of the announcement.
-     * @param announcement The {@link Announcement} object to be distributed.
+     * @param userIds              A list of user IDs representing the recipients of the announcement.
+     * @param announcement         The {@link Announcement} object to be distributed.
      * @param taskCompletionSource A {@link TaskCompletionSource} used to signal the completion
      *                             of the announcement processing, either successfully or with a list
      *                             of user IDs that failed to be notified.
@@ -119,7 +120,6 @@ public class FirebaseAnnouncementController
         for (int i = 0; i < userIds.size(); i += MAX_BATCH_SIZE) {
             int end = Math.min(userIds.size(), i + MAX_BATCH_SIZE);
             List<String> subList = userIds.subList(i, end);
-
 
 
             //writes each batch to the database in the users collection.
@@ -149,6 +149,7 @@ public class FirebaseAnnouncementController
             }
         });
     }
+
     public ListenerRegistration setupAnnouncementListListener(String userid, ArrayList<Announcement> announcementDataList, AnnouncementArrayAdapter adapter, TextView emptyAnnouncement, ListView listView) {
         validateId(userid);
 
@@ -172,10 +173,8 @@ public class FirebaseAnnouncementController
                                 break;
                             case MODIFIED:
                                 Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                for (int i = 0; i < announcementDataList.size(); i++)
-                                {
-                                    if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId()))
-                                    {
+                                for (int i = 0; i < announcementDataList.size(); i++) {
+                                    if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId())) {
                                         announcementDataList.set(i, modifiedAnnouncement);
                                         break;
                                     }

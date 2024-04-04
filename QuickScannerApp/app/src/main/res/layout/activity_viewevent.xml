@@ -44,7 +44,7 @@
                 android:layout_width="0dp"
                 android:layout_height="182dp"
                 android:layout_marginTop="16dp"
-                android:src="@drawable/ic_launcher_background"
+                tools:src="@drawable/ic_launcher_background"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/eventTitle_text" />
@@ -71,6 +71,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/eventTime_text"
                 android:gravity="center_horizontal"
+                android:textSize="15sp"
                 android:layout_marginTop="25dp" />
 
 
@@ -78,7 +79,7 @@
                 android:id="@+id/organiserProfilePicture"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/ic_launcher_background"
+                tools:src="@drawable/ic_launcher_background"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/eventImage_image"
                 app:layout_constraintBottom_toTopOf="@id/eventDescription_text"
@@ -188,6 +189,7 @@
         android:layout_height="80dp"
         android:text="Sign Up"
         android:textAllCaps="false"
+        android:textSize="20sp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="16dp"  />

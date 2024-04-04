@@ -32,6 +32,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.quickscanner.controller.FirebaseAnnouncementController;
+import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.ui.attendance.AttendanceActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseAttendanceController;
@@ -65,6 +67,7 @@ public class ViewEventActivity extends AppCompatActivity
     private FirebaseImageController fbImageController;
     private FirebaseUserController fbUserController;
     private FirebaseAttendanceController fbAttendanceController;
+    private FirebaseAnnouncementController fbAnnouncementController;
     private Event event;
     private ActivityVieweventBinding binding;
     private ProgressBar loading;
@@ -94,6 +97,7 @@ public class ViewEventActivity extends AppCompatActivity
         fbQRCodeController = new FirebaseQrCodeController();
         fbUserController = new FirebaseUserController();
         fbAttendanceController = new FirebaseAttendanceController();
+        fbAnnouncementController = new FirebaseAnnouncementController();
         toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
         loading = findViewById(R.id.loading);
         contentLayout = findViewById(R.id.contentLayout);
@@ -173,9 +177,29 @@ public class ViewEventActivity extends AppCompatActivity
                             public void onClick(DialogInterface dialog, int whichButton)
                             {
                                 // Get the user's input
-                                String announcement = input.getText().toString();
+                                String announcement_content = input.getText().toString();
+
+                                Announcement announcement_actual = new Announcement(announcement_content, event.getName());
 
                                 // TODO: Handle the announcement (e.g., send it to Firebase)
+
+                                fbAnnouncementController.addAnnouncement(eventID, announcement_actual)
+                                        .addOnSuccessListener(new OnSuccessListener()
+                                        {
+                                            @Override
+                                            public void onSuccess(Object o) {
+                                                Toast.makeText(ViewEventActivity.this, "Announcement made successfully", Toast.LENGTH_LONG).show();
+
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener()
+                                        {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e)
+                                            {
+                                                Toast.makeText(ViewEventActivity.this, "Failed to add announcement", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
 
                             }
                         })
