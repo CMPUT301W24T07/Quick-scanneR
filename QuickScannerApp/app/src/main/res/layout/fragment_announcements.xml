@@ -6,6 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".ui.announcements.AnnouncementsFragment">
 
+    <TextView
+        android:id="@+id/emptyAnnouncementListTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No announcements to display"
+        android:gravity="center"
+        android:textSize="30sp"
+        android:visibility="gone" />
+
     <ListView
         android:id="@+id/announcement_listview"
         android:layout_width="match_parent"

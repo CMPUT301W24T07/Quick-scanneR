@@ -150,6 +150,7 @@ public class FirebaseAnnouncementController {
         });
     }
 
+
     public ListenerRegistration setupAnnouncementListListener(String userid, ArrayList<Announcement> announcementDataList, AnnouncementArrayAdapter adapter, TextView emptyAnnouncement, ListView listView) {
         validateId(userid);
 
