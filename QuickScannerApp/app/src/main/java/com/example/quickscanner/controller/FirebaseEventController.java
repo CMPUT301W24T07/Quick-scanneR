@@ -450,6 +450,8 @@ public class FirebaseEventController
                     for (int i = 0; i < eventsDataList.size(); i++) {
                         Event event = eventsDataList.get(i);
                         // If the event's time is before the current time, its removed from list
+                        if (event == null)
+                            continue;
                         if (event.getTime().compareTo(Timestamp.now()) <= 0) {
                             eventsDataList.remove(i);
                             i--; // Decrement the counter since something was removed
