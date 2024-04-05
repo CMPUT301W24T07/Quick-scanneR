@@ -130,9 +130,6 @@ public class AnnouncementsFragment extends Fragment {
 
 
 
-
-
-
         /*      Announcement ListView Click       */
         announcementListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

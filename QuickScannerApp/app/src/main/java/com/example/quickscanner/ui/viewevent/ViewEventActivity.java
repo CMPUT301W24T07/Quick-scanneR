@@ -180,6 +180,7 @@ public class ViewEventActivity extends AppCompatActivity
                                 String announcement_content = input.getText().toString();
 
                                 Announcement announcement_actual = new Announcement(announcement_content, event.getName());
+                                announcement_actual.setEventID(eventID);
 
                                 // TODO: Handle the announcement (e.g., send it to Firebase)
 
