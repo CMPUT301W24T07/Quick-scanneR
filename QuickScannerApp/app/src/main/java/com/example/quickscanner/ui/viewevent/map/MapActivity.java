@@ -5,6 +5,7 @@ import static org.osmdroid.views.overlay.mylocation.IMyLocationProvider.*;
 import android.Manifest;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,6 +23,7 @@ import android.os.Bundle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import org.checkerframework.checker.units.qual.A;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -40,12 +42,22 @@ import java.util.ArrayList;
 import com.example.quickscanner.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.Firebase;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.IMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import java.util.List;
 import java.util.Objects;
 
 import ch.hsr.geohash.BoundingBox;
@@ -59,9 +71,17 @@ public class MapActivity extends AppCompatActivity {
      *           https://developer.android.com/training/permissions/requesting
      */
 
-    // References
+    // Map References
     private MapView map = null;
     IMapController mapController;
+    // Firestore references
+    private FirebaseFirestore db;
+    private CollectionReference eventsRef;
+    private ListenerRegistration checkInListener;
+
+    // Other References
+    Intent intent;
+
 
 
     @Override
@@ -69,6 +89,12 @@ public class MapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        // instantiate intent bundles
+        intent = getIntent();
+
+        // instantiate firestore ref
+        db = FirebaseFirestore.getInstance();
+        eventsRef = db.collection("Events");
 
         // back button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -87,8 +113,7 @@ public class MapActivity extends AppCompatActivity {
         map.setMultiTouchControls(true);
 
 
-        // If a geo location is passed to the activity, display it.
-        Intent intent = getIntent();
+        // If the Event's geolocation is passed to the activity, display it.
         String hashedLocation = intent.getStringExtra("geoHash");
         if (hashedLocation != null && !hashedLocation.isEmpty()){
             displayEventGeolocation(hashedLocation);
@@ -97,19 +122,26 @@ public class MapActivity extends AppCompatActivity {
             displayDefault();
         }
 
-        // TODO: Still hardcoded coordinates so far.
-        ArrayList<String> geoPoints = new ArrayList<>();
-        geoPoints.add(hashCoordinates(53.5283, -113.52625));
-        geoPoints.add(hashCoordinates(53.52833,-113.52623));
-        geoPoints.add(hashCoordinates(53.52798,-113.52632));
-        geoPoints.add(hashCoordinates(53.52812,-113.52685));
-        geoPoints.add(hashCoordinates(53.52843,-113.52549));
-        geoPoints.add(hashCoordinates(53.52740,-113.52524));
-        geoPoints.add(hashCoordinates(53.52814,-113.52461));
-        for (String geopoint : geoPoints) {
-            createMarker(geopoint);
-        }
-
+        // Display geolocation of Checked-In Users.
+        String eventID = intent.getStringExtra("eventID"); // grab eventID passed into this activity
+        assert(eventID != null);
+        checkInListener = db.collection("Events").document(eventID).collection("checkIns")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot data, @Nullable FirebaseFirestoreException error) {
+                        // handle query error
+                        if (error != null) {
+                            Log.w("MapActivity", "Listen for check-in users failed",error);
+                        }
+                        // pull geolocation data
+                        for (QueryDocumentSnapshot checkInDoc : data) {
+                            if (checkInDoc.get("geolocation") != null) {
+                                // plot the geolocation
+                                createMarker(checkInDoc.getString("geolocation"));
+                            }
+                        }
+                    }
+                });
 
     }
 
@@ -193,21 +225,13 @@ public class MapActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        //this will refresh the osmdroid configuration on resuming.
-        //if you make changes to the configuration, use
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
-        map.onResume(); //needed for compass, my location overlays, v6.0.0 and up
+        map.onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        //this will refresh the osmdroid configuration on resuming.
-        //if you make changes to the configuration, use
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //Configuration.getInstance().save(this, prefs);
-        map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
+        map.onPause();
     }
 
 
@@ -223,6 +247,10 @@ public class MapActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             // Handle the Back button press
+            if (checkInListener != null)
+                // delete listener
+                checkInListener.remove();
+            // pop this activity from the activity stack (managed by app)
             finish();
             return true;
         }

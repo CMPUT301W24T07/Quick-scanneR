@@ -688,6 +688,8 @@ public class ViewEventActivity extends AppCompatActivity
             }
             // Add the hashed location
             bundle.putString("geoHash", event.getGeoLocation());
+            // Add eventID
+            bundle.putString("eventID", event.getEventID());
             intent.putExtras(bundle);
             startActivity(intent);
             return true;

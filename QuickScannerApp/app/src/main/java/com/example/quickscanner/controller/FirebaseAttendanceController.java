@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+import com.example.quickscanner.singletons.SettingsDataSingleton;
 import com.example.quickscanner.ui.attendance.CheckInAdapter;
 import com.example.quickscanner.ui.attendance.SignUpAdapter;
 import com.google.android.datatransport.cct.internal.LogEvent;
@@ -187,6 +188,7 @@ public class FirebaseAttendanceController
         final DocumentReference userCheckInsRef = userRef.collection("Attendance").document("checkedInEvents");
         final DocumentReference userSignUpsRef = userRef.collection("Attendance").document("signedUpEvents");
 
+        String geolocation = SettingsDataSingleton.getInstance().getHashedGeoLocation();
 
         // Run a transaction to perform the check-in operation
         return db.runTransaction(new Transaction.Function<Void>() {
@@ -231,12 +233,14 @@ public class FirebaseAttendanceController
                     transaction.set(signUpRef, new HashMap<>());
                     Log.d("testerrr","new document added");
 
-
                     //makes a hashmap to store the times checked in or other check in data
                     Map<String, Object> checkInData = new HashMap<>();
-                    checkInData.put("timesCheckedIn", 1);
-                    transaction.set(checkInRef, checkInData);
+                    checkInData.put("timesCheckedIn", 1);            // count check-ins
+                    if (geolocation !=null)
+                        checkInData.put("geolocation", geolocation); // store geolocation
+                    transaction.set(checkInRef, checkInData);        // create transaction
                     Log.d("testerrr","new hashmap created");
+
 
                     // Add the event to the user's list of signed-up and checked-in events
                     Map<String, Object> userCheckInsData = new HashMap<>();
@@ -252,6 +256,8 @@ public class FirebaseAttendanceController
                     // Add a document to the check-ins collection
                     Map<String, Object> checkInData = new HashMap<>();
                     checkInData.put("timesCheckedIn", 1);
+                    if (geolocation !=null)
+                        checkInData.put("geolocation", geolocation); // store geolocation
                     transaction.set(checkInRef, checkInData);
 
                     // Increment the current attendance count
@@ -277,6 +283,8 @@ public class FirebaseAttendanceController
                     // Increment the number of times the user has checked in
                     Map<String, Object> checkInData = new HashMap<>();
                     checkInData.put("timesCheckedIn", FieldValue.increment(1));
+                    if (geolocation !=null)
+                        checkInData.put("geolocation", geolocation); // store geolocation
                     transaction.set(checkInRef, checkInData, SetOptions.merge());
                 }
 
@@ -404,7 +412,7 @@ public class FirebaseAttendanceController
     //gets the times checked in for a user
     public Task<String> getTimesCheckedIn(String userId) {
         validateId(userId);
-        DocumentReference userRef =usersRef.document(userId);
+        DocumentReference userRef = usersRef.document(userId);
         return userRef.collection("Attendance").document("checkedInEvents").get().continueWith(task -> {
             DocumentSnapshot document = task.getResult();
             if (document.exists()) {
