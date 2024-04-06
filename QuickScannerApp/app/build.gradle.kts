@@ -73,6 +73,6 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.8.1")
     implementation("ch.hsr:geohash:1.4.0")
     implementation("com.google.firebase:firebase-firestore:21.4.3")
-
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
 
 }

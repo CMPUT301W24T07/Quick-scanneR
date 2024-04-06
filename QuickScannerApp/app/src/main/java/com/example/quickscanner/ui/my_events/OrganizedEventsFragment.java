@@ -1,6 +1,5 @@
 package com.example.quickscanner.ui.my_events;
 
-import static android.content.ContentValues.TAG;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,6 +23,7 @@ import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.FragmentEventsBinding;
+import com.example.quickscanner.databinding.FragmentMyEventsBinding;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
@@ -38,6 +39,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -52,7 +54,7 @@ public class OrganizedEventsFragment extends Fragment {
      * Can see more event details by clicking an event.
      */
 
-    private FragmentEventsBinding binding;
+    private @NonNull FragmentMyEventsBinding binding;
 
     // EventList References
     ListView eventListView;
@@ -68,64 +70,45 @@ public class OrganizedEventsFragment extends Fragment {
     private ImageView expandableArrow;
 
 
-    // Firestore References
-    private StorageReference storeRef;
 
     // Joey Firestore References
     private FirebaseUserController fbUserController;
     private FirebaseEventController fbEventController;
+    private ListenerRegistration orgListener;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentMyEventsBinding.inflate(inflater, container, false);
 
 
         // Joey Firebase References
         fbUserController = new FirebaseUserController();
         fbEventController = new FirebaseEventController();
 
-        return inflater.inflate(R.layout.fragment_my_events, container, false);
+        return binding.getRoot();
 
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        // Store view references
-        eventListView = view.findViewById(R.id.my_event_listview);
-
         // Initialize the event data list and ArrayAdapter
         eventsDataList = new ArrayList<Event>();
         eventAdapter = new EventArrayAdapter(getContext(), eventsDataList);
         // Set the adapter to the ListView
-        eventListView.setAdapter(eventAdapter);
+        binding.myEventListview.setVisibility(View.GONE);
+        binding.myEventListview.setAdapter(eventAdapter);
+        ListView myEventListView = binding.myEventListview;
+        TextView noOrgTextView = binding.noOrgTextview;
+
+
         String orgId = fbUserController.getCurrentUserUid();
         // Create FireStore Listener for Updates to the Events List.
-        fbEventController.getEventsByOrganizer(orgId)
-                .addOnSuccessListener(new OnSuccessListener<List<Event>>() {
-                    @Override
-                    public void onSuccess(List<Event> events) {
-                        // Clear the old data
-                        eventsDataList.clear();
-
-                        // Add the new events to the list
-                        eventsDataList.addAll(events);
-
-                        // Notify the adapter that the data has changed
-                        eventAdapter.notifyDataSetChanged();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e(TAG, "Error getting events", e);
-                    }
-                });
-
-
-
+        //log of uid
+        orgListener = fbEventController.setUpOrganizedEventsListener(orgId, eventsDataList, eventAdapter,noOrgTextView, myEventListView);
 
         /*      Event ListView Click       */
-        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        binding.myEventListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
             // get the clicked event
@@ -149,6 +132,10 @@ public class OrganizedEventsFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (orgListener != null) {
+            orgListener.remove();
+            orgListener = null;
+        }
         binding = null;
     }
 

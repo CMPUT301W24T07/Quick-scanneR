@@ -10,7 +10,6 @@
         android:layout_height="match_parent"
         tools:context=".ui.my_events.AttendingEventsFragment">
 
-
         <ListView
             android:id="@+id/my_event_listview"
             android:layout_width="match_parent"
@@ -23,9 +22,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:id="@+id/no_org_textview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="No currently organized Events"
+            android:gravity="center"
+            android:visibility="gone"/>
+        <TextView
+            android:id="@+id/no_attend_textview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="not attending any Events currently"
+            android:gravity="center"
+            android:visibility="gone"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-
 </RelativeLayout>
-

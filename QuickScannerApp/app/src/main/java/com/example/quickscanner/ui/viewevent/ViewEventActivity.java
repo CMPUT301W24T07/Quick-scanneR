@@ -3,6 +3,7 @@ package com.example.quickscanner.ui.viewevent;
 import static android.content.ContentValues.TAG;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,12 +11,15 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -65,6 +69,7 @@ public class ViewEventActivity extends AppCompatActivity
     private ActivityVieweventBinding binding;
     private ProgressBar loading;
     private RelativeLayout contentLayout;
+    private Integer  loadCount;
 
 
     private FirebaseQrCodeController fbQRCodeController;
@@ -94,15 +99,39 @@ public class ViewEventActivity extends AppCompatActivity
         contentLayout = findViewById(R.id.contentLayout);
         loading.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.GONE);
+        binding.signUpButton.setVisibility(View.GONE);
+        loadCount = 5;
+        Log.d("LoadCount", "Decrementing loadCount, current value: " + loadCount);
+
+
+
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 // Refresh the event data
+                loadCount = 5;
+                loading.setVisibility(View.VISIBLE);
+                contentLayout.setVisibility(View.GONE);
+                binding.signUpButton.setVisibility(View.GONE);
+                Log.d("LoadCount", "Decrementing loadCount, current value: " + loadCount);
+
                 fetchEventData();
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
+
+        // Set click listeners
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Create and show the custom dialog
+                showOrganiserDetailsDialog();
+            }
+        };
+
+        binding.organiserProfilePicture.setOnClickListener(listener);
+        binding.organiserText.setOnClickListener(listener);
 
         // Display Back Button
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -112,7 +141,7 @@ public class ViewEventActivity extends AppCompatActivity
         if (inputBundle != null)
         {
             eventID = inputBundle.getString("eventID");
-            Log.d("Beans", eventID);
+//            Log.d("Beans", eventID);
         }
         if (eventID != null)
         {
@@ -213,9 +242,93 @@ public class ViewEventActivity extends AppCompatActivity
 
     }
 
+    
+    private void showOrganiserDetailsDialog() {
+
+        Dialog dialog = new Dialog(this);
+
+        dialog.setContentView(R.layout.dialog_organiser_details);
+
+        //get references for all views
+        ImageView organiserProfilePicture = dialog.findViewById(R.id.dialog_organiser_profile_picture);
+        TextView organiserName = dialog.findViewById(R.id.dialog_organiser_name);
+        TextView organiserEmail = dialog.findViewById(R.id.dialog_organiser_email);
+        TextView organiserLinkedIn = dialog.findViewById(R.id.dialog_organiser_linkedin);
+        ProgressBar progressBar = dialog.findViewById(R.id.progressBar);
+
+        progressBar.setVisibility(View.VISIBLE);
+
+        fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
+            public void onSuccess(User user) {
+                if (user != null && user.getUserProfile() != null) {
+                    // Set the organiser details
+
+                    // Get the URL of the organizer's profile picture
+                    if (user.getUserProfile().getImageUrl() == null || user.getUserProfile().getImageUrl().isEmpty())
+                    {
+                        //TODO: set default image to our default. i forget what the path is.
+                        user.getUserProfile().setImageUrl("default.jpeg");
+                    }
+                    fbImageController.downloadImage(user.getUserProfile().getImageUrl()).addOnCompleteListener(task1 -> {
+                        String url = String.valueOf(task1.getResult());
+                        Picasso.get().load(url).into(organiserProfilePicture, new com.squareup.picasso.Callback() {
+                            @Override
+                            public void onSuccess() {
+                                progressBar.setVisibility(View.GONE);
+
+
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                progressBar.setVisibility(View.GONE);
+                            }
+
+                        });
+                    });
+                    if (user.getUserProfile().getName() == null || user.getUserProfile().getName().isEmpty())
+                    {
+                        organiserName.setText("Anonymous Organizer");
+                    }
+                    else
+                    {
+                        organiserName.setText(user.getUserProfile().getName());
+                    }
+                    if (user.getUserProfile().getEmail() == null || user.getUserProfile().getEmail().isEmpty())
+                    {
+                        organiserEmail.setText("No email provided");
+                    }
+                    else
+                    {
+                        organiserEmail.setText(user.getUserProfile().getEmail());
+                    }
+                    if (user.getUserProfile().getWebsite() == null || user.getUserProfile().getWebsite().isEmpty())
+                    {
+                        organiserLinkedIn.setText("No LinkedIn provided");
+                    }
+                    else
+                    {
+                        organiserLinkedIn.setText(user.getUserProfile().getWebsite());
+                    }
+                } else {
+                    Log.d("halpp", "Document not retrieved, setting default image");
+                    binding.organiserText.setText("Unknown");
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("ViewEventActivity", "Error fetching user data: " + e.getMessage());
+            }
+        });
+
+        dialog.show();
+    }
+
     // Fetches the event data from Firestore
     private void fetchEventData()
     {
+
         String UiD = fbUserController.getCurrentUserUid();
         fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<Event>()
         {
@@ -284,6 +397,7 @@ public class ViewEventActivity extends AppCompatActivity
                         }
                     }
                 });
+                decrementLoadCount("event");
 
             }
         }).addOnFailureListener(new OnFailureListener()
@@ -304,15 +418,37 @@ public class ViewEventActivity extends AppCompatActivity
         binding.eventTitleText.setText(event.getName());
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
-        fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
-            public void onSuccess(User user) {
-                if (user != null && user.getUserProfile() != null) {
+        binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
+        fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>()
+        {
+            public void onSuccess(User user)
+            {
+                if (user != null && user.getUserProfile() != null)
+                {
                     //disable this organiser text line if creating new event crashes
-                    binding.organiserText.setText(user.getUserProfile().getName());
-                } else {
-                    Log.d("halpp", "Document not retrieved, setting default image");
-                    binding.organiserText.setText("Unknown");
+//                    binding.organiserText.setText(user.getUserProfile().getName());
+                    // this code exists to underline the organiser's name
+                    SpannableString content = new SpannableString(user.getUserProfile().getName());
+                    content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+                    binding.organiserText.setText(content);
+
+                    Log.d("halpp", "Organiser name is: " + user.getUserProfile().getName());
+
+
+                    //SIDDHARTH HERE PAY ATTENTION
+                    //TODO: set the profile picture of the organiser
+
+//                    Profile organizerProfile = organizer.getUserProfile();
+
+                    // Get the URL of the organizer's profile picture
+                    fbImageController.downloadImage(user.getUserProfile().getImageUrl()).addOnCompleteListener(task1 -> {
+                        String url = String.valueOf(task1.getResult());
+                        Picasso.get().load(url).into(binding.organiserProfilePicture);
+                        decrementLoadCount("org pic");
+                    });
                 }
+                decrementLoadCount("user");
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -324,6 +460,7 @@ public class ViewEventActivity extends AppCompatActivity
         // Check if the current user is the organizer
         if (UiD.equals(event.getOrganizerID())) {
             binding.signUpButton.setText("Attendance Information");
+            decrementLoadCount("button attend");
         } else {
             // Check if the user is signed up for the event
             fbAttendanceController.isUserSignedUp(eventID, UiD).addOnCompleteListener(new OnCompleteListener<Boolean>() {
@@ -348,7 +485,10 @@ public class ViewEventActivity extends AppCompatActivity
                                         .getColor(ViewEventActivity.this, R.color.purple_500));
                             }
                         }
-                    } else {
+                        decrementLoadCount("button");
+                    }
+                    else
+                    {
                         Log.e(TAG, "Failed at checking sign up", task.getException());
                     }
                 }
@@ -365,8 +505,8 @@ public class ViewEventActivity extends AppCompatActivity
                 Log.d("halppp", "Document not retrieved, setting default image");
                 binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
             }
-            loading.setVisibility(View.GONE);
-            contentLayout.setVisibility(View.VISIBLE);
+            decrementLoadCount("event image again?");
+
         });
 
 
@@ -386,8 +526,10 @@ public class ViewEventActivity extends AppCompatActivity
                 Log.d("halppp", "Document not retrieved, setting default image");
                 binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
             }
+            decrementLoadCount("event image");
         });
     }
+
 //    // Handles The Top Bar menu clicks
 //    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 //        if (item.getItemId() == android.R.id.home) {
@@ -490,6 +632,8 @@ public class ViewEventActivity extends AppCompatActivity
             }
             // Add the hashed location
             bundle.putString("geoHash", event.getGeoLocation());
+            // Add eventID
+            bundle.putString("eventID", event.getEventID());
             intent.putExtras(bundle);
             startActivity(intent);
             return true;
@@ -572,6 +716,7 @@ public class ViewEventActivity extends AppCompatActivity
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
 
 }
 
