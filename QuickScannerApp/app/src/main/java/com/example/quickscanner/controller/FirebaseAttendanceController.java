@@ -3,7 +3,6 @@ package com.example.quickscanner.controller;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,7 +12,7 @@ import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.attendance.CheckInAdapter;
 import com.example.quickscanner.ui.attendance.SignUpAdapter;
-import com.google.android.datatransport.cct.internal.LogEvent;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
@@ -34,8 +33,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -924,8 +921,6 @@ public class FirebaseAttendanceController
     }
 
 
-
-
     /**
      * Converts a list of DocumentSnapshots to a list of objects of a specified class.
      *
@@ -970,4 +965,6 @@ public class FirebaseAttendanceController
         }
         return docList;
     }
+
+
 }

@@ -9,6 +9,8 @@ import androidx.fragment.app.Fragment;
 
 import com.example.quickscanner.AnnouncementArrayAdapter;
 import com.example.quickscanner.controller.FirebaseAnnouncementController;
+import com.example.quickscanner.controller.FirebaseAttendanceController;
+import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.FragmentAnnouncementsBinding;
 import com.example.quickscanner.R;
@@ -31,6 +33,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.Announcement;
+import com.example.quickscanner.model.Event;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -64,6 +67,8 @@ public class AnnouncementsFragment extends Fragment {
     AnnouncementArrayAdapter announcementsAdapter;
 
     private FirebaseAnnouncementController fbAnnouncementController;
+    private FirebaseEventController fbEventController;
+    private FirebaseAttendanceController fbAttendanceController;
     private FirebaseUserController fbUserController;
     private ListenerRegistration registration;
 
@@ -80,6 +85,8 @@ public class AnnouncementsFragment extends Fragment {
 
         fbAnnouncementController = new FirebaseAnnouncementController();
         fbUserController = new FirebaseUserController();
+        fbEventController = new FirebaseEventController();
+        fbAttendanceController = new FirebaseAttendanceController();
 
         return root;
 
@@ -111,6 +118,7 @@ public class AnnouncementsFragment extends Fragment {
                 announcementsAdapter,
                 emptyAnnouncementsListTextView,
                 announcementListView);
+
 
 
 

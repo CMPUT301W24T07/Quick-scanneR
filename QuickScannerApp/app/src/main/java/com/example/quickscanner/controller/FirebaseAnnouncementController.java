@@ -267,35 +267,20 @@ public class FirebaseAnnouncementController {
         }
     }
 
-    public void setupRegistrationMilestoneListener(String eventId) {
+    public void addMilestoneAnnouncement(String eventId, long count, String milestoneType) {
         validateId(eventId);
 
-        String organiserID = eventsRef.document(eventId).get().getResult().getString("organizerID");
+        if (count == 10 || count == 20) {
+            Announcement milestoneAnnouncement = new Announcement();
+            milestoneAnnouncement.setEventName(milestoneType + " Milestone Reached");
+            milestoneAnnouncement.setMessage("Your event has reached " + count + " " + milestoneType.toLowerCase() + "!");
+            milestoneAnnouncement.setIsMilestone(true);
+            milestoneAnnouncement.setOrganizerID("system announcement");
 
-        eventsRef.document(eventId).collection("Registrations")
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Log.e("FirebaseAnnouncementController", "Error getting registrations", error);
-                        return;
-                    }
-
-                    if (value == null) {
-                        Log.e("FirebaseAnnouncementController", "No registrations found");
-                        return;
-                    }
-
-                    int registrationCount = value.size();
-
-                    if (registrationCount == 10 || registrationCount == 100) {
-                        Announcement milestoneAnnouncement = new Announcement();
-                        milestoneAnnouncement.setEventName("Registration Milestone Reached");
-                        milestoneAnnouncement.setMessage("Your event has reached " + registrationCount + " registrations!");
-                        milestoneAnnouncement.setOrganizerID(organiserID);
-                        milestoneAnnouncement.setIsMilestone(true);
-                        addAnnouncement(eventId, milestoneAnnouncement);
-                    }
-                });
+            addAnnouncement(eventId, milestoneAnnouncement);
+        }
     }
+
 
 
 }
