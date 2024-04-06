@@ -72,9 +72,16 @@ public class FirebaseAnnouncementController {
         fbAttendanceController.getEventAttendeeIds(eventId).addOnSuccessListener(userIds -> {
             DocumentReference eventAnnouncementRef = eventsRef.document(eventId)
                     .collection("Announcements").document();
+
             // attempts to add the announcement to the event
             announcement.setId(eventAnnouncementRef.getId());
+
             eventAnnouncementRef.set(announcement).addOnSuccessListener(aVoid -> {
+
+                if (!userIds.contains(announcement.getOrganizerID())) {
+                    userIds.add(announcement.getOrganizerID());
+                }
+
                 // If adding the announcement succeeds, proceeds as normal
                 processUserAnnouncements(userIds, announcement, taskCompletionSource);
             }).addOnFailureListener(e -> {
@@ -155,6 +162,13 @@ public class FirebaseAnnouncementController {
     public ListenerRegistration setupAnnouncementListListener(String userid, ArrayList<Announcement> announcementDataList, AnnouncementArrayAdapter adapter, TextView emptyAnnouncement, ListView listView) {
         validateId(userid);
 
+        CollectionReference userAnnouncementsRef = usersRef.document(userid).collection("Announcements");
+//
+       // Query query = isOrganizer ? userAnnouncementsRef : userAnnouncementsRef.whereEqualTo("isMilestone", false);
+//        Query query = userid== ? userAnnouncementsRef.whereEqualTo("isMilestone", true) : userAnnouncementsRef.whereEqualTo("isMilestone", false);
+
+
+
         return usersRef.document(userid).collection("Announcements")
                 .addSnapshotListener((value, error) -> {
                     if (error != null) {
@@ -172,25 +186,62 @@ public class FirebaseAnnouncementController {
                     }
 
                     for (DocumentChange dc : value.getDocumentChanges()) {
-                        switch (dc.getType()) {
-                            case ADDED:
-                                Announcement newAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                announcementDataList.add(0, newAnnouncement);
-                                break;
-                            case MODIFIED:
-                                Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                for (int i = 0; i < announcementDataList.size(); i++) {
-                                    if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId())) {
-                                        announcementDataList.set(i, modifiedAnnouncement);
+                        Announcement ann = dc.getDocument().toObject(Announcement.class);
+                        if (userid.equals(ann.getOrganizerID())) {
+                            //current user is the organiser.
+                            //show only milestone announcements
+                            Log.d("weird","organiser id equals user id");
+                            if (ann.getIsMilestone()) {
+                                switch (dc.getType()) {
+                                    case ADDED:
+                                        Announcement newAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.add(0, newAnnouncement);
                                         break;
-                                    }
+                                    case MODIFIED:
+                                        Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        for (int i = 0; i < announcementDataList.size(); i++) {
+                                            if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId())) {
+                                                announcementDataList.set(i, modifiedAnnouncement);
+                                                break;
+                                            }
+                                        }
+                                        break;
+                                    case REMOVED:
+                                        //TODO make this method inside all other listeners.
+                                        Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.removeIf(announcement -> announcement.getId().equals(removedAnnouncement.getId()));
+                                        break;
                                 }
-                                break;
-                            case REMOVED:
-                                //TODO make this method inside all other listeners.
-                                Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                announcementDataList.removeIf(announcement -> announcement.getId().equals(removedAnnouncement.getId()));
-                                break;
+                            }
+                        }
+
+                        else {
+                            //current user is not the organiser.
+                            //show only non milestone announcements
+                            if (!ann.getIsMilestone()) {
+                                Log.d("weird","organiser id does not                             Log.d(\"weird\",\"organiser id equals user id\");\nequals user id");
+
+                                switch (dc.getType()) {
+                                    case ADDED:
+                                        Announcement newAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.add(0, newAnnouncement);
+                                        break;
+                                    case MODIFIED:
+                                        Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        for (int i = 0; i < announcementDataList.size(); i++) {
+                                            if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId())) {
+                                                announcementDataList.set(i, modifiedAnnouncement);
+                                                break;
+                                            }
+                                        }
+                                        break;
+                                    case REMOVED:
+                                        //TODO make this method inside all other listeners.
+                                        Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.removeIf(announcement -> announcement.getId().equals(removedAnnouncement.getId()));
+                                        break;
+                                }
+                            }
                         }
                     }
 
@@ -204,6 +255,7 @@ public class FirebaseAnnouncementController {
                     //if you dont want to just remove the text view and the listview form parameters
                     //and delete this.
                     updateVisibility(announcementDataList, listView, emptyAnnouncement);
+                    Log.d("Halpp","announcement changes made");
                     adapter.notifyDataSetChanged();
                 });
     }
@@ -217,5 +269,37 @@ public class FirebaseAnnouncementController {
             listView.setVisibility(View.VISIBLE);
         }
     }
+
+    public void setupRegistrationMilestoneListener(String eventId) {
+        validateId(eventId);
+
+        String organiserID = eventsRef.document(eventId).get().getResult().getString("organizerID");
+
+        eventsRef.document(eventId).collection("Registrations")
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Log.e("FirebaseAnnouncementController", "Error getting registrations", error);
+                        return;
+                    }
+
+                    if (value == null) {
+                        Log.e("FirebaseAnnouncementController", "No registrations found");
+                        return;
+                    }
+
+                    int registrationCount = value.size();
+
+                    if (registrationCount == 10 || registrationCount == 100) {
+                        Announcement milestoneAnnouncement = new Announcement();
+                        milestoneAnnouncement.setEventName("Registration Milestone Reached");
+                        milestoneAnnouncement.setMessage("Your event has reached " + registrationCount + " registrations!");
+                        milestoneAnnouncement.setOrganizerID(organiserID);
+                        milestoneAnnouncement.setIsMilestone(true);
+                        addAnnouncement(eventId, milestoneAnnouncement);
+                    }
+                });
+    }
+
+
 }
 

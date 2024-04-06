@@ -181,6 +181,8 @@ public class ViewEventActivity extends AppCompatActivity
 
                                 Announcement announcement_actual = new Announcement(announcement_content, event.getName());
                                 announcement_actual.setEventID(eventID);
+                                announcement_actual.setIsMilestone(false);
+                                announcement_actual.setOrganizerID(event.getOrganizerID());
 
                                 // TODO: Handle the announcement (e.g., send it to Firebase)
 

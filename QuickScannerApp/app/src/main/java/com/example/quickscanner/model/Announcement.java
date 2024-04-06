@@ -12,6 +12,8 @@ public class Announcement {
     private String eventID;
     private String id;
     private Timestamp time;
+    private String organizerID;
+    private boolean isMilestone=false;
 
 
     public Announcement() {
@@ -23,6 +25,8 @@ public class Announcement {
     }
 
 
+
+
     public String getMessage() {
         return message;
     }
@@ -32,7 +36,7 @@ public class Announcement {
     public Timestamp getTime() {
         return time;
     }
-
+    public String getOrganizerID() {return organizerID;}
     public String getEventID()
     {
         return eventID;
@@ -40,6 +44,9 @@ public class Announcement {
     public String getId() {
         return id;
     }
+    public boolean getIsMilestone() {return isMilestone;}
+
+
 
 
 
@@ -52,7 +59,8 @@ public class Announcement {
     public void setTime(Timestamp time) {
         this.time = time;
     }
-
+    public void setOrganizerID(String organizerID) {this.organizerID = organizerID;}
+    public void setIsMilestone(boolean isMilestone) {this.isMilestone = isMilestone;}
     public void setEventID(String eventID)
     {
         this.eventID = eventID;
