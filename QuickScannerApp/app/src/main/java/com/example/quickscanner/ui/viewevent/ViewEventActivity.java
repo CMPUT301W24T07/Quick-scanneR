@@ -298,79 +298,57 @@ public class ViewEventActivity extends AppCompatActivity
     }
 
 
-    private void setEventDataToUI(Event event, String UiD)
-    {
+    private void setEventDataToUI(Event event, String UiD) {
 
         //use event object to update all the views
         binding.eventTitleText.setText(event.getName());
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
-        fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>()
-        {
-            public void onSuccess(User user)
-            {
-                if (user != null && user.getUserProfile() != null)
-                {
+        fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
+            public void onSuccess(User user) {
+                if (user != null && user.getUserProfile() != null) {
                     //disable this organiser text line if creating new event crashes
                     binding.organiserText.setText(user.getUserProfile().getName());
-                }
-                else
-                {
+                } else {
                     Log.d("halpp", "Document not retrieved, setting default image");
                     binding.organiserText.setText("Unknown");
                 }
             }
-        }).addOnFailureListener(new OnFailureListener()
-        {
+        }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(@NonNull Exception e)
-            {
+            public void onFailure(@NonNull Exception e) {
                 Log.e("ViewEventActivity", "Error fetching user data: " + e.getMessage());
             }
         });
         binding.eventTimeText.setText(event.getTimeAsString());
         // Check if the current user is the organizer
-        if (UiD.equals(event.getOrganizerID()))
-        {
+        if (UiD.equals(event.getOrganizerID())) {
             binding.signUpButton.setText("Attendance Information");
-        }
-        else
-        {
+        } else {
             // Check if the user is signed up for the event
-            fbAttendanceController.isUserSignedUp(eventID, UiD).addOnCompleteListener(new OnCompleteListener<Boolean>()
-            {
+            fbAttendanceController.isUserSignedUp(eventID, UiD).addOnCompleteListener(new OnCompleteListener<Boolean>() {
                 @Override
-                public void onComplete(@NonNull Task<Boolean> task)
-                {
-                    if (task.isSuccessful())
-                    {
+                public void onComplete(@NonNull Task<Boolean> task) {
+                    if (task.isSuccessful()) {
                         boolean isSignedUp = task.getResult();
-                        if (isSignedUp)
-                        {
+                        if (isSignedUp) {
                             binding.signUpButton.setText("Cancel Sign Up");
                             binding.signUpButton.setEnabled(true);
                             binding.signUpButton.setBackgroundColor(ContextCompat
                                     .getColor(ViewEventActivity.this, R.color.purple_500));
-                        }
-                        else
-                        {
-                            if (event.getMaxSpots() != null && event.getMaxSpots() <= event.getTakenSpots())
-                            {
+                        } else {
+                            if (event.getMaxSpots() != null && event.getMaxSpots() <= event.getTakenSpots()) {
                                 binding.signUpButton.setText("Event Full");
                                 binding.signUpButton.setEnabled(false);
                                 binding.signUpButton.setBackgroundColor(Color.GRAY);
-                            }
-                            else
-                            {
+                            } else {
                                 binding.signUpButton.setText("Sign Up for Event");
                                 binding.signUpButton.setEnabled(true);
                                 binding.signUpButton.setBackgroundColor(ContextCompat
                                         .getColor(ViewEventActivity.this, R.color.purple_500));
                             }
                         }
-                    }
-                    else
-                    {
+                    } else {
                         Log.e(TAG, "Failed at checking sign up", task.getException());
                     }
                 }
@@ -380,13 +358,10 @@ public class ViewEventActivity extends AppCompatActivity
         //
         fbImageController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 ->
         {
-            if (task1.isSuccessful())
-            {
+            if (task1.isSuccessful()) {
                 String url = String.valueOf(task1.getResult());
                 Picasso.get().load(url).into(binding.eventImageImage);
-            }
-            else
-            {
+            } else {
                 Log.d("halppp", "Document not retrieved, setting default image");
                 binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
             }
@@ -404,39 +379,15 @@ public class ViewEventActivity extends AppCompatActivity
         //and get the image from the firebase storage and set it to the image view
         fbImageController.downloadImage(event.getImagePath()).addOnCompleteListener(task1 ->
         {
-            if (task1.isSuccessful())
-            {
+            if (task1.isSuccessful()) {
                 String url = String.valueOf(task1.getResult());
                 Picasso.get().load(url).into(binding.eventImageImage);
-            }
-            else
-            {
+            } else {
                 Log.d("halppp", "Document not retrieved, setting default image");
                 binding.eventImageImage.setImageResource(R.drawable.ic_home_black_24dp);
             }
         });
-
-        fbAttendanceController.getLiveCount(eventID).addOnSuccessListener(new OnSuccessListener<Long>() {
-            @Override
-            public void onSuccess(Long count) {
-                TextView attendanceNumTextView = findViewById(R.id.attendanceNum);
-                if (count != null) {
-                    attendanceNumTextView.setText("Attendance: " + count);
-                } else {
-                    attendanceNumTextView.setText("Attendance: 0"); // Display default value if count is null
-                }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.e("ViewEventActivity", "Error fetching attendance count: " + e.getMessage());
-            }
-        });
-
     }
-
-
-
 //    // Handles The Top Bar menu clicks
 //    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 //        if (item.getItemId() == android.R.id.home) {

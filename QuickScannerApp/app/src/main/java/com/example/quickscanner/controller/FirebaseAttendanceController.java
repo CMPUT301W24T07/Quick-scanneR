@@ -828,4 +828,60 @@ public class FirebaseAttendanceController
         }
         return docList;
     }
+
+    public ListenerRegistration setupMaxSpotsListener(String eventId, TextView maxSpotsTextView) {
+        validateId(eventId);
+        DocumentReference maxSpotsRef = getMaxSpotsRef(eventId);
+        return maxSpotsRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("AttendanceActivity", "Listen failed.", e);
+                    return;
+                }
+
+                int maxSpots = 0;
+                if (snapshot != null && snapshot.exists()) {
+                    Integer temp = snapshot.getLong("maxSpots") != null ? snapshot.getLong("maxSpots").intValue() : null;
+                    if (temp != null) {
+                        maxSpots = temp;
+                    } else {
+                        // MaxSpots is null, indicate that there is no maximum limit
+                        maxSpotsTextView.setText("No Maximum Limit");
+                        return;
+                    }
+                }
+                maxSpotsTextView.setText("Max Spots: " + maxSpots);
+            }
+        });
+    }
+
+    /**
+     * Fetches the maximum attendance (MaxSpots) for a specific event.
+     *
+     * @param eventId The ID of the event.
+     * @return A Task that resolves to the maximum attendance count.
+     */
+    public Task<Integer> getMaxSpots(String eventId) {
+        // Validate the event ID
+        validateId(eventId);
+
+        // Reference to the event's max spots document
+        DocumentReference maxSpotsRef = eventsRef.document(eventId);
+
+        // Fetch the document and return the maximum attendance count
+        return maxSpotsRef.get().continueWith(task -> {
+            DocumentSnapshot document = task.getResult();
+            return document.getLong("maxSpots").intValue();
+        });
+    }
+
+    // Method that gives reference to the max spots document for a specific event
+    public DocumentReference getMaxSpotsRef(String eventId) {
+        validateId(eventId);
+        return eventsRef.document(eventId);
+    }
+
+
 }
