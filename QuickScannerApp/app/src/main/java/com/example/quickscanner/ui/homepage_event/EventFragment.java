@@ -48,7 +48,6 @@ public class EventFragment extends Fragment {
     private TimerTask timerTask;
 
 
-
     // Button References
     FloatingActionButton fobButton;
 
@@ -61,7 +60,6 @@ public class EventFragment extends Fragment {
     // Firestore References
     private FirebaseEventController fbEventController;
     private ListenerRegistration eventListListenerReg;
-
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -115,32 +113,28 @@ public class EventFragment extends Fragment {
 
         /*      Event ListView Click       */
         eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-            // get the clicked event
-            Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
-            // move to new activity and pass the clicked event's unique ID.
-            Intent intent = new Intent(getContext(), ViewEventActivity.class);
-            Bundle bundle = new Bundle(1);
-            // Pass the Event Identifier to the New Activity
-            bundle.putString("eventID", clickedEvent.getEventID());
-            intent.putExtras(bundle);
-            // Start new Activity
-            requireContext().startActivity(intent);
-        }
-    });
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                // get the clicked event
+                Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
+                // move to new activity and pass the clicked event's unique ID.
+                Intent intent = new Intent(getContext(), ViewEventActivity.class);
+                Bundle bundle = new Bundle(1);
+                // Pass the Event Identifier to the New Activity
+                bundle.putString("eventID", clickedEvent.getEventID());
+                intent.putExtras(bundle);
+                // Start new Activity
+                requireContext().startActivity(intent);
+            }
+        });
     }
 
-    private void setupTimeListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter)
-    {
-        timerTask = new TimerTask()
-        {
+    private void setupTimeListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter) {
+        timerTask = new TimerTask() {
             @Override
-            public void run()
-            {
+            public void run() {
                 // Check the top event in the list
-                while (!eventsDataList.isEmpty() && eventsDataList.get(0).getTime().compareTo(Timestamp.now()) <= 0)
-                {
+                while (!eventsDataList.isEmpty() && eventsDataList.get(0).getTime().compareTo(Timestamp.now()) <= 0) {
                     // If the event's time is before the current time, remove it from the list
                     if (!eventsDataList.isEmpty()) {
                         eventsDataList.remove(0);
@@ -149,11 +143,9 @@ public class EventFragment extends Fragment {
 
                 // Notify the adapter of the changes
                 // Notify the adapter of the changes on the main thread
-                eventListView.post(new Runnable()
-                {
+                eventListView.post(new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         eventAdapter.notifyDataSetChanged();
                     }
                 });
@@ -175,13 +167,11 @@ public class EventFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         // Stop the time listener when the view is destroyed
-        if (timer != null)
-        {
+        if (timer != null) {
             timer.cancel();
             timerTask.cancel();
         }
-        if (eventListListenerReg != null)
-        {
+        if (eventListListenerReg != null) {
             eventListListenerReg.remove();
             eventListListenerReg = null;
         }

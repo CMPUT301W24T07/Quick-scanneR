@@ -68,8 +68,6 @@ public class AnnouncementsFragment extends Fragment {
     private ListenerRegistration registration;
 
 
-
-
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
@@ -105,7 +103,6 @@ public class AnnouncementsFragment extends Fragment {
         emptyAnnouncementsListTextView.setVisibility(View.GONE);
 
 
-
         //here we call the method to set up announcement list listener
 
         registration = fbAnnouncementController.setupAnnouncementListListener(
@@ -131,7 +128,7 @@ public class AnnouncementsFragment extends Fragment {
                 fullRowLayout = view.findViewById(R.id.announcementsContent_Row);
 
                 // display fragment
-                if (dropDownLayout.getVisibility() == View.GONE){
+                if (dropDownLayout.getVisibility() == View.GONE) {
                     dropDownLayout.setVisibility(View.VISIBLE);
                     expandableArrow.setImageResource(R.drawable.ic_up_arrow);
                 } else {
@@ -144,12 +141,10 @@ public class AnnouncementsFragment extends Fragment {
     }
 
 
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (registration != null)
-        {
+        if (registration != null) {
             registration.remove();
             registration = null;
         }

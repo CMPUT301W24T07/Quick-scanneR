@@ -164,9 +164,8 @@ public class FirebaseAnnouncementController {
 
         CollectionReference userAnnouncementsRef = usersRef.document(userid).collection("Announcements");
 //
-       // Query query = isOrganizer ? userAnnouncementsRef : userAnnouncementsRef.whereEqualTo("isMilestone", false);
+        // Query query = isOrganizer ? userAnnouncementsRef : userAnnouncementsRef.whereEqualTo("isMilestone", false);
 //        Query query = userid== ? userAnnouncementsRef.whereEqualTo("isMilestone", true) : userAnnouncementsRef.whereEqualTo("isMilestone", false);
-
 
 
         return usersRef.document(userid).collection("Announcements")
@@ -190,7 +189,7 @@ public class FirebaseAnnouncementController {
                         if (userid.equals(ann.getOrganizerID())) {
                             //current user is the organiser.
                             //show only milestone announcements
-                            Log.d("weird","organiser id equals user id");
+                            Log.d("weird", "organiser id equals user id");
                             if (ann.getIsMilestone()) {
                                 switch (dc.getType()) {
                                     case ADDED:
@@ -213,13 +212,11 @@ public class FirebaseAnnouncementController {
                                         break;
                                 }
                             }
-                        }
-
-                        else {
+                        } else {
                             //current user is not the organiser.
                             //show only non milestone announcements
                             if (!ann.getIsMilestone()) {
-                                Log.d("weird","organiser id does not                             Log.d(\"weird\",\"organiser id equals user id\");\nequals user id");
+                                Log.d("weird", "organiser id does not                             Log.d(\"weird\",\"organiser id equals user id\");\nequals user id");
 
                                 switch (dc.getType()) {
                                     case ADDED:
@@ -255,7 +252,7 @@ public class FirebaseAnnouncementController {
                     //if you dont want to just remove the text view and the listview form parameters
                     //and delete this.
                     updateVisibility(announcementDataList, listView, emptyAnnouncement);
-                    Log.d("Halpp","announcement changes made");
+                    Log.d("Halpp", "announcement changes made");
                     adapter.notifyDataSetChanged();
                 });
     }
