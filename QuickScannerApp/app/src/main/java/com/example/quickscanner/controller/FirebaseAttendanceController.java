@@ -355,22 +355,32 @@ public class FirebaseAttendanceController
     public Task<Void> removeFromSignUp(final String userId, final String eventId) {
         validateId(userId);
         validateId(eventId);
+        final DocumentReference userRef = db.collection("users").document(userId);
+        final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
         final DocumentReference eventRef = eventsRef.document(eventId);
         final DocumentReference signUpRef = eventRef.collection("signUps").document(userId);
-        final DocumentReference userRef = db.collection("users").document(userId);
         final DocumentReference userSignUpsRef = userRef.collection("Attendance")
                 .document("signedUpEvents");
-        final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
 
-        return db.runTransaction(new Transaction.Function<Void>() {
-            @Nullable
-            @Override
-            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+        return userAnnouncementsRef.whereEqualTo("eventID", eventId).get().continueWithTask(task -> {
+            List<String> announcementIds = new ArrayList<>();
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot document : task.getResult()) {
+                    if (document.exists()) {
+                        announcementIds.add(document.getId());
+                        Log.d("AnnouncementData", "Document ID: " + document.getId() + " Data: " + document.getData().toString());
+                    } else {
+                        // Optionally log documents that were found but do not exist anymore
+                        Log.d("AnnouncementData", "Found a document reference, but it no longer exists in the collection.");
+                    }
+                }
+            }
+
+            // Proceed with the transaction to perform sign-up deletion and updates
+            return db.runTransaction(transaction -> {
                 DocumentSnapshot signUpSnapshot = transaction.get(signUpRef);
 
-                boolean isSignedUp = signUpSnapshot.exists();
-
-                if (isSignedUp) {
+                if (signUpSnapshot.exists()) {
                     // Decrement the takenSpots field
                     transaction.update(eventRef, "takenSpots", FieldValue.increment(-1));
 
@@ -380,27 +390,19 @@ public class FirebaseAttendanceController
                     // Remove the event from the user's signed-up events
                     transaction.update(userSignUpsRef, "eventIds", FieldValue.arrayRemove(eventId));
 
-                    // Fetch all the announcements related to the event from the user's Announcements subcollection
-                    userAnnouncementsRef.whereEqualTo("eventId", eventId).get().addOnCompleteListener(task ->
-                    {
-                        if (task.isSuccessful())
-                        {
-                            for (DocumentSnapshot document : task.getResult())
-                            {
-                                // Delete the announcement document
-                                if (document.exists())
-                                {
-                                    transaction.delete(userAnnouncementsRef.document(document.getId()));
-                                }
-                            }
+                    // Delete each announcement document using its ID, only if there are IDs to delete
+                    if (!announcementIds.isEmpty()) {
+                        for (String announcementId : announcementIds) {
+                            DocumentReference announcementRef = userRef.collection("Announcements").document(announcementId);
+                            transaction.delete(announcementRef);
                         }
-                    });
+                    }
                 }
-
-                return null;
-            }
+                return null; // Transaction must return null if Void
+            });
         });
     }
+
     //gets the times checked in for a user
     public Task<String> getTimesCheckedIn(String userId) {
         validateId(userId);

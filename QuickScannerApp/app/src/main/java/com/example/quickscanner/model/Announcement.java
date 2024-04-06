@@ -3,6 +3,8 @@ package com.example.quickscanner.model;
 
 import com.google.firebase.Timestamp;
 
+import java.util.Objects;
+
 public class Announcement {
 
     private String message;
@@ -57,5 +59,15 @@ public class Announcement {
     }
     public void setId(String id) {
         this.id = id;
+    }
+    @Override
+    public boolean equals(Object compare) {
+        if (compare == null || getClass() != compare.getClass()) return false;
+        Announcement otherAnnouncement = (Announcement) compare;
+        return Objects.equals(id, otherAnnouncement.id);
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

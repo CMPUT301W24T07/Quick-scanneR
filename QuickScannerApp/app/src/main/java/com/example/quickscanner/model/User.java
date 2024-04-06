@@ -183,6 +183,10 @@ public class User {
         User user = (User) o;
         return Objects.equals(Uid, user.Uid);
     }
+    @Override
+    public int hashCode() {
+        return Objects.hash(Uid);
+    }
 
 
 }

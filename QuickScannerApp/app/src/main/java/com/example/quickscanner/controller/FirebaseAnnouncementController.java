@@ -27,7 +27,7 @@ public class FirebaseAnnouncementController {
     private final CollectionReference eventsRef;
 
     private final CollectionReference usersRef;
-    private FirebaseAttendanceController fbAttendanceController;
+    private final FirebaseAttendanceController fbAttendanceController;
 
     /**
      * Constructor for FirebaseAnnouncementController.
@@ -73,6 +73,7 @@ public class FirebaseAnnouncementController {
             DocumentReference eventAnnouncementRef = eventsRef.document(eventId)
                     .collection("Announcements").document();
             // attempts to add the announcement to the event
+            announcement.setId(eventAnnouncementRef.getId());
             eventAnnouncementRef.set(announcement).addOnSuccessListener(aVoid -> {
                 // If adding the announcement succeeds, proceeds as normal
                 processUserAnnouncements(userIds, announcement, taskCompletionSource);
@@ -165,6 +166,10 @@ public class FirebaseAnnouncementController {
                         Log.e("FirebaseAnnouncementController", "No announcements found");
                         return;
                     }
+                    if (value.isEmpty()) {
+                        listView.setVisibility(View.GONE);
+                        emptyAnnouncement.setVisibility(View.VISIBLE);
+                    }
 
                     for (DocumentChange dc : value.getDocumentChanges()) {
                         switch (dc.getType()) {
@@ -180,9 +185,11 @@ public class FirebaseAnnouncementController {
                                         break;
                                     }
                                 }
+                                break;
                             case REMOVED:
+                                //TODO make this method inside all other listeners.
                                 Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                announcementDataList.remove(removedAnnouncement);
+                                announcementDataList.removeIf(announcement -> announcement.getId().equals(removedAnnouncement.getId()));
                                 break;
                         }
                     }
@@ -196,16 +203,19 @@ public class FirebaseAnnouncementController {
                     //or something
                     //if you dont want to just remove the text view and the listview form parameters
                     //and delete this.
-                    if (announcementDataList.isEmpty()) {
-                        emptyAnnouncement.setVisibility(View.VISIBLE);
-                        listView.setVisibility(View.GONE);
-                    } else {
-                        emptyAnnouncement.setVisibility(View.GONE);
-                        listView.setVisibility(View.VISIBLE);
-                    }
-
+                    updateVisibility(announcementDataList, listView, emptyAnnouncement);
                     adapter.notifyDataSetChanged();
                 });
+    }
+
+    private void updateVisibility(ArrayList<Announcement> announcementDataList, ListView listView, TextView emptyAnnouncement) {
+        if (announcementDataList.isEmpty()) {
+            emptyAnnouncement.setVisibility(View.VISIBLE);
+            listView.setVisibility(View.GONE);
+        } else {
+            emptyAnnouncement.setVisibility(View.GONE);
+            listView.setVisibility(View.VISIBLE);
+        }
     }
 }
 

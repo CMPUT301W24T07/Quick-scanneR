@@ -65,14 +65,7 @@ public class AnnouncementsFragment extends Fragment {
 
     private FirebaseAnnouncementController fbAnnouncementController;
     private FirebaseUserController fbUserController;
-
-
-
-
-    // Firestore References
-    private FirebaseFirestore db;
-    private CollectionReference eventsRef;
-    private CollectionReference announcementsRef;
+    private ListenerRegistration registration;
 
 
 
@@ -86,9 +79,6 @@ public class AnnouncementsFragment extends Fragment {
         View root = binding.getRoot();
 
         // Firebase references
-        db = FirebaseFirestore.getInstance(); // non-image db references
-        eventsRef = db.collection("Events");
-        announcementsRef = db.collection("Announcements");
 
         fbAnnouncementController = new FirebaseAnnouncementController();
         fbUserController = new FirebaseUserController();
@@ -105,23 +95,20 @@ public class AnnouncementsFragment extends Fragment {
         announcementListView = binding.announcementListview;
         TextView emptyAnnouncementsListTextView = binding.emptyAnnouncementListTextView;
 
+
         // Initialize the Announcement data list and ArrayAdapter
         AnnouncementsDataList = new ArrayList<Announcement>();
         announcementsAdapter = new AnnouncementArrayAdapter(getContext(), AnnouncementsDataList);
         // Set the adapter to the ListView
         announcementListView.setAdapter(announcementsAdapter);
+        announcementListView.setVisibility(View.GONE);
+        emptyAnnouncementsListTextView.setVisibility(View.GONE);
 
-        if (AnnouncementsDataList.isEmpty()) {
-            emptyAnnouncementsListTextView.setVisibility(View.VISIBLE);
-            announcementListView.setVisibility(View.GONE);
-        } else {
-            emptyAnnouncementsListTextView.setVisibility(View.GONE);
-            announcementListView.setVisibility(View.VISIBLE);
-        }
+
 
         //here we call the method to set up announcement list listener
 
-        ListenerRegistration registration = fbAnnouncementController.setupAnnouncementListListener(
+        registration = fbAnnouncementController.setupAnnouncementListListener(
                 fbUserController.getCurrentUserUid(),
                 AnnouncementsDataList,
                 announcementsAdapter,
@@ -161,6 +148,11 @@ public class AnnouncementsFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (registration != null)
+        {
+            registration.remove();
+            registration = null;
+        }
         binding = null;
     }
 
