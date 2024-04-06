@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
+import com.example.quickscanner.singletons.SettingsDataSingleton;
 import com.example.quickscanner.ui.attendance.CheckInAdapter;
 import com.example.quickscanner.ui.attendance.SignUpAdapter;
 import com.google.android.gms.tasks.Task;
@@ -186,6 +187,9 @@ public class FirebaseAttendanceController {
         final DocumentReference userSignUpsRef = userRef.collection("Attendance").document("signedUpEvents");
         final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
 
+        // grab geolocation info
+        String geolocation = SettingsDataSingleton.getInstance().getHashedGeoLocation();
+      
         return eventAnnouncementsRef.get().continueWithTask(task -> {
             final List<DocumentSnapshot> announcementDocs = task.getResult().getDocuments();
 
@@ -237,18 +241,22 @@ public class FirebaseAttendanceController {
                             transaction.set(signUpRef, new HashMap<>());
                             Log.d("testerrr", "new document added");
 
-
                             //makes a hashmap to store the times checked in or other check in data
                             Map<String, Object> checkInData = new HashMap<>();
-                            checkInData.put("timesCheckedIn", 1);
-                            transaction.set(checkInRef, checkInData);
-                            Log.d("testerrr", "new hashmap created");
+                            checkInData.put("timesCheckedIn", 1);            // count check-ins
+                            if (geolocation !=null)
+                                checkInData.put("geolocation", geolocation); // store geolocation
+                            transaction.set(checkInRef, checkInData);        // create transaction
+                            Log.d("testerrr","new hashmap created");
+
 
                             // Add the event to the user's list of signed-up and checked-in events
                             Map<String, Object> userCheckInsData = new HashMap<>();
                             userCheckInsData.put("eventIds", FieldValue.arrayUnion(eventId));
                             transaction.set(userCheckInsRef, userCheckInsData, SetOptions.merge());
                             //transaction.update(userCheckInsRef, "eventIds", FieldValue.arrayUnion(eventId));
+                            Log.d("testerrr","event added to user check ins");
+
 
                             //add announcements for new check ins from event
                             for (DocumentSnapshot announcement : announcementDocs) {
@@ -265,8 +273,6 @@ public class FirebaseAttendanceController {
                         }
 
 
-
-
                     }
 
                     // If the user is signed up but not checked in
@@ -274,6 +280,8 @@ public class FirebaseAttendanceController {
                         // Add a document to the check-ins collection
                         Map<String, Object> checkInData = new HashMap<>();
                         checkInData.put("timesCheckedIn", 1);
+                        if (geolocation !=null)
+                            checkInData.put("geolocation", geolocation); // store geolocation
                         transaction.set(checkInRef, checkInData);
 
                         // Increment the current attendance count
@@ -299,11 +307,14 @@ public class FirebaseAttendanceController {
                         // Increment the number of times the user has checked in
                         Map<String, Object> checkInData = new HashMap<>();
                         checkInData.put("timesCheckedIn", FieldValue.increment(1));
+                        if (geolocation !=null)
+                           checkInData.put("geolocation", geolocation); // store geolocation
                         transaction.set(checkInRef, checkInData, SetOptions.merge());
                     }
 
                     return null;
                 }
+
             });
         });
     }
