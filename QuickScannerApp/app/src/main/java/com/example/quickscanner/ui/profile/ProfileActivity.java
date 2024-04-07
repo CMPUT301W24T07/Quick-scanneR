@@ -116,7 +116,7 @@ public class ProfileActivity extends AppCompatActivity {
                     });
 
                     resetButton.setOnClickListener(v -> {
-                        myProfile.setImageUrl(myProfile.genereteProfilePicture(myUser.getUid()));
+                        myProfile.setImageUrl(myProfile.genereteProfilePicture(myUser.getUid(), myUser.getUserProfile().getName()));
                         profileBitMap = null;
                         fbImageController.downloadImage(myProfile.getImageUrl()).addOnCompleteListener(task1 -> {
                             String url = String.valueOf(task1.getResult());

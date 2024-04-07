@@ -41,11 +41,15 @@ public class Profile {
         this.imageUrl = "default.jpeg";
     }
 
-    public String genereteProfilePicture(String userID) {
+    public String genereteProfilePicture(String userID, String name) {
         int sum = 0;
         int pfpCount = 10;
-        for(int i = 0; i < userID.length(); i++) {
-            sum += (int)userID.charAt(i);
+        String generatee = userID;
+        if (name != "") {
+            generatee = name;
+        }
+        for(int i = 0; i < generatee.length(); i++) {
+            sum += (int)generatee.charAt(i);
         }
         return String.valueOf(sum%pfpCount) + ".png";
     }
