@@ -86,4 +86,5 @@
     <string name="geopoint">GeoPoint</string>
     <string name="sign_up_text">sign up to attend event</string>
     <string name="profile_name">Profile Name</string>
+    <string name="testing_stuff">testing_stuff</string>
 </resources>

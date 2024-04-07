@@ -54,9 +54,32 @@ public class ModelTesting {
         return event;
     }
 
+    /**
+     * Test story: US 02.05.01 As an attendee,
+     * I want my profile picture to be deterministically generated from my
+     * profile name if I haven't uploaded an profile image yet.
+     * @return void
+     */
+    @Test
+    public void testGenerateProfilePicture() {
+        User mock = MockUser();
+
+        // generate profile picture for this mock user.
+        String uid = mock.getUid();
+        String name = mock.getUserProfile().getName();
+        String hashedPicture1 = mock.getUserProfile().genereteProfilePicture(uid, name);
+
+        // generate the profile picture for this mock user again.
+        String hashedPicture2 = mock.getUserProfile().genereteProfilePicture(uid, name);
+
+        // validate both pictures are the same.
+        assertEquals(hashedPicture1, hashedPicture2);
+    }
+
 
     /**
-     * Test Admin Access in User Class
+     * Test Admin Access in User Class.
+     * Administrator: the entity that is responsible for the infrastructure that the game runs on.
      * @return void
      */
     @Test
@@ -69,8 +92,11 @@ public class ModelTesting {
         assertEquals(true, user.getAdmin().booleanValue());
     }
 
+
     /**
-     * Test User geolocation toggling
+     * Test Story: US 03.02.01
+     * As a user, I want the option to enable or disable
+     * geolocation tracking for event verification.
      * @return void
      */
     @Test
@@ -84,7 +110,9 @@ public class ModelTesting {
     }
 
     /**
-     * Test Event geolocation toggling
+     * Test Story: Geolocation Verification (Optional):
+     * Optionally use geolocation to verify that attendees are
+     * physically present at the event location during check-in.
      * @return void
      */
     @Test
@@ -98,8 +126,9 @@ public class ModelTesting {
     }
 
     /**
-     * Test adding organizing events to User
-     * @return void
+     * Test Story: US 01.01.01 As an organizer,
+     * I want to create a new event and generate
+     * a unique QR code for attendee check-ins.
      */
     @Test
     public void testUserOrganizedEvent() {
@@ -119,7 +148,9 @@ public class ModelTesting {
 
 
     /**
-     * Test adding attending events to User
+     * Test Story: [New for Part 3] US 02.07.01
+     * As an attendee, I want to sign up to attend
+     * an event from the event details (as in I promise to go).
      * @return void
      */
     @Test
@@ -139,8 +170,14 @@ public class ModelTesting {
     }
 
     /**
-     * Test adding attending Users to an Event
-     * @return void
+     * Test story: [New for Part 3] US 02.07.01 As an attendee,
+     * I want to sign up to attend an event from the event details (as in I promise to go).
+     *
+     * And
+     *
+     * Test story: US 02.01.01 As an attendee, I want to quickly
+     * check into an event ...
+     *
      */
     @Test
     public void testEventHavingUsers() {
@@ -195,6 +232,8 @@ public class ModelTesting {
         assertEquals(message, testModel.getMessage());
         assertEquals(eventName, testModel.getEventName());
     }
+
+
 
 
 }

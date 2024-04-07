@@ -545,7 +545,7 @@ public class FirebaseAttendanceController {
      * @return A task that resolves to a list of Event objects.
      */
     public Task<List<Event>> getUserCheckedInEvents(String userId) {
-        validateId(userId);
+            validateId(userId);
         // Reference to the user's checked in events document
         DocumentReference userCheckInsRef = db.collection("users")
                 .document(userId)

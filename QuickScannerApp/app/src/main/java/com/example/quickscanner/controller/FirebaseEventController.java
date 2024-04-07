@@ -73,7 +73,6 @@ public class FirebaseEventController
      */
     public Task<DocumentReference> addEvent(Event event)
     {
-
         return eventsRef.add(event);
     }
 
@@ -113,6 +112,7 @@ public class FirebaseEventController
      */
     public Task<Void> deleteEvent(String eventId)
     {
+        //       deleteEvent(eventId: String): Task<Void>
         validateId(eventId);
         return eventsRef.document(eventId).delete();
     }
@@ -389,7 +389,7 @@ public class FirebaseEventController
      * @param eventAdapter The ArrayAdapter to notify of changes. This adapter should be connected to the UI.
      */
     public ListenerRegistration setupEventListListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter) {
-         return eventsRef.addSnapshotListener(new com.google.firebase.firestore.EventListener<QuerySnapshot>() {
+            return eventsRef.addSnapshotListener(new com.google.firebase.firestore.EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots,
                                 @Nullable FirebaseFirestoreException e) {
