@@ -28,18 +28,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.quickscanner.MainActivity;
-
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.controller.FirebaseQrCodeController;
 import com.example.quickscanner.controller.FirebaseUserController;
-import com.example.quickscanner.model.ConferenceConfig;
 import com.example.quickscanner.model.Event;
-import com.example.quickscanner.model.User;
-import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.google.firebase.Timestamp;
 
 import java.io.ByteArrayOutputStream;
@@ -72,6 +67,7 @@ public class AddEventActivity extends AppCompatActivity
     private Timestamp eventTime;
     private String minTime;
     private String maxTime;
+    private EditText maxAttendeeEditText;
 
 
     private ArrayAdapter<Event> eventAdapter;
@@ -124,6 +120,8 @@ public class AddEventActivity extends AppCompatActivity
 
         locationEditText = findViewById(R.id.location_textview);
         geolocationEditText = findViewById(R.id.geolocation_textview);
+        maxAttendeeEditText = findViewById(R.id.maxattendee_textview);
+
         timeEditText = findViewById(R.id.time_textview);
         timeEditText.setFocusable(false); // can't type, must interact with listener
         timeEditText.setOnClickListener(new View.OnClickListener()
@@ -231,6 +229,12 @@ public class AddEventActivity extends AppCompatActivity
     // Add event to Firestore
     private void addEventToFirestore(Event event)
     {
+        String maxAttendeesString = maxAttendeeEditText.getText().toString();
+        if (!maxAttendeesString.isEmpty()) {
+            int maxAttendees = Integer.parseInt(maxAttendeesString);
+            event.setMaxSpots(maxAttendees);
+        }
+
         fbEventController.addEvent(event)
                 .addOnSuccessListener(documentReference ->
                 {

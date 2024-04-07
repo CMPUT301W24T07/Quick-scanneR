@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:id="@+id/browse_images_fragment"
@@ -24,17 +25,43 @@
 
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/select_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/browse_images_fragment"
+        android:text="Select"
+        android:textSize="15dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="16dp"
+        android:textColor="#202020"
+        android:textStyle="bold"
+        />
+
+    <TextView
+        android:id="@+id/name_text_view"
+        android:layout_toRightOf="@+id/select_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/browse_images_fragment"
+        android:text="Name"
+        android:textSize="15dp"
+        android:layout_marginStart="35dp"
+        android:layout_marginTop="16dp"
+        android:textColor="#202020"
+        android:textStyle="bold"
+        />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="40dp"
-        android:layout_below="@+id/browse_images_fragment"
+        android:layout_marginBottom="90dp"
+        android:layout_below="@+id/select_text_view"
         android:layout_marginTop="16dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="85dp">
+            android:layout_height="match_parent">
 
             <ListView
                 android:id="@+id/BrowseImagesListView"
@@ -46,5 +73,16 @@
         </RelativeLayout>
 
     </RelativeLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/delete_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_menu_delete"
+        android:visibility="gone"
+        app:fabSize="normal" />
 
 </RelativeLayout>
