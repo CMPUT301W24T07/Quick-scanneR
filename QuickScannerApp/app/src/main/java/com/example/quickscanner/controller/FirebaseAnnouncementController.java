@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import com.example.quickscanner.AnnouncementArrayAdapter;
 import com.example.quickscanner.model.Announcement;
+import com.example.quickscanner.model.Event;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
@@ -16,49 +17,51 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.WriteBatch;
+
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FirebaseAnnouncementController
-{
+public class FirebaseAnnouncementController {
     private final FirebaseFirestore db;
     private final CollectionReference eventsRef;
 
     private final CollectionReference usersRef;
-    private FirebaseAttendanceController fbAttendanceController;
+    private final FirebaseAttendanceController fbAttendanceController;
+    private FirebaseEventController fbEventController;
 
     /**
      * Constructor for FirebaseAnnouncementController.
      * Initializes Firestore database instance and references to "Events" and "users" collections.
      */
-    public FirebaseAnnouncementController()
-    {
+    public FirebaseAnnouncementController() {
         db = FirebaseFirestore.getInstance();
         eventsRef = db.collection("Events");
         usersRef = db.collection("users");
         fbAttendanceController = new FirebaseAttendanceController();
+        fbEventController = new FirebaseEventController();
     }
+
     /**
      * Validates the provided ID.
+     *
      * @param id The ID to be validated.
      * @throws IllegalArgumentException if the ID is null or empty.
      */
-    private void validateId(String id)
-    {
-        if (id == null || id.isEmpty())
-        {
+    private void validateId(String id) {
+        if (id == null || id.isEmpty()) {
             throw new IllegalArgumentException("ID cannot be null or empty in Attendance controller");
         }
     }
+
     /**
      * Attempts to add an announcement to a specific event and then notifies the event's attendees.
      * First, it fetches the event attendee IDs. If successful, it proceeds to add the announcement
      * to the event's "Announcements" collection. Regardless of the outcome, it attempts to notify
      * attendees by processing the announcements for each user.
      *
-     * @param eventId The unique identifier of the event to add the announcement to.
+     * @param eventId      The unique identifier of the event to add the announcement to.
      * @param announcement The {@link Announcement} object containing the announcement details.
      * @return A {@link Task} that resolves to a list of strings. On success, this list is empty,
      * indicating that the announcement was added and processed successfully. If fetching attendees fails,
@@ -72,8 +75,16 @@ public class FirebaseAnnouncementController
         fbAttendanceController.getEventAttendeeIds(eventId).addOnSuccessListener(userIds -> {
             DocumentReference eventAnnouncementRef = eventsRef.document(eventId)
                     .collection("Announcements").document();
+
             // attempts to add the announcement to the event
+            announcement.setId(eventAnnouncementRef.getId());
+
             eventAnnouncementRef.set(announcement).addOnSuccessListener(aVoid -> {
+
+                if (!userIds.contains(announcement.getOrganizerID())) {
+                    userIds.add(announcement.getOrganizerID());
+                }
+
                 // If adding the announcement succeeds, proceeds as normal
                 processUserAnnouncements(userIds, announcement, taskCompletionSource);
             }).addOnFailureListener(e -> {
@@ -91,16 +102,17 @@ public class FirebaseAnnouncementController
 
         return taskCompletionSource.getTask();
     }
+
     /**
      * Processes announcements for a batch of users. This method handles the distribution of
      * the announcement to each user's "Announcements" collection in Firestore. It manages
      * batch processing to avoid exceeding Firestore's batch size limits.
-     *
+     * <p>
      * The method divides the user IDs into manageable batches and attempts to write the announcement
      * to each user's document. If any batch fails, the IDs from that batch are collected for reporting.
      *
-     * @param userIds A list of user IDs representing the recipients of the announcement.
-     * @param announcement The {@link Announcement} object to be distributed.
+     * @param userIds              A list of user IDs representing the recipients of the announcement.
+     * @param announcement         The {@link Announcement} object to be distributed.
      * @param taskCompletionSource A {@link TaskCompletionSource} used to signal the completion
      *                             of the announcement processing, either successfully or with a list
      *                             of user IDs that failed to be notified.
@@ -119,7 +131,6 @@ public class FirebaseAnnouncementController
         for (int i = 0; i < userIds.size(); i += MAX_BATCH_SIZE) {
             int end = Math.min(userIds.size(), i + MAX_BATCH_SIZE);
             List<String> subList = userIds.subList(i, end);
-
 
 
             //writes each batch to the database in the users collection.
@@ -149,8 +160,16 @@ public class FirebaseAnnouncementController
             }
         });
     }
+
+
     public ListenerRegistration setupAnnouncementListListener(String userid, ArrayList<Announcement> announcementDataList, AnnouncementArrayAdapter adapter, TextView emptyAnnouncement, ListView listView) {
         validateId(userid);
+
+        CollectionReference userAnnouncementsRef = usersRef.document(userid).collection("Announcements");
+//
+        // Query query = isOrganizer ? userAnnouncementsRef : userAnnouncementsRef.whereEqualTo("isMilestone", false);
+//        Query query = userid== ? userAnnouncementsRef.whereEqualTo("isMilestone", true) : userAnnouncementsRef.whereEqualTo("isMilestone", false);
+
 
         return usersRef.document(userid).collection("Announcements")
                 .addSnapshotListener((value, error) -> {
@@ -163,28 +182,69 @@ public class FirebaseAnnouncementController
                         Log.e("FirebaseAnnouncementController", "No announcements found");
                         return;
                     }
+                    if (value.isEmpty()) {
+                        listView.setVisibility(View.GONE);
+                        emptyAnnouncement.setVisibility(View.VISIBLE);
+                    }
 
                     for (DocumentChange dc : value.getDocumentChanges()) {
-                        switch (dc.getType()) {
-                            case ADDED:
-                                Announcement newAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                announcementDataList.add(0, newAnnouncement);
-                                break;
-                            case MODIFIED:
-                                Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                for (int i = 0; i < announcementDataList.size(); i++)
-                                {
-                                    if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId()))
-                                    {
-                                        announcementDataList.set(i, modifiedAnnouncement);
+                        Announcement ann = dc.getDocument().toObject(Announcement.class);
+                        if (userid.equals(ann.getOrganizerID())) {
+                            //current user is the organiser.
+                            //show only milestone announcements
+                            Log.d("weird", "organiser id equals user id");
+                            if (ann.getIsMilestone()) {
+                                switch (dc.getType()) {
+                                    case ADDED:
+                                        Announcement newAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.add(0, newAnnouncement);
                                         break;
-                                    }
+                                    case MODIFIED:
+                                        Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        for (int i = 0; i < announcementDataList.size(); i++) {
+                                            if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId())) {
+                                                announcementDataList.set(i, modifiedAnnouncement);
+                                                break;
+                                            }
+                                        }
+                                        break;
+                                    case REMOVED:
+                                        //TODO make this method inside all other listeners.
+                                        Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.removeIf(announcement -> announcement.getId().equals(removedAnnouncement.getId()));
+                                        break;
                                 }
-                            case REMOVED:
-                                Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                announcementDataList.remove(removedAnnouncement);
-                                break;
+                            }
+                        } else {
+                            //current user is not the organiser.
+                            //show only non milestone announcements
+                            if (!ann.getIsMilestone()) {
+                                Log.d("weird", "organiser id does not                             Log.d(\"weird\",\"organiser id equals user id\");\nequals user id");
+
+                                switch (dc.getType()) {
+                                    case ADDED:
+                                        Announcement newAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.add(0, newAnnouncement);
+                                        break;
+                                    case MODIFIED:
+                                        Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        for (int i = 0; i < announcementDataList.size(); i++) {
+                                            if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId())) {
+                                                announcementDataList.set(i, modifiedAnnouncement);
+                                                break;
+                                            }
+                                        }
+                                        break;
+                                    case REMOVED:
+                                        //TODO make this method inside all other listeners.
+                                        Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.removeIf(announcement -> announcement.getId().equals(removedAnnouncement.getId()));
+                                        break;
+                                }
+                            }
                         }
+
+
                     }
 
 
@@ -196,16 +256,39 @@ public class FirebaseAnnouncementController
                     //or something
                     //if you dont want to just remove the text view and the listview form parameters
                     //and delete this.
-                    if (announcementDataList.isEmpty()) {
-                        emptyAnnouncement.setVisibility(View.VISIBLE);
-                        listView.setVisibility(View.GONE);
-                    } else {
-                        emptyAnnouncement.setVisibility(View.GONE);
-                        listView.setVisibility(View.VISIBLE);
-                    }
-
+                    updateVisibility(announcementDataList, listView, emptyAnnouncement);
+                    Log.d("Halpp", "announcement changes made");
                     adapter.notifyDataSetChanged();
                 });
     }
+
+    private void updateVisibility(ArrayList<Announcement> announcementDataList, ListView listView, TextView emptyAnnouncement) {
+        if (announcementDataList.isEmpty()) {
+            emptyAnnouncement.setVisibility(View.VISIBLE);
+            listView.setVisibility(View.GONE);
+        } else {
+            emptyAnnouncement.setVisibility(View.GONE);
+            listView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void addMilestoneAnnouncement(String eventId, long count, String milestoneType) {
+        validateId(eventId);
+
+        Event actual_event= fbEventController.getEvent(eventId).getResult();
+
+        if (count == 10 || count == 20) {
+            Announcement milestoneAnnouncement = new Announcement();
+            milestoneAnnouncement.setEventName(milestoneType + " Milestone Reached");
+            milestoneAnnouncement.setMessage("Your event has reached " + count + " " + milestoneType.toLowerCase() + "!");
+            milestoneAnnouncement.setIsMilestone(true);
+            milestoneAnnouncement.setOrganizerID(actual_event.getOrganizerID());
+
+            addAnnouncement(eventId, milestoneAnnouncement);
+        }
+    }
+
+
+
 }
 

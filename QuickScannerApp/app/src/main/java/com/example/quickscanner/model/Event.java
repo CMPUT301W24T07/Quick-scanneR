@@ -160,4 +160,8 @@ public class Event {
         Event event = (Event) compare;
         return Objects.equals(eventID, event.eventID);
     }
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventID);
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.quickscanner.controller;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
@@ -8,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.singletons.SettingsDataSingleton;
@@ -395,22 +397,32 @@ public class FirebaseAttendanceController {
     public Task<Void> removeFromSignUp(final String userId, final String eventId) {
         validateId(userId);
         validateId(eventId);
+        final DocumentReference userRef = db.collection("users").document(userId);
+        final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
         final DocumentReference eventRef = eventsRef.document(eventId);
         final DocumentReference signUpRef = eventRef.collection("signUps").document(userId);
-        final DocumentReference userRef = db.collection("users").document(userId);
         final DocumentReference userSignUpsRef = userRef.collection("Attendance")
                 .document("signedUpEvents");
-        final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
 
-        return db.runTransaction(new Transaction.Function<Void>() {
-            @Nullable
-            @Override
-            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+        return userAnnouncementsRef.whereEqualTo("eventID", eventId).get().continueWithTask(task -> {
+            List<String> announcementIds = new ArrayList<>();
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot document : task.getResult()) {
+                    if (document.exists()) {
+                        announcementIds.add(document.getId());
+                        Log.d("AnnouncementData", "Document ID: " + document.getId() + " Data: " + document.getData().toString());
+                    } else {
+                        // Optionally log documents that were found but do not exist anymore
+                        Log.d("AnnouncementData", "Found a document reference, but it no longer exists in the collection.");
+                    }
+                }
+            }
+
+            // Proceed with the transaction to perform sign-up deletion and updates
+            return db.runTransaction(transaction -> {
                 DocumentSnapshot signUpSnapshot = transaction.get(signUpRef);
 
-                boolean isSignedUp = signUpSnapshot.exists();
-
-                if (isSignedUp) {
+                if (signUpSnapshot.exists()) {
                     // Decrement the takenSpots field
                     transaction.update(eventRef, "takenSpots", FieldValue.increment(-1));
 
@@ -419,6 +431,7 @@ public class FirebaseAttendanceController {
 
                     // Remove the event from the user's signed-up events
                     transaction.update(userSignUpsRef, "eventIds", FieldValue.arrayRemove(eventId));
+
 
                     // Fetch all the announcements related to the event from the user's Announcements subcollection
                     userAnnouncementsRef.whereEqualTo("eventId", eventId).get().addOnCompleteListener(task ->
@@ -431,11 +444,10 @@ public class FirebaseAttendanceController {
                                 }
                             }
                         }
-                    });
+                    }
                 }
-
-                return null;
-            }
+                return null; // Transaction must return null if Void
+            });
         });
     }
 
@@ -459,6 +471,7 @@ public class FirebaseAttendanceController {
             }
         });
     }
+
     /**
      * Fetches the events a user has signed up for.
      * This method performs the following operations:
@@ -610,6 +623,7 @@ public class FirebaseAttendanceController {
             return convertToObject(task.getResult(), User.class);
         });
     }
+
     //get the list of users who have checked in to a specific event
     public Task<List<User>> getEventCheckIns(String eventId) {
         // Validate the event ID
@@ -633,6 +647,7 @@ public class FirebaseAttendanceController {
             return convertToObject(task.getResult(), User.class);
         });
     }
+
     public Task<List<User>> getEventAttendees(String eventId) {
         // Validates the event ID
         validateId(eventId);
@@ -682,6 +697,7 @@ public class FirebaseAttendanceController {
             return users;
         });
     }
+
     public Task<List<String>> getEventAttendeeIds(String eventId) {
         // Validates the event ID
         validateId(eventId);
@@ -719,8 +735,7 @@ public class FirebaseAttendanceController {
         });
     }
 
-    public ListenerRegistration setupSignUpListListener(String eventId, ArrayList<User> signUpDataList, SignUpAdapter adapter, TextView emptyList, ListView listView)
-    {
+    public ListenerRegistration setupSignUpListListener(String eventId, ArrayList<User> signUpDataList, SignUpAdapter adapter, TextView emptyList, ListView listView) {
         validateId(eventId);
         return eventsRef.document(eventId).collection("signUps")
                 //TODO make people sign out so this wont break stuff
@@ -786,26 +801,23 @@ public class FirebaseAttendanceController {
                             Log.d("SignUpFragment", "Current data: null");
                         }
                     }
-                    private void updateVisibility()
-                    {
-                        if (signUpDataList.isEmpty())
-                        {
+
+                    private void updateVisibility() {
+                        if (signUpDataList.isEmpty()) {
                             listView.setVisibility(View.GONE);
                             emptyList.setVisibility(View.VISIBLE);
-                        }
-                        else
-                        {
+                        } else {
                             listView.setVisibility(View.VISIBLE);
                             emptyList.setVisibility(View.GONE);
                         }
                     }
                 });
-                }
+    }
 
 
     public ListenerRegistration setupCheckInListListener(String eventId, ArrayList<User> checkInDataList, CheckInAdapter adapter, TextView emptyList, ListView listView) {
         validateId(eventId);
-         return eventsRef.document(eventId).collection("checkIns")
+        return eventsRef.document(eventId).collection("checkIns")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
@@ -815,8 +827,7 @@ public class FirebaseAttendanceController {
                         }
 
                         if (queryDocumentSnapshots != null) {
-                            if(queryDocumentSnapshots.isEmpty())
-                            {
+                            if (queryDocumentSnapshots.isEmpty()) {
                                 emptyList.setVisibility(View.VISIBLE);
                             }
                             for (DocumentChange docChange : queryDocumentSnapshots.getDocumentChanges()) {
@@ -864,15 +875,12 @@ public class FirebaseAttendanceController {
                             Log.d("CheckInFragment", "Current data: null");
                         }
                     }
-                    private void updateVisibility()
-                    {
-                        if (checkInDataList.isEmpty())
-                        {
+
+                    private void updateVisibility() {
+                        if (checkInDataList.isEmpty()) {
                             listView.setVisibility(View.GONE);
                             emptyList.setVisibility(View.VISIBLE);
-                        }
-                        else
-                        {
+                        } else {
                             listView.setVisibility(View.VISIBLE);
                             emptyList.setVisibility(View.GONE);
                         }
@@ -880,18 +888,20 @@ public class FirebaseAttendanceController {
 
                 });
     }
+
     //method to get reference to live count collection for specific event
     public ListenerRegistration setupLiveCountListener(String eventId, TextView timesCheckedInTextView) {
         validateId(eventId);
         DocumentReference liveCountRef = getLiveCountRef(eventId);
-         return liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w("CheckInFragment", "Listen failed.", e);
-                            return;
-                        }
+        return liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("CheckInFragment", "Listen failed.", e);
+                    return;
+                }
+
 
                         long liveCount = 0L;
                         if (snapshot != null && snapshot.exists()) {
@@ -902,7 +912,10 @@ public class FirebaseAttendanceController {
                         }
                         timesCheckedInTextView.setText(String.format("Live Attendance Count: %d", liveCount));
                     }
-                });
+                }
+                timesCheckedInTextView.setText("Live Attendance Count: " + liveCount);
+            }
+        });
     }
 
     /**
@@ -929,11 +942,13 @@ public class FirebaseAttendanceController {
         validateId(eventId);
         return eventsRef.document(eventId).collection("liveCounts").document("currentAttendance");
     }
+
+
     /**
      * Checks if a user is checked in to a specific event.
      *
      * @param eventId The ID of the event.
-     * @param userId The ID of the user.
+     * @param userId  The ID of the user.
      * @return A Task that resolves to true if the user is checked in, false otherwise.
      */
     public Task<Boolean> isUserCheckedIn(String eventId, String userId) {
@@ -958,7 +973,7 @@ public class FirebaseAttendanceController {
      * Checks if a user is signed up to a specific event.
      *
      * @param eventId The ID of the event.
-     * @param userId The ID of the user.
+     * @param userId  The ID of the user.
      * @return A Task that resolves to true if the user is signed up, false otherwise.
      */
     public Task<Boolean> isUserSignedUp(String eventId, String userId) {
@@ -980,15 +995,13 @@ public class FirebaseAttendanceController {
     }
 
 
-
-
     /**
      * Converts a list of DocumentSnapshots to a list of objects of a specified class.
      * Each DocumentSnapshot in the list is converted to an instance of the specified class.
      * If a DocumentSnapshot cannot be converted to an instance of the specified class, it is ignored.
      * can convert any document snapshot list to any class
      *
-     * @param objects The list of DocumentSnapshots.
+     * @param objects     The list of DocumentSnapshots.
      * @param objectClass The class to convert the DocumentSnapshots to.
      * @return A list of objects of the specified class.
      */
