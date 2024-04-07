@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,6 +30,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -75,7 +77,9 @@ public class ViewEventActivity extends AppCompatActivity
 
     private FirebaseQrCodeController fbQRCodeController;
     // UI reference
-    Switch toggleGeolocation;
+    private Switch toggleGeolocation;
+
+    private boolean editMode;
 
 
     private Event currentEvent;
@@ -413,15 +417,74 @@ public class ViewEventActivity extends AppCompatActivity
     }
 
     private void setNonEditConstraint() {
-        binding.setTimeButton.setVisibility(View.GONE);
-        binding.setLocationButton.setVisibility(View.GONE);
+        Button timeButton = binding.setTimeButton;
+        Button locationButton = binding.setLocationButton;
+        timeButton.setVisibility(View.GONE);
+        locationButton.setVisibility(View.GONE);
 
-        binding.setTimeButton.setLayoutParams();
+        EditText timeText = binding.eventTimeText;
+        EditText locationText = binding.locationTextview;
+        EditText descriptionText = binding.eventDescriptionText;
+
+        ConstraintLayout.LayoutParams timeParams = (ConstraintLayout.LayoutParams) timeText.getLayoutParams();
+        ConstraintLayout.LayoutParams locationParams = (ConstraintLayout.LayoutParams) locationText.getLayoutParams();
+        ConstraintLayout.LayoutParams descriptionParams = (ConstraintLayout.LayoutParams) descriptionText.getLayoutParams();
+
+        locationParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+        locationParams.startToEnd = ConstraintLayout.LayoutParams.UNSET;
+        locationParams.startToStart = binding.constraintLayout.getId();
+        locationParams.topToBottom = timeText.getId();
+
+        timeParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.startToEnd = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.startToStart = binding.constraintLayout.getId();
+        timeParams.topToTop = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.topToBottom = binding.organiserProfilePicture.getId();
+
+        descriptionParams.topMargin = 100;
+
+        timeText.setLayoutParams(timeParams);
+        locationText.setLayoutParams(locationParams);
+        descriptionText.setLayoutParams(descriptionParams);
+    }
+
+    private void setEditConstraint() {
+        Button timeButton = binding.setTimeButton;
+        Button locationButton = binding.setLocationButton;
+        timeButton.setVisibility(View.VISIBLE);
+        locationButton.setVisibility(View.VISIBLE);
+
+        EditText timeText = binding.eventTimeText;
+        EditText locationText = binding.locationTextview;
+        EditText descriptionText = binding.eventDescriptionText;
+
+        ConstraintLayout.LayoutParams timeParams = (ConstraintLayout.LayoutParams) timeText.getLayoutParams();
+        ConstraintLayout.LayoutParams locationParams = (ConstraintLayout.LayoutParams) locationText.getLayoutParams();
+        ConstraintLayout.LayoutParams descriptionParams = (ConstraintLayout.LayoutParams) descriptionText.getLayoutParams();
+
+        locationParams.bottomToBottom = locationButton.getId();
+        locationParams.startToEnd = locationButton.getId();
+        locationParams.startToStart = ConstraintLayout.LayoutParams.UNSET;
+        locationParams.topToBottom = timeButton.getId();
+
+        timeParams.bottomToBottom = timeButton.getId();
+        timeParams.startToEnd = timeButton.getId();
+        timeParams.startToStart = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.topToTop = timeButton.getId();
+        timeParams.topToBottom = ConstraintLayout.LayoutParams.UNSET;
+
+
+        descriptionParams.topMargin = 15;
+
+        timeText.setLayoutParams(timeParams);
+        locationText.setLayoutParams(locationParams);
+        descriptionText.setLayoutParams(descriptionParams);
     }
 
     private void setEventDataToUI(Event event, String UiD) {
-
+        editMode = false;
         //use event object to update all the views
+        setNonEditConstraint();
         binding.eventTitleText.setText(event.getName());
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
@@ -590,7 +653,15 @@ public class ViewEventActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(@NonNull MenuItem item)
     {
         int itemId = item.getItemId();
-        if (itemId == R.id.navigation_attendance_list)
+        if (itemId == R.id.navigation_edit) {
+            if (editMode) {
+                setNonEditConstraint();
+            } else {
+                setEditConstraint();
+            }
+            editMode = !editMode;
+        }
+        else if (itemId == R.id.navigation_attendance_list)
         {// Handle Edit Profile click
             // Handle click
             Toast.makeText(this, "navigation_attendance_list clicked", Toast.LENGTH_SHORT).show();

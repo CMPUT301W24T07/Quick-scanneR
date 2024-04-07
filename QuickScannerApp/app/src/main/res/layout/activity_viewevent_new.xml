@@ -25,6 +25,7 @@
                 android:fillViewport="true">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/constraintLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="100dp">
@@ -49,16 +50,16 @@
 
                     <EditText
                         android:id="@+id/eventDescription_text"
-                        android:inputType="none"
-                        android:enabled="false"
-                        android:textColor="@android:color/white"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:layout_marginTop="10dp"
-                        android:paddingHorizontal="5dp"
                         android:background="@color/material_dynamic_neutral30"
+                        android:enabled="false"
                         android:gravity="left"
+                        android:inputType="none"
+                        android:paddingHorizontal="5dp"
                         android:text="@string/event_description"
+                        android:textColor="@android:color/white"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.0"
