@@ -412,6 +412,12 @@ public class ViewEventActivity extends AppCompatActivity
 
     }
 
+    private void setNonEditConstraint() {
+        binding.setTimeButton.setVisibility(View.GONE);
+        binding.setLocationButton.setVisibility(View.GONE);
+
+        binding.setTimeButton.setLayoutParams();
+    }
 
     private void setEventDataToUI(Event event, String UiD) {
 
@@ -420,6 +426,9 @@ public class ViewEventActivity extends AppCompatActivity
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
         binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
+        // disabling the set buttons for location and time
+
+
         fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>()
         {
             public void onSuccess(User user)
