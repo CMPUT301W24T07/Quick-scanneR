@@ -19,7 +19,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -28,11 +27,8 @@ import com.google.firebase.firestore.ListenerRegistration;
 public class AttendanceActivity extends AppCompatActivity
 {
     private TextView liveAttendanceCount;
-    private TextView maxSpotsTextView;
     private FirebaseAttendanceController fbAttendanceController;
     private ListenerRegistration liveCountListenerReg;
-    private ListenerRegistration maxSpotsListenerReg;
-
 
 
     @Override
@@ -52,21 +48,15 @@ public class AttendanceActivity extends AppCompatActivity
             getSupportActionBar().setTitle("Attendance Information");
         }
 
-        fbAttendanceController = new FirebaseAttendanceController();
 
-        // Set up listener for MaxSpots updates
-        maxSpotsTextView = findViewById(R.id.displayMaxAttendance);
-        maxSpotsListenerReg = fbAttendanceController.setupMaxSpotsListener(eventID, maxSpotsTextView);
 
         // Create bottom menu for Attendance Activity.
         createBottomMenu(eventID);
 
         liveAttendanceCount = findViewById(R.id.live_attendance_count);
+        fbAttendanceController = new FirebaseAttendanceController();
         liveCountListenerReg = fbAttendanceController.setupLiveCountListener(eventID, liveAttendanceCount);
-
-
     }
-
 
 
     @Override

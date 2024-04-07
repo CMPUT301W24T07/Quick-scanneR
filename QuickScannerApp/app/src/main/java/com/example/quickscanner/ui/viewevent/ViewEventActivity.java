@@ -32,7 +32,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.quickscanner.databinding.ActivityVieweventNewBinding;
+import com.example.quickscanner.controller.FirebaseAnnouncementController;
+import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.ui.attendance.AttendanceActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseAttendanceController;
@@ -67,7 +68,7 @@ public class ViewEventActivity extends AppCompatActivity {
     private FirebaseAttendanceController fbAttendanceController;
     private FirebaseAnnouncementController fbAnnouncementController;
     private Event event;
-    private ActivityVieweventNewBinding binding;
+    private ActivityVieweventBinding binding;
     private ProgressBar loading;
     private RelativeLayout contentLayout;
     private Integer loadCount;
@@ -85,7 +86,7 @@ public class ViewEventActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityVieweventNewBinding.inflate(getLayoutInflater());
+        binding = ActivityVieweventBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         //references
@@ -431,6 +432,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
             }
 
+
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
@@ -508,9 +510,39 @@ public class ViewEventActivity extends AppCompatActivity {
             }
             decrementLoadCount("event image");
         });
+
     }
 
 
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
+//            }
+//        });
+
+
+    private void showQRCodeDialog() {
+        // Check if the event object is available
+        if (event != null) {
+            // Create and show the QR code dialog fragment
+            QRCodeDialogFragment.newInstance(eventID).show(getSupportFragmentManager(), "QRCodeDialogFragment");
+        }
+    }
+
+    private void showContent() {
+        loading.setVisibility(View.GONE);
+        binding.signUpButton.setVisibility(View.VISIBLE);
+        contentLayout.setVisibility(View.VISIBLE);
+    }
+
+    private synchronized void decrementLoadCount(String location) {
+        loadCount--;
+        Log.d(TAG, "loadCount after decrement " + location + " : " + loadCount); // Corrected to log after decrement
+        if (loadCount == 0) {
+            showContent();
+        }
+    }
 //    // Handles The Top Bar menu clicks
 //    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 //        if (item.getItemId() == android.R.id.home) {
@@ -597,8 +629,6 @@ public class ViewEventActivity extends AppCompatActivity {
             }
             // Add the hashed location
             bundle.putString("geoHash", event.getGeoLocation());
-            // Add eventID
-            bundle.putString("eventID", event.getEventID());
             intent.putExtras(bundle);
             startActivity(intent);
             return true;
@@ -663,19 +693,6 @@ public class ViewEventActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-    }
-
-    private void showContent() {
-        loading.setVisibility(View.GONE);
-        binding.signUpButton.setVisibility(View.VISIBLE);
-        contentLayout.setVisibility(View.VISIBLE);
-    }
-    private synchronized void decrementLoadCount(String location) {
-        loadCount--;
-        Log.d(TAG, "loadCount after decrement " + location + " : " + loadCount); // Corrected to log after decrement
-        if (loadCount == 0) {
-            showContent();
-        }
     }
 
 
