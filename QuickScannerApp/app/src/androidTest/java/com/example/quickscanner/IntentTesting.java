@@ -38,6 +38,7 @@ import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
 import com.example.quickscanner.ui.adminpage.BrowseEventsActivity;
+import com.example.quickscanner.ui.adminpage.BrowseImagesActivity;
 import com.example.quickscanner.ui.adminpage.BrowseProfilesActivity;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.settings.SettingsActivity;
@@ -249,6 +250,34 @@ public class IntentTesting {
         onView(isRoot()).perform(ViewActions.pressBack());
         onView(withId(R.id.navigation_events)).check(matches(isDisplayed()));
     }
+
+
+    /*
+     *   Test if the redirection to BrowseImages work properly
+     * */
+    @Test
+    public void testIntentAdminBrowseImages(){
+        // Opens menu
+        Espresso.openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+        // clicks on Admin Page
+        onView(withText("Admin Page")).perform(click());
+        // check if intent worked
+        intended(hasComponent(AdminActivity.class.getName()));
+        // click on BrowsePage
+        onView(withText("Browse Images")).perform(click());
+        // check if intent worked
+        intended(hasComponent(BrowseImagesActivity.class.getName()));
+        // check on an event
+
+        // Test the back button
+        onView(isRoot()).perform(ViewActions.pressBack());
+        onView(withId(R.id.admin_activity_main)).check(matches(isDisplayed()));
+        // Test the back button
+        onView(isRoot()).perform(ViewActions.pressBack());
+        onView(withId(R.id.navigation_events)).check(matches(isDisplayed()));
+    }
+
+
 
 
 
