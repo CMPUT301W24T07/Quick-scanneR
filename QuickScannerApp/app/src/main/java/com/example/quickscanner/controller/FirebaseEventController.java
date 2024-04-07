@@ -35,7 +35,8 @@ import java.util.List;
 /**
  * Controller for managing events in Firestore.
  */
-public class FirebaseEventController {
+public class FirebaseEventController
+{
     private final FirebaseFirestore db;
     private final CollectionReference eventsRef;
     private final CollectionReference configRef;
@@ -43,7 +44,8 @@ public class FirebaseEventController {
     /**
      * Initializes Firestore and a reference to the "Events" collection.
      */
-    public FirebaseEventController() {
+    public FirebaseEventController()
+    {
         db = FirebaseFirestore.getInstance();
         eventsRef = db.collection("Events");
         configRef = db.collection("config");
@@ -55,8 +57,10 @@ public class FirebaseEventController {
      * @param id The ID to validate. It should be a non-null and non-empty string.
      * @throws IllegalArgumentException If the ID is null or empty.
      */
-    private void validateId(String id) {
-        if (id == null || id.isEmpty()) {
+    private void validateId(String id)
+    {
+        if (id == null || id.isEmpty())
+        {
             throw new IllegalArgumentException("ID cannot be null or empty in Event controller");
         }
     }
@@ -67,7 +71,8 @@ public class FirebaseEventController {
      * @param event the event to be added
      * @return a Task that will be once the event is added
      */
-    public Task<DocumentReference> addEvent(Event event) {
+    public Task<DocumentReference> addEvent(Event event)
+    {
 
         return eventsRef.add(event);
     }
@@ -81,7 +86,8 @@ public class FirebaseEventController {
      * @param event the event to be updated
      * @return a Task that will be completed once the event is updated
      */
-    public Task<Void> updateAndMergeEvent(Event event) {
+    public Task<Void> updateAndMergeEvent(Event event)
+    {
         return eventsRef.document(event.getEventID()).set(event, SetOptions.merge());
     }
 
@@ -94,7 +100,8 @@ public class FirebaseEventController {
      * @param event the event to be updated
      * @return a Task that will be completed once the event is updated
      */
-    public Task<Void> updateEvent(Event event) {
+    public Task<Void> updateEvent(Event event)
+    {
         return eventsRef.document(event.getEventID()).set(event);
     }
 
@@ -104,62 +111,81 @@ public class FirebaseEventController {
      * @param eventId the ID of the event to be deleted
      * @return a Task that will be completed once the event is deleted
      */
-    public Task<Void> deleteEvent(String eventId) {
+    public Task<Void> deleteEvent(String eventId)
+    {
         validateId(eventId);
         return eventsRef.document(eventId).delete();
     }
 
 
-    public Task<List<Event>> getEvents() {
+    public Task<List<Event>> getEvents()
+    {
         Query query = eventsRef.orderBy("time").limit(30);
 
         Task<QuerySnapshot> task = query.get();
 
-        return task.continueWith(new Continuation<QuerySnapshot, List<Event>>() {
+        return task.continueWith(new Continuation<QuerySnapshot, List<Event>>()
+        {
             @Override
-            public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-                if (task.isSuccessful()) {
+            public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception
+            {
+                if (task.isSuccessful())
+                {
                     QuerySnapshot querySnapshot = task.getResult();
                     List<Event> events = new ArrayList<>();
-                    if (querySnapshot != null) {
-                        for (QueryDocumentSnapshot document : querySnapshot) {
+                    if (querySnapshot != null)
+                    {
+                        for (QueryDocumentSnapshot document : querySnapshot)
+                        {
                             Event event = document.toObject(Event.class);
                             events.add(event);
                         }
                     }
                     return events;
-                } else {
+                }
+                else
+                {
                     throw task.getException();
                 }
             }
         });
     }
 
-    public Task<List<Event>> continueGetEvents(String lastEventId) {
+    public Task<List<Event>> continueGetEvents(String lastEventId)
+    {
         validateId(lastEventId);
         Task<DocumentSnapshot> lastEventTask = eventsRef.document(lastEventId).get();
 
-        return lastEventTask.continueWithTask(new Continuation<DocumentSnapshot, Task<List<Event>>>() {
+        return lastEventTask.continueWithTask(new Continuation<DocumentSnapshot, Task<List<Event>>>()
+        {
             @Override
-            public Task<List<Event>> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
+            public Task<List<Event>> then(@NonNull Task<DocumentSnapshot> task) throws Exception
+            {
                 DocumentSnapshot lastEvent = task.getResult();
                 Query query = eventsRef.orderBy("time").startAfter(lastEvent).limit(30);
                 Task<QuerySnapshot> queryTask = query.get();
 
-                return queryTask.continueWith(new Continuation<QuerySnapshot, List<Event>>() {
+                return queryTask.continueWith(new Continuation<QuerySnapshot, List<Event>>()
+                {
                     @Override
-                    public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception {
-                        if (task.isSuccessful()) {
+                    public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception
+                    {
+                        if (task.isSuccessful())
+                        {
                             QuerySnapshot querySnapshot = task.getResult();
                             List<Event> events = new ArrayList<>();
-                            if (querySnapshot != null) {
-                                for (QueryDocumentSnapshot document : querySnapshot) {
+                            if (querySnapshot != null)
+                            {
+                                for (QueryDocumentSnapshot document : querySnapshot)
+                                {
                                     Event event = document.toObject(Event.class);
                                     events.add(event);
                                 }
                             }
                             return events;
-                        } else {
+                        }
+                        else
+                        {
                             throw task.getException();
                         }
                     }
@@ -174,92 +200,112 @@ public class FirebaseEventController {
      * @param eventId The ID of the event to retrieve.
      * @return A task that completes with the Event object.
      */
-    public Task<Event> getEvent(String eventId) {
+    public Task<Event> getEvent(String eventId)
+    {
         validateId(eventId);
         Task<DocumentSnapshot> task = eventsRef.document(eventId).get();
-        return task.continueWithTask(new Continuation<DocumentSnapshot, Task<Event>>() {
+        return task.continueWithTask(new Continuation<DocumentSnapshot, Task<Event>>()
+        {
             @Override
-            public Task<Event> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
-                if (task.isSuccessful()) {
+            public Task<Event> then(@NonNull Task<DocumentSnapshot> task) throws Exception
+            {
+                if (task.isSuccessful())
+                {
                     DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
+                    if (document.exists())
+                    {
                         Event event = document.toObject(Event.class);
                         return Tasks.forResult(event);
-                    } else {
+                    }
+                    else
+                    {
                         return Tasks.forException(new Exception("No such Event"));
                     }
-                } else {
+                }
+                else
+                {
                     return Tasks.forException(task.getException());
                 }
             }
         });
     }
 
-    public ListenerRegistration setUpOrganizedEventsListener(String orgId, ArrayList<Event> eventsDataList, ArrayAdapter<Event> eventAdapter, TextView emptyEvents, ListView listView) {
+    public ListenerRegistration setUpOrganizedEventsListener(String orgId, ArrayList<Event> eventsDataList, ArrayAdapter<Event> eventAdapter, TextView emptyEvents, ListView listView)
+    {
         //log saying that the orgId is being passed
         return eventsRef.whereEqualTo("organizerID", orgId)
                 .orderBy("time", Query.Direction.ASCENDING)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                .addSnapshotListener(new EventListener<QuerySnapshot>()
+                {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots,
-                                        @Nullable FirebaseFirestoreException e) {
+                                        @Nullable FirebaseFirestoreException e)
+                    {
                         //log stating in on event
-                        if (e != null) {
+                        if (e != null)
+                        {
                             Log.e("SetUpOrganizedEventsListener", "Error getting events", e);
                             return;
                         }
-                        if (queryDocumentSnapshots != null) {
-                            if (queryDocumentSnapshots.isEmpty()) {
+                        if (queryDocumentSnapshots != null)
+                        {
+                            if(queryDocumentSnapshots.isEmpty())
+                            {
                                 listView.setVisibility(View.GONE);
                                 emptyEvents.setVisibility(View.VISIBLE);
                             }
 
 
-                            for (DocumentChange docChange : queryDocumentSnapshots.getDocumentChanges()) {
-                                switch (docChange.getType()) {
-                                    case ADDED:
-                                        // A new document has been added, add it to the list
-                                        Event newEvent = docChange.getDocument().toObject(Event.class);
-                                        eventsDataList.add(newEvent);
-                                        updateVisibility();
-                                        break;
-                                    case MODIFIED:
-                                        // An existing document has been modified, update it in the list
-                                        Event modifiedEvent = docChange.getDocument().toObject(Event.class);
-                                        int index = eventsDataList.indexOf(modifiedEvent);
-                                        if (index != -1) {
-                                            eventsDataList.set(index, modifiedEvent);
-                                        }
-                                        updateVisibility();
-                                        break;
-                                    case REMOVED:
-                                        // A document has been removed, remove it from the list
-                                        Event removedEvent = docChange.getDocument().toObject(Event.class);
-                                        eventsDataList.remove(removedEvent);
-                                        updateVisibility();
-                                        break;
-                                }
+                        for (DocumentChange docChange : queryDocumentSnapshots.getDocumentChanges())
+                        {
+                            switch (docChange.getType())
+                            {
+                                case ADDED:
+                                    // A new document has been added, add it to the list
+                                    Event newEvent = docChange.getDocument().toObject(Event.class);
+                                    eventsDataList.add(newEvent);
+                                    updateVisibility();
+                                    break;
+                                case MODIFIED:
+                                    // An existing document has been modified, update it in the list
+                                    Event modifiedEvent = docChange.getDocument().toObject(Event.class);
+                                    int index = eventsDataList.indexOf(modifiedEvent);
+                                    if (index != -1)
+                                    {
+                                        eventsDataList.set(index, modifiedEvent);
+                                    }
+                                    updateVisibility();
+                                    break;
+                                case REMOVED:
+                                    // A document has been removed, remove it from the list
+                                    Event removedEvent = docChange.getDocument().toObject(Event.class);
+                                    eventsDataList.remove(removedEvent);
+                                    updateVisibility();
+                                    break;
                             }
-                        } else {
+                        }
+                    }else {
                             Log.e("SetUpOrganizedEventsListener", "queryDocumentSnapshots is null");
                         }
 
                         // Notify the adapter that the data has changed
                         eventAdapter.notifyDataSetChanged();
                     }
-
-                    private void updateVisibility() {
-                        if (eventsDataList.isEmpty()) {
+                    private void updateVisibility()
+                    {
+                        if (eventsDataList.isEmpty())
+                        {
                             listView.setVisibility(View.GONE);
                             emptyEvents.setVisibility(View.VISIBLE);
-                        } else {
+                        }
+                        else
+                        {
                             listView.setVisibility(View.VISIBLE);
                             emptyEvents.setVisibility(View.GONE);
                         }
                     }
                 });
     }
-
     public ListenerRegistration setupAttendListListener(String userId, ArrayList<Event> signedUpEventsList, ArrayAdapter<Event> adapter, TextView emptyList, ListView listView) {
         validateId(userId);
         DocumentReference userSignUpsRef = db.collection("users").document(userId).collection("Attendance").document("signedUpEvents");
@@ -315,7 +361,7 @@ public class FirebaseEventController {
 
     /**
      * Sets up a Firestore listener for real-time updates to the events list.
-     * <p>
+     *
      * 1. This method sets up a listener on the Firestore "Events" collection.
      * The listener will be triggered every time there's a change in the collection.
      * 2. Inside the listener, it first checks if there was an error. If there was,
@@ -323,15 +369,15 @@ public class FirebaseEventController {
      * 3. If there was no error, it checks if the QuerySnapshot is not null and not empty. If it is,
      * it iterates over the document changes in the QuerySnapshot.
      * 4. For each DocumentChange, it checks the type of change:
-     * - If the change type is ADDED,
-     * it converts the document to an Event object and adds it to the eventsDataList.
-     * - If the change type is MODIFIED,
-     * it converts the document to an Event object and finds its position in the eventsDataList.
-     * If the event is found in the list, it checks if the image, name, or time has changed.
-     * If any of these have changed, it replaces the old event with the new one in the
-     * eventsDataList.
-     * - If the change type is REMOVED,
-     * it converts the document to an Event object and removes it from the eventsDataList.
+     *    - If the change type is ADDED,
+     *      it converts the document to an Event object and adds it to the eventsDataList.
+     *    - If the change type is MODIFIED,
+     *      it converts the document to an Event object and finds its position in the eventsDataList.
+     *    If the event is found in the list, it checks if the image, name, or time has changed.
+     *      If any of these have changed, it replaces the old event with the new one in the
+     *      eventsDataList.
+     *    - If the change type is REMOVED,
+     *    it converts the document to an Event object and removes it from the eventsDataList.
      * 5. After processing all the document changes,
      * it sorts the eventsDataList in descending order based on the timestamp.
      * 6. It then iterates over the eventsDataList, and if it finds an event whose time is before
@@ -340,10 +386,10 @@ public class FirebaseEventController {
      * This will cause the UI to update and reflect the changes in the data.
      *
      * @param eventsDataList The list of events to update. This list should be modifiable.
-     * @param eventAdapter   The ArrayAdapter to notify of changes. This adapter should be connected to the UI.
+     * @param eventAdapter The ArrayAdapter to notify of changes. This adapter should be connected to the UI.
      */
     public ListenerRegistration setupEventListListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter) {
-        return eventsRef.addSnapshotListener(new com.google.firebase.firestore.EventListener<QuerySnapshot>() {
+         return eventsRef.addSnapshotListener(new com.google.firebase.firestore.EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots,
                                 @Nullable FirebaseFirestoreException e) {
@@ -361,12 +407,14 @@ public class FirebaseEventController {
                             case MODIFIED:
                                 Event modifiedEvent = changes.getDocument().toObject(Event.class);
                                 int modifiedPosition = eventsDataList.indexOf(modifiedEvent);
-                                if (modifiedPosition != -1) {
+                                if (modifiedPosition != -1)
+                                {
                                     Event oldEvent = eventsDataList.get(modifiedPosition);
                                     // Check if the image, name, or time has changed
                                     if (!oldEvent.getImagePath().equals(modifiedEvent.getImagePath()) ||
                                             !oldEvent.getName().equals(modifiedEvent.getName()) ||
-                                            !oldEvent.getTime().equals(modifiedEvent.getTime())) {
+                                            !oldEvent.getTime().equals(modifiedEvent.getTime()))
+                                    {
                                         // Replace the old event with the new one
                                         eventsDataList.set(modifiedPosition, modifiedEvent);
                                     }
@@ -381,7 +429,6 @@ public class FirebaseEventController {
                     // Sorts the eventsDataList in descending order based on the timestamp
                     eventsDataList.sort(new Comparator<Event>() {
                         final Timestamp currentTime = Timestamp.now();
-
                         @Override
                         public int compare(Event e1, Event e2) {
                             // Compares the difference between the event's time and the current time
@@ -411,33 +458,37 @@ public class FirebaseEventController {
             }
         });
     }
-
     /**
      * Retrieves the conference configuration from Firestore.
      *
      * @return a Task that completes with the ConferenceConfig object.
      */
-    public Task<ConferenceConfig> getConferenceConfig() {
+    public Task<ConferenceConfig> getConferenceConfig()
+    {
         return configRef.document("ConferenceConfig")
                 .get()
-                .continueWithTask(new Continuation<DocumentSnapshot, Task<ConferenceConfig>>() {
+                .continueWithTask(new Continuation<DocumentSnapshot, Task<ConferenceConfig>>()
+                {
                     @Override
-                    public Task<ConferenceConfig> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
-                        if (task.isSuccessful()) {
+                    public Task<ConferenceConfig> then(@NonNull Task<DocumentSnapshot> task) throws Exception
+                    {
+                        if (task.isSuccessful())
+                        {
                             DocumentSnapshot document = task.getResult();
-                            if (document.exists()) {
+                            if (document.exists())
+                            {
                                 return Tasks.forResult(document.toObject(ConferenceConfig.class));
-                            } else {
+                            }
+                            else
+                            {
                                 return Tasks.forException(new Exception("No such document"));
                             }
-                        } else {
+                        }
+                        else
+                        {
                             return Tasks.forException(task.getException());
                         }
                     }
                 });
     }
-
-
-
-
 }
