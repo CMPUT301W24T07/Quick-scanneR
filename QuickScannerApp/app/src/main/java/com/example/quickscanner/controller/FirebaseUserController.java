@@ -228,4 +228,27 @@ public class FirebaseUserController
         //TODO remove this and replace with other get user method
         return usersRef.document(userId).get();
     }
+
+    public Task<User> getUserByImageURL(String imageURL) {
+        Query query = usersRef.whereEqualTo("imageURL", imageURL);
+
+        Task<QuerySnapshot> task = query.get();
+
+        return task.continueWith(new Continuation<QuerySnapshot, User>() {
+            @Override
+            public User then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                if (task.isSuccessful()) {
+                    QuerySnapshot querySnapshot = task.getResult();
+                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                        DocumentSnapshot document = querySnapshot.getDocuments().get(0);
+                        return document.toObject(User.class);
+                    } else {
+                        throw new Exception("No user found with the given image URL");
+                    }
+                } else {
+                    throw task.getException();
+                }
+            }
+        });
+    }
 }
