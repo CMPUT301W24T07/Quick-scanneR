@@ -10,9 +10,10 @@ import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
-import com.example.quickscanner.singletons.SettingsDataSingleton;
 import com.example.quickscanner.ui.attendance.CheckInAdapter;
 import com.example.quickscanner.ui.attendance.SignUpAdapter;
+import com.example.quickscanner.ui.homepage_event.EventArrayAdapter;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
@@ -70,6 +71,7 @@ public class FirebaseAttendanceController {
 
     /**
      * Signs up a user for an event, ensuring that the current attendees does not exceed the max.
+     * <p>
      * This method performs the following operations in a transaction:
      * 1. Checks if the user is already signed up for the event. If so, no further action is taken.
      * 2. If the user is not signed up and the event is not full, it increments the count of taken spots in the event document.
@@ -107,19 +109,11 @@ public class FirebaseAttendanceController {
                     boolean isSignedUp = signUpSnapshot.exists();
 
                     if (!isSignedUp) {
-                        if (event != null) {
-                            if (event.getMaxSpots() != null && event.getTakenSpots() >= event.getMaxSpots()) {
-                                throw new FirebaseFirestoreException(
-                                        "Event is full",
-                                        FirebaseFirestoreException.Code.ABORTED
-                                );
-                            }
-                        } else {
+                        if (event.getMaxSpots() != null && event.getTakenSpots() >= event.getMaxSpots()) {
                             throw new FirebaseFirestoreException(
-                                    "event is null when pulled ",
+                                    "Event is full",
                                     FirebaseFirestoreException.Code.ABORTED
                             );
-
                         }
 
                         // Increment the takenSpots field
@@ -138,11 +132,11 @@ public class FirebaseAttendanceController {
 
 
                         // For each document in the Announcements subcollection,
-                        // adds a document with the same ID and data to the Announcements
+                        // add a document with the same ID and data to the Announcements
                         // subcollection of the user
                         for (DocumentSnapshot announcementDoc : announcementDocs) {
                             DocumentReference userAnnouncementRef = userAnnouncementsRef.document(announcementDoc.getId());
-                            if (announcementDoc.exists() && announcementDoc.getData() != null) {
+                            if (announcementDoc.exists()) {
                                 transaction.set(userAnnouncementRef, announcementDoc.getData());
                             }
                         }
@@ -156,12 +150,15 @@ public class FirebaseAttendanceController {
 
     /**
      * Checks a user into an event.
+     * <p>
      * This method performs the following operations in a transaction:
      * 1. If the user is not signed up, they will be signed up and checked in.
      * 2. If the user is signed up but not checked in, they will be checked in.
      * 3. If the user is already checked in, the timesCheckedIn field will be incremented.
+     * <p>
      * This method ensures all these operations are performed atomically, so there's no chance of
      * write errors or too many people joining.
+     * <p>
      * If the event is full
      * (i.e., the number of taken spots is equal to or greater than the maximum spots),
      * the transaction is aborted and an exception is thrown.
@@ -180,153 +177,119 @@ public class FirebaseAttendanceController {
         final DocumentReference signUpRef = eventRef.collection("signUps").document(userId);
         final DocumentReference checkInRef = eventRef.collection("checkIns").document(userId);
         final DocumentReference liveCountRef = eventRef.collection("liveCounts").document("currentAttendance");
-        final CollectionReference eventAnnouncementsRef = eventRef.collection("Announcements");
 
         final DocumentReference userRef = db.collection("users").document(userId);
         final DocumentReference userCheckInsRef = userRef.collection("Attendance").document("checkedInEvents");
         final DocumentReference userSignUpsRef = userRef.collection("Attendance").document("signedUpEvents");
-        final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
-
-        // grab geolocation info
-        String geolocation = SettingsDataSingleton.getInstance().getHashedGeoLocation();
-      
-        return eventAnnouncementsRef.get().continueWithTask(task -> {
-            final List<DocumentSnapshot> announcementDocs = task.getResult().getDocuments();
 
 
-            // Run a transaction to perform the check-in operation
-            return db.runTransaction(new Transaction.Function<Void>() {
+        // Run a transaction to perform the check-in operation
+        return db.runTransaction(new Transaction.Function<Void>() {
+            @Nullable
+            @Override
+            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                // Fetch the current state of the event, sign-up, and check-in documents
+                DocumentSnapshot eventSnapshot = transaction.get(eventRef);
+                DocumentSnapshot signUpSnapshot = transaction.get(signUpRef);
+                DocumentSnapshot checkInSnapshot = transaction.get(checkInRef);
 
-                @Nullable
-                @Override
-                public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                    // Fetch the current state of the event, sign-up, and check-in documents
-                    DocumentSnapshot eventSnapshot = transaction.get(eventRef);
-                    DocumentSnapshot signUpSnapshot = transaction.get(signUpRef);
-                    DocumentSnapshot checkInSnapshot = transaction.get(checkInRef);
+                // Convert the event document to an Event object
+                Event event = eventSnapshot.toObject(Event.class);
 
+                // Check if the user is signed up and checked in
+                boolean isSignedUp = signUpSnapshot.exists();
+                boolean isCheckedIn = checkInSnapshot.exists();
 
-                    // Convert the event document to an Event object
-                    Event event = eventSnapshot.toObject(Event.class);
-
-                    // Check if the user is signed up and checked in
-                    boolean isSignedUp = signUpSnapshot.exists();
-                    boolean isCheckedIn = checkInSnapshot.exists();
-
-                    // If the user is neither signed up nor checked in
-                    if (!isSignedUp && !isCheckedIn) {
-                        // If the event is full, abort the transaction
-                        if (event != null) {
-                            if (event.getMaxSpots() != null && event.getTakenSpots() >= event.getMaxSpots()) {
-                                Log.d("testerrr", "event is full");
-                                throw new FirebaseFirestoreException(
-                                        "Event is full",
-                                        FirebaseFirestoreException.Code.ABORTED
-                                );
-                            }
-
-
-                            // Increment the number of taken spots for the event
-                            transaction.update(eventRef, "takenSpots", FieldValue.increment(1));
-                            event.setTakenSpots(event.getTakenSpots() + 1);
-                            Log.d("testerrr", "reached taken spots check");
-
-                            // Increment the current attendance count
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("attendanceCount", FieldValue.increment(1));
-                            transaction.set(liveCountRef, data, SetOptions.merge());
-                            Log.d("testerrr", "reached current attendance count check");
-
-                            // Add a document to the sign-ups and check-ins collections
-                            transaction.set(signUpRef, new HashMap<>());
-                            Log.d("testerrr", "new document added");
-
-                            //makes a hashmap to store the times checked in or other check in data
-                            Map<String, Object> checkInData = new HashMap<>();
-                            checkInData.put("timesCheckedIn", 1);            // count check-ins
-                            if (geolocation !=null)
-                                checkInData.put("geolocation", geolocation); // store geolocation
-                            transaction.set(checkInRef, checkInData);        // create transaction
-                            Log.d("testerrr","new hashmap created");
-
-
-                            // Add the event to the user's list of signed-up and checked-in events
-                            Map<String, Object> userCheckInsData = new HashMap<>();
-                            userCheckInsData.put("eventIds", FieldValue.arrayUnion(eventId));
-                            transaction.set(userCheckInsRef, userCheckInsData, SetOptions.merge());
-                            //transaction.update(userCheckInsRef, "eventIds", FieldValue.arrayUnion(eventId));
-                            Log.d("testerrr","event added to user check ins");
-
-
-                            //add announcements for new check ins from event
-                            for (DocumentSnapshot announcement : announcementDocs) {
-                                if (announcement.exists() && announcement.getData() != null) {
-                                    DocumentReference userAnnouncementRef = userAnnouncementsRef.document(announcement.getId());
-                                    transaction.set(userAnnouncementRef, announcement.getData());
-                                }
-                                //if not in there, the doc doesn't exist or its null
-                        }
-                        }
-                        else
-                        {
-                            Log.e("check in", "event is null for some reason ");
-                        }
-
-
+                // If the user is neither signed up nor checked in
+                if (!isSignedUp && !isCheckedIn) {
+                    // If the event is full, abort the transaction
+                    if (event.getMaxSpots() != null && event.getTakenSpots() >= event.getMaxSpots()) {
+                        Log.d("testerrr", "event is full");
+                        throw new FirebaseFirestoreException(
+                                "Event is full",
+                                FirebaseFirestoreException.Code.ABORTED
+                        );
                     }
 
-                    // If the user is signed up but not checked in
-                    else if (isSignedUp && !isCheckedIn) {
-                        // Add a document to the check-ins collection
-                        Map<String, Object> checkInData = new HashMap<>();
-                        checkInData.put("timesCheckedIn", 1);
-                        if (geolocation !=null)
-                            checkInData.put("geolocation", geolocation); // store geolocation
-                        transaction.set(checkInRef, checkInData);
+                    // Increment the number of taken spots for the event
+                    transaction.update(eventRef, "takenSpots", FieldValue.increment(1));
+                    event.setTakenSpots(event.getTakenSpots() + 1);
+                    Log.d("testerrr", "reached taken spots check");
 
-                        // Increment the current attendance count
-                        Map<String, Object> liveCountData = new HashMap<>();
-                        liveCountData.put("attendanceCount", FieldValue.increment(1));
-                        transaction.set(liveCountRef, liveCountData, SetOptions.merge());
-                        // Remove the document from the sign-ups collection
-                        transaction.delete(signUpRef);
+                    // Increment the current attendance count
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("attendanceCount", FieldValue.increment(1));
+                    transaction.set(liveCountRef, data, SetOptions.merge());
+                    Log.d("testerrr", "reached current attendance count check");
 
-                        // Remove the event from the user's list of signed-up events
-                        Map<String, Object> signUpData = new HashMap<>();
-                        signUpData.put("eventIds", FieldValue.arrayRemove(eventId));
-                        transaction.set(userSignUpsRef, signUpData, SetOptions.merge());
+                    // Add a document to the sign-ups and check-ins collections
+                    transaction.set(signUpRef, new HashMap<>());
+                    Log.d("testerrr", "new document added");
 
 
-                        // Add the event to the user's list of checked-in events
-                        Map<String, Object> userCheckInData = new HashMap<>();
-                        userCheckInData.put("eventIds", FieldValue.arrayUnion(eventId));
-                        transaction.set(userCheckInsRef, userCheckInData, SetOptions.merge());
-                    }
-                    // If the user is already checked in
-                    else if (isCheckedIn) {
-                        // Increment the number of times the user has checked in
-                        Map<String, Object> checkInData = new HashMap<>();
-                        checkInData.put("timesCheckedIn", FieldValue.increment(1));
-                        if (geolocation !=null)
-                           checkInData.put("geolocation", geolocation); // store geolocation
-                        transaction.set(checkInRef, checkInData, SetOptions.merge());
-                    }
+                    //makes a hashmap to store the times checked in or other check in data
+                    Map<String, Object> checkInData = new HashMap<>();
+                    checkInData.put("timesCheckedIn", 1);
+                    transaction.set(checkInRef, checkInData);
+                    Log.d("testerrr", "new hashmap created");
 
-                    return null;
+                    // Add the event to the user's list of signed-up and checked-in events
+                    Map<String, Object> userCheckInsData = new HashMap<>();
+                    userCheckInsData.put("eventIds", FieldValue.arrayUnion(eventId));
+                    transaction.set(userCheckInsRef, userCheckInsData, SetOptions.merge());
+                    //transaction.update(userCheckInsRef, "eventIds", FieldValue.arrayUnion(eventId));
+                    Log.d("testerrr", "event added to user check ins");
+
                 }
 
-            });
+                // If the user is signed up but not checked in
+                else if (isSignedUp && !isCheckedIn) {
+                    // Add a document to the check-ins collection
+                    Map<String, Object> checkInData = new HashMap<>();
+                    checkInData.put("timesCheckedIn", 1);
+                    transaction.set(checkInRef, checkInData);
+
+                    // Increment the current attendance count
+                    Map<String, Object> liveCountData = new HashMap<>();
+                    liveCountData.put("attendanceCount", FieldValue.increment(1));
+                    transaction.set(liveCountRef, liveCountData, SetOptions.merge());
+                    // Remove the document from the sign-ups collection
+                    transaction.delete(signUpRef);
+
+                    // Remove the event from the user's list of signed-up events
+                    Map<String, Object> signUpData = new HashMap<>();
+                    signUpData.put("eventIds", FieldValue.arrayRemove(eventId));
+                    transaction.set(userSignUpsRef, signUpData, SetOptions.merge());
+
+
+                    // Add the event to the user's list of checked-in events
+                    Map<String, Object> userCheckInData = new HashMap<>();
+                    userCheckInData.put("eventIds", FieldValue.arrayUnion(eventId));
+                    transaction.set(userCheckInsRef, userCheckInData, SetOptions.merge());
+                }
+                // If the user is already checked in
+                else if (isCheckedIn) {
+                    // Increment the number of times the user has checked in
+                    Map<String, Object> checkInData = new HashMap<>();
+                    checkInData.put("timesCheckedIn", FieldValue.increment(1));
+                    transaction.set(checkInRef, checkInData, SetOptions.merge());
+                }
+
+                return null;
+            }
         });
     }
 
 
     /**
      * Removes a user from the check-ins of an event.
+     * <p>
      * This method performs the following operations in a transaction:
      * 1. Decrements the count of current attendees in the event document.
      * 2. Decrements the count of taken spots in the event document.
      * 3. Deletes the check-in document for the user in the event's check-ins collection.
      * 4. Removes the event ID from the user's list of checked-in events.
+     * <p>
      * If the user is not checked into the event, the method does nothing
      *
      * @param userId  The ID of the user to be removed from the check-ins.
@@ -341,7 +304,6 @@ public class FirebaseAttendanceController {
         final DocumentReference userRef = usersRef.document(userId);
         final DocumentReference userAttendanceRef = userRef.collection("Attendance")
                 .document("checkedInEvents");
-        final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
 
 
         return db.runTransaction(new Transaction.Function<Void>() {
@@ -360,18 +322,6 @@ public class FirebaseAttendanceController {
 
                     // Remove the event from the user's checked-in events
                     transaction.update(userAttendanceRef, "eventIds", FieldValue.arrayRemove(eventId));
-
-                    userAnnouncementsRef.whereEqualTo("eventId", eventId).get().addOnCompleteListener(task ->
-                    {
-                        if (task.isSuccessful()) {
-                            for (DocumentSnapshot document : task.getResult()) {
-                                // Delete the announcement document
-                                if (document.exists()) {
-                                    transaction.delete(userAnnouncementsRef.document(document.getId()));
-                                }
-                            }
-                        }
-                    });
                 }
 
                 return null;
@@ -381,10 +331,12 @@ public class FirebaseAttendanceController {
 
     /**
      * Removes a user from the sign-ups of an event.
+     * <p>
      * This method performs the following operations in a transaction:
      * 1. Decrements the count of taken spots in the event document.
      * 2. Deletes the sign-up document for the user in the event's sign-ups collection.
      * 3. Removes the event ID from the user's list of signed-up events.
+     * <p>
      * If the user is not signed up for the event, the method does nothing.
      *
      * @param userId  The ID of the user to be removed from the sign-ups.
@@ -420,6 +372,13 @@ public class FirebaseAttendanceController {
                     // Remove the event from the user's signed-up events
                     transaction.update(userSignUpsRef, "eventIds", FieldValue.arrayRemove(eventId));
 
+//<<<<<<< HEAD
+//                    // Delete each announcement document using its ID, only if there are IDs to delete
+//                    if (!announcementIds.isEmpty()) {
+//                        for (String announcementId : announcementIds) {
+//                            DocumentReference announcementRef = userRef.collection("Announcements").document(announcementId);
+//                            transaction.delete(announcementRef);
+//=======
                     // Fetch all the announcements related to the event from the user's Announcements subcollection
                     userAnnouncementsRef.whereEqualTo("eventId", eventId).get().addOnCompleteListener(task ->
                     {
@@ -430,6 +389,7 @@ public class FirebaseAttendanceController {
                                     transaction.delete(userAnnouncementsRef.document(document.getId()));
                                 }
                             }
+//>>>>>>> main
                         }
                     });
                 }
@@ -446,21 +406,15 @@ public class FirebaseAttendanceController {
         return userRef.collection("Attendance").document("checkedInEvents").get().continueWith(task -> {
             DocumentSnapshot document = task.getResult();
             if (document.exists()) {
-                Object timesCheckedIn = document.get("timesCheckedIn");
-                if (timesCheckedIn != null) {
-                    return timesCheckedIn.toString();
-                }
-                //doc is null for some reason
-                Log.e("FirebaseAttendanceController", "getTimesCheckedIn has livecount as null but not empty" );
-                return " ";
+                return document.get("timesCheckedIn").toString();
             } else {
-                // Document does not exist, return "0"
                 return "0";
             }
         });
     }
     /**
      * Fetches the events a user has signed up for.
+     * <p>
      * This method performs the following operations:
      * 1. Fetches the user's signed-up events document.
      * 2. Retrieves the list of event IDs from the document.
@@ -468,6 +422,7 @@ public class FirebaseAttendanceController {
      * 4. Converts the chunks to a list of tasks that fetch the corresponding QuerySnapshots.
      * 5. Waits for all tasks to complete.
      * 6. Converts the QuerySnapshots to Event objects.
+     * <p>
      * If the user has not signed up for any events, the method returns a task that resolves to an empty list.
      *
      * @param userId The ID of the user.
@@ -486,17 +441,9 @@ public class FirebaseAttendanceController {
             DocumentSnapshot document = task.getResult();
 
             // Get the list of event IDs from the document
-            Object eventIdsObject = document.get("eventIds");
-            List<String> eventIds = new ArrayList<>();
-
-            if (eventIdsObject instanceof List<?>) {
-                for (Object item : (List<?>) eventIdsObject) {
-                    if (item instanceof String) {
-                        eventIds.add((String) item);
-                    }
-                }
-            }
-            if (eventIds.isEmpty()) {
+            List<String> eventIds = (List<String>) document.get("eventIds");
+            if (eventIds == null) {
+                // If there are no event IDs, return an empty list
                 return Tasks.forResult(new ArrayList<Event>());
             }
 
@@ -533,12 +480,14 @@ public class FirebaseAttendanceController {
 
     /**
      * Fetches the events a user has checked into.
+     * <p>
      * This method performs the following operations:
      * 1. Fetches the user's checked-in events document.
      * 2. Retrieves the list of event IDs from the document.
      * 3. Converts the event IDs to a list of tasks that fetch the corresponding DocumentSnapshots.
      * 4. Waits for all tasks to complete.
      * 5. Converts the DocumentSnapshots to Event objects.
+     * <p>
      * If the user has not checked into any events, the method returns a task that resolves to an empty list.
      *
      * @param userId The ID of the user.
@@ -556,19 +505,10 @@ public class FirebaseAttendanceController {
         return userCheckInsRef.get().continueWithTask(task -> {
             DocumentSnapshot document = task.getResult();
             // Get the list of event IDs from the document
-
-            Object eventIdsObject = document.get("eventIds");
-            List<String> eventIds = new ArrayList<>();
-            if (eventIdsObject instanceof List<?>) {
-                for (Object item : (List<?>) eventIdsObject) {
-                    if (item instanceof String) {
-                        eventIds.add((String) item);
-                    }
-                }
-            }
-            if (eventIds.isEmpty()) {
+            List<String> eventIds = (List<String>) document.get("eventIds");
+            if (eventIds == null) {
                 // If there are no event IDs, return an empty list
-                return Tasks.forResult(new ArrayList<Event>());
+                return Tasks.forResult(new ArrayList<Object>());
             }
             // Convert the event IDs to a list of DocumentSnapshot tasks
             List<Task<DocumentSnapshot>> tasks = arrayToDocList(eventIds);
@@ -884,6 +824,22 @@ public class FirebaseAttendanceController {
     public ListenerRegistration setupLiveCountListener(String eventId, TextView timesCheckedInTextView) {
         validateId(eventId);
         DocumentReference liveCountRef = getLiveCountRef(eventId);
+//<<<<<<< HEAD
+//        return liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//            @Override
+//            public void onEvent(@Nullable DocumentSnapshot snapshot,
+//                                @Nullable FirebaseFirestoreException e) {
+//                if (e != null) {
+//                    Log.w("CheckInFragment", "Listen failed.", e);
+//                    return;
+//                }
+//
+//                Long liveCount = 0L;
+//                if (snapshot != null && snapshot.exists()) {
+//                    Long temp = snapshot.getLong("liveCount");
+//                    if (temp != null) {
+//                        liveCount = temp;
+//=======
          return liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                     @Override
                     public void onEvent(@Nullable DocumentSnapshot snapshot,
@@ -901,6 +857,7 @@ public class FirebaseAttendanceController {
                             }
                         }
                         timesCheckedInTextView.setText(String.format("Live Attendance Count: %d", liveCount));
+//>>>>>>> main
                     }
                 });
     }
@@ -924,7 +881,8 @@ public class FirebaseAttendanceController {
             return document.getLong("attendanceCount");
         });
     }
-    // method that gives reference to live count collection for specific event
+
+    // method that gives reference to live count collection for specfici event
     public DocumentReference getLiveCountRef(String eventId) {
         validateId(eventId);
         return eventsRef.document(eventId).collection("liveCounts").document("currentAttendance");
@@ -984,6 +942,7 @@ public class FirebaseAttendanceController {
 
     /**
      * Converts a list of DocumentSnapshots to a list of objects of a specified class.
+     * <p>
      * Each DocumentSnapshot in the list is converted to an instance of the specified class.
      * If a DocumentSnapshot cannot be converted to an instance of the specified class, it is ignored.
      * can convert any document snapshot list to any class
@@ -1009,6 +968,7 @@ public class FirebaseAttendanceController {
 
     /**
      * Converts a list of event IDs to a list of tasks that retrieve the corresponding DocumentSnapshots.
+     * <p>
      * Each task in the returned list, when run, will fetch the DocumentSnapshot for the corresponding event ID.
      * currently only works for event ids, but could be converted to work with any id by taking
      * in the collection reference as well as changing variable names
@@ -1024,60 +984,65 @@ public class FirebaseAttendanceController {
         }
         return docList;
     }
-
-    public ListenerRegistration setupMaxSpotsListener(String eventId, TextView maxSpotsTextView) {
-        validateId(eventId);
-        DocumentReference maxSpotsRef = getMaxSpotsRef(eventId);
-        return maxSpotsRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("AttendanceActivity", "Listen failed.", e);
-                    return;
-                }
-
-                int maxSpots = 0;
-                if (snapshot != null && snapshot.exists()) {
-                    Integer temp = snapshot.getLong("maxSpots") != null ? snapshot.getLong("maxSpots").intValue() : null;
-                    if (temp != null) {
-                        maxSpots = temp;
-                    } else {
-                        // MaxSpots is null, indicate that there is no maximum limit
-                        maxSpotsTextView.setText("No Maximum Limit");
-                        return;
-                    }
-                }
-                maxSpotsTextView.setText("Max Spots: " + maxSpots);
-            }
-        });
-    }
-
-    /**
-     * Fetches the maximum attendance (MaxSpots) for a specific event.
-     *
-     * @param eventId The ID of the event.
-     * @return A Task that resolves to the maximum attendance count.
-     */
-    public Task<Integer> getMaxSpots(String eventId) {
-        // Validate the event ID
-        validateId(eventId);
-
-        // Reference to the event's max spots document
-        DocumentReference maxSpotsRef = eventsRef.document(eventId);
-
-        // Fetch the document and return the maximum attendance count
-        return maxSpotsRef.get().continueWith(task -> {
-            DocumentSnapshot document = task.getResult();
-            return document.getLong("maxSpots").intValue();
-        });
-    }
-
-    // Method that gives reference to the max spots document for a specific event
-    public DocumentReference getMaxSpotsRef(String eventId) {
-        validateId(eventId);
-        return eventsRef.document(eventId);
-    }
-
-
 }
+
+//<<<<<<< HEAD
+//   }
+//=======
+//    public ListenerRegistration setupMaxSpotsListener(String eventId, TextView maxSpotsTextView) {
+//        validateId(eventId);
+//        DocumentReference maxSpotsRef = getMaxSpotsRef(eventId);
+//        return maxSpotsRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//            @Override
+//            public void onEvent(@Nullable DocumentSnapshot snapshot,
+//                                @Nullable FirebaseFirestoreException e) {
+//                if (e != null) {
+//                    Log.w("AttendanceActivity", "Listen failed.", e);
+//                    return;
+//                }
+//
+//                int maxSpots = 0;
+//                if (snapshot != null && snapshot.exists()) {
+//                    Integer temp = snapshot.getLong("maxSpots") != null ? snapshot.getLong("maxSpots").intValue() : null;
+//                    if (temp != null) {
+//                        maxSpots = temp;
+//                    } else {
+//                        // MaxSpots is null, indicate that there is no maximum limit
+//                        maxSpotsTextView.setText("No Maximum Limit");
+//                        return;
+//                    }
+//                }
+//                maxSpotsTextView.setText("Max Spots: " + maxSpots);
+//            }
+//        });
+//    }
+//
+//    /**
+//     * Fetches the maximum attendance (MaxSpots) for a specific event.
+//     *
+//     * @param eventId The ID of the event.
+//     * @return A Task that resolves to the maximum attendance count.
+//     */
+//    public Task<Integer> getMaxSpots(String eventId) {
+//        // Validate the event ID
+//        validateId(eventId);
+//
+//        // Reference to the event's max spots document
+//        DocumentReference maxSpotsRef = eventsRef.document(eventId);
+//
+//        // Fetch the document and return the maximum attendance count
+//        return maxSpotsRef.get().continueWith(task -> {
+//            DocumentSnapshot document = task.getResult();
+//            return document.getLong("maxSpots").intValue();
+//        });
+//    }
+//
+//    // Method that gives reference to the max spots document for a specific event
+//    public DocumentReference getMaxSpotsRef(String eventId) {
+//        validateId(eventId);
+//        return eventsRef.document(eventId);
+//    }
+//
+//
+//}
+//>>>>>>> main

@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.ConferenceConfig;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.ui.homepage_event.EventArrayAdapter;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -29,8 +30,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Controller for managing events in Firestore.
@@ -397,6 +402,7 @@ public class FirebaseEventController
                     Log.w("event fragment listener", "Listen failed.", e);
                     return;
                 }
+
                 if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
                     for (DocumentChange changes : queryDocumentSnapshots.getDocumentChanges()) {
                         switch (changes.getType()) {
@@ -444,8 +450,6 @@ public class FirebaseEventController
                     for (int i = 0; i < eventsDataList.size(); i++) {
                         Event event = eventsDataList.get(i);
                         // If the event's time is before the current time, its removed from list
-                        if (event == null)
-                            continue;
                         if (event.getTime().compareTo(Timestamp.now()) <= 0) {
                             eventsDataList.remove(i);
                             i--; // Decrement the counter since something was removed

@@ -32,7 +32,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.quickscanner.databinding.ActivityVieweventNewBinding;
+import com.example.quickscanner.controller.FirebaseAnnouncementController;
+import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.ui.attendance.AttendanceActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseAttendanceController;
@@ -67,7 +68,7 @@ public class ViewEventActivity extends AppCompatActivity
     private FirebaseUserController fbUserController;
     private FirebaseAttendanceController fbAttendanceController;
     private Event event;
-    private ActivityVieweventNewBinding binding;
+    private ActivityVieweventBinding binding;
     private ProgressBar loading;
     private RelativeLayout contentLayout;
     private Integer  loadCount;
@@ -86,7 +87,7 @@ public class ViewEventActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        binding = ActivityVieweventNewBinding.inflate(getLayoutInflater());
+        binding = ActivityVieweventBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         //references
@@ -100,6 +101,7 @@ public class ViewEventActivity extends AppCompatActivity
         contentLayout = findViewById(R.id.contentLayout);
         loading.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.GONE);
+
         binding.signUpButton.setVisibility(View.GONE);
         loadCount = 5;
         Log.d("LoadCount", "Decrementing loadCount, current value: " + loadCount);
@@ -451,6 +453,7 @@ public class ViewEventActivity extends AppCompatActivity
                 decrementLoadCount("user");
 
             }
+
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
@@ -529,6 +532,21 @@ public class ViewEventActivity extends AppCompatActivity
             }
             decrementLoadCount("event image");
         });
+
+    }
+
+    private void showContent() {
+        loading.setVisibility(View.GONE);
+        binding.signUpButton.setVisibility(View.VISIBLE);
+        contentLayout.setVisibility(View.VISIBLE);
+    }
+
+    private synchronized void decrementLoadCount(String location) {
+        loadCount--;
+        Log.d(TAG, "loadCount after decrement " + location + " : " + loadCount); // Corrected to log after decrement
+        if (loadCount == 0) {
+            showContent();
+        }
     }
 
 //    // Handles The Top Bar menu clicks
@@ -633,8 +651,6 @@ public class ViewEventActivity extends AppCompatActivity
             }
             // Add the hashed location
             bundle.putString("geoHash", event.getGeoLocation());
-            // Add eventID
-            bundle.putString("eventID", event.getEventID());
             intent.putExtras(bundle);
             startActivity(intent);
             return true;
@@ -716,19 +732,6 @@ public class ViewEventActivity extends AppCompatActivity
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-    }
-
-    private void showContent() {
-        loading.setVisibility(View.GONE);
-        binding.signUpButton.setVisibility(View.VISIBLE);
-        contentLayout.setVisibility(View.VISIBLE);
-    }
-    private synchronized void decrementLoadCount(String location) {
-        loadCount--;
-        Log.d(TAG, "loadCount after decrement " + location + " : " + loadCount); // Corrected to log after decrement
-        if (loadCount == 0) {
-            showContent();
-        }
     }
 
 
