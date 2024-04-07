@@ -493,7 +493,7 @@ public class FirebaseEventController
     }
 
     public Task<Event> getEventByImageURL(String imageURL) {
-        Query query = eventsRef.whereEqualTo("imageURL", imageURL);
+        Query query = eventsRef.whereEqualTo("imagePath", imageURL);
 
         Task<QuerySnapshot> task = query.get();
 

@@ -1,6 +1,7 @@
 package com.example.quickscanner.ui.adminpage;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,8 +56,9 @@ public class ImageArrayAdapter extends ArrayAdapter<Image> {
 
         // Fetch and display user or event name
         TextView name = listItem.findViewById(R.id.name);
-
-        if(currentImage.getSource()!= null && currentImage.getSource().equals("user")){
+        Log.d("testing", "Source: " + currentImage.getSource());
+        if (currentImage.getSource()!= null && currentImage.getSource().equals("user")){
+            Log.d("testing", "getView: User");
             fbUserController.getUserByImageURL(currentImage.getImageUrl())
                     .addOnCompleteListener(new OnCompleteListener<User>() {
                         @Override
@@ -92,35 +94,33 @@ public class ImageArrayAdapter extends ArrayAdapter<Image> {
                     });
         }
         else {
-
             fbUserController.getUserByImageURL(currentImage.getImageUrl())
                     .addOnCompleteListener(new OnCompleteListener<User>() {
                         @Override
                         public void onComplete(@NonNull Task<User> task) {
                             if (task.isSuccessful()) {
+                                Log.d("testing", "onComplete: yea");
                                 User user = task.getResult();
                                 if (user != null && user.getUserProfile() != null) {
                                     name.setText(user.getUserProfile().getName());
-                                } else {
-                                    fbEventController.getEventByImageURL(currentImage.getImageUrl())
-                                            .addOnCompleteListener(new OnCompleteListener<Event>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Event> task) {
-                                                    if (task.isSuccessful()) {
-                                                        Event event = task.getResult();
-                                                        if (event != null) {
-                                                            name.setText(event.getName());
-                                                        } else {
-                                                            name.setText("Not found");
-                                                        }
+                                }
+                            } else {
+                                fbEventController.getEventByImageURL(currentImage.getImageUrl())
+                                        .addOnCompleteListener(new OnCompleteListener<Event>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Event> task) {
+                                                if (task.isSuccessful()) {
+                                                    Event event = task.getResult();
+                                                    if (event != null) {
+                                                        name.setText(event.getName());
                                                     } else {
                                                         name.setText("Not found");
                                                     }
+                                                } else {
+                                                    name.setText("Not found");
                                                 }
-                                            });
-                                }
-                            } else {
-                                name.setText("Not found");
+                                            }
+                                        });
                             }
                         }
                     });
