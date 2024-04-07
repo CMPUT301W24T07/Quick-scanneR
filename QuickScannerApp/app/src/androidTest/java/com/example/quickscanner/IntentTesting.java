@@ -1,52 +1,50 @@
 package com.example.quickscanner;
 
+import static android.os.SystemClock.sleep;
+import static android.provider.Settings.System.getString;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
-import static androidx.test.espresso.intent.matcher.IntentMatchers.toPackage;
+import static androidx.test.espresso.matcher.ViewMatchers.hasChildCount;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
+import static org.hamcrest.CoreMatchers.anything;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.JMock1Matchers.equalTo;
-import static org.hamcrest.Matchers.hasToString;
-import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertEquals;
-
 import static java.util.EnumSet.allOf;
+
 import android.content.Context;
 
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.intent.Intents;
-import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.GrantPermissionRule;
 
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.addevent.AddEventActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
 import com.example.quickscanner.ui.adminpage.BrowseEventsActivity;
+import com.example.quickscanner.ui.adminpage.BrowseImagesActivity;
 import com.example.quickscanner.ui.adminpage.BrowseProfilesActivity;
+import com.example.quickscanner.ui.my_events.MyEvents_Activity;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.settings.SettingsActivity;
+import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.firebase.Timestamp;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.Date;
 
@@ -62,6 +60,12 @@ public class IntentTesting {
     @Rule
     public ActivityScenarioRule<MainActivity> scenario = new
             ActivityScenarioRule<MainActivity>(MainActivity.class);
+
+    // Grant location access permissions.
+    // For testing purposes.
+    @Rule
+    public GrantPermissionRule mRuntimePermissionRule = GrantPermissionRule
+            .grant(android.Manifest.permission.ACCESS_FINE_LOCATION);
 
     /* Is called before every test
      * Set up an intent listener
@@ -132,8 +136,8 @@ public class IntentTesting {
 
 
     /* Test the navigation to add Events works
-    *  ( Does not add/create any Events )
-    * */
+     *  ( Does not add/create any Events )
+     * */
     @Test
     public void testAddEvents(){
         /* test if add event button works */
@@ -146,8 +150,8 @@ public class IntentTesting {
     }
 
     /*
-    *   Test If the redirection to settings work properly
-    * */
+     *   Test If the redirection to settings work properly
+     * */
     @Test
     public void testIntentSettings(){
         /* test if clicking settings on the menu works  */
@@ -242,6 +246,186 @@ public class IntentTesting {
         onView(isRoot()).perform(ViewActions.pressBack());
         onView(withId(R.id.navigation_events)).check(matches(isDisplayed()));
     }
+
+
+    /*
+     *   Test if the redirection to BrowseImages work properly
+     * */
+    @Test
+    public void testIntentAdminBrowseImages(){
+        // Opens menu
+        Espresso.openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+        // clicks on Admin Page
+        onView(withText("Admin Page")).perform(click());
+        // check if intent worked
+        intended(hasComponent(AdminActivity.class.getName()));
+        // click on BrowsePage
+        onView(withText("Browse Images")).perform(click());
+        // check if intent worked
+        intended(hasComponent(BrowseImagesActivity.class.getName()));
+        // Test the back button
+        onView(isRoot()).perform(ViewActions.pressBack());
+        onView(withId(R.id.admin_activity_main)).check(matches(isDisplayed()));
+        // Test the back button
+        onView(isRoot()).perform(ViewActions.pressBack());
+        onView(withId(R.id.navigation_events)).check(matches(isDisplayed()));
+    }
+
+
+    /*
+     *   Test if the redirection to BrowseEvents work properly
+     * */
+    @Test
+    public void testAdminBrowseEvents() {
+        // Opens menu
+        Espresso.openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+        // clicks on Admin Page
+        onView(withText("Admin Page")).perform(click());
+        // check if intent worked
+        intended(hasComponent(AdminActivity.class.getName()));
+        // click on BrowsePage
+        onView(withText("Browse Events")).perform(click());
+        // check if intent worked
+        intended(hasComponent(BrowseEventsActivity.class.getName()));
+        // click on an event
+        sleep(1500); // get some sleep sid zzz
+        AssertionError eCode = null;
+        try {
+            onView(withId(R.id.BrowseEventsListView)).check(matches(hasChildCount(0)));
+        } catch (AssertionError e) {
+            // listview is most likely empty, so didn't do anything.
+            eCode = e;
+        }
+        if (eCode == null) {
+            // listview is not empty. so open an event.
+            onView(withId(R.id.BrowseEventsListView)).perform(click());
+            // check if opening event worked
+            intended(hasComponent(BrowseEventsActivity.class.getName()));
+            // Opens menu
+            Espresso.openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+            // check if the 'delete' option exists
+            onView(withText(R.string.delete)).check(matches(isDisplayed()));
+        }
+
+    }
+
+    /*
+     *   Test if MyEvents_Activity works properly
+     * */
+    @Test
+    public void testIntentMyEvents(){
+        /* test if clicking settings on the menu works  */
+        // Opens menu
+        Espresso.openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+        // clicks on settings
+        onView(withText("My Events")).perform(click());
+        // check if intent worked
+        intended(hasComponent(MyEvents_Activity.class.getName()));
+        // check bottom nav bar for my_events.
+        // Attending Events click
+        onView(withId(R.id.navigation_attending_events)).perform(click());
+        onView(withId(R.id.navigation_attending_events)).check(matches(isDisplayed()));
+        // Organized Events click
+        onView(withId(R.id.navigation_organized_events)).perform(click());
+        onView(withId(R.id.navigation_organized_events)).check(matches(isDisplayed()));
+        // Test the back button
+        onView(isRoot()).perform(ViewActions.pressBack());
+    }
+
+
+    /*
+     *   Test if the BrowseProfiles Activity works properly
+     * */
+    @Test
+    public void testAdminBrowseProfiles() {
+        // Opens menu
+        Espresso.openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+        // clicks on Admin Page
+        onView(withText("Admin Page")).perform(click());
+        // check if intent worked
+        intended(hasComponent(AdminActivity.class.getName()));
+        // click on BrowsePage
+        onView(withText("Browse Profiles")).perform(click());
+        // check if intent worked
+        intended(hasComponent(BrowseProfilesActivity.class.getName()));
+        // click on a profile
+        sleep(1500); // get some sleep sid zzz
+        AssertionError eCode = null;
+        try {
+            onView(withId(R.id.BrowseProfilesListView)).check(matches(hasChildCount(0)));
+        } catch (AssertionError e) {
+            // listview is most likely empty, so didn't do anything.
+            eCode = e;
+        }
+        if (eCode == null) {
+            // listview is not empty. so open a profile.
+            onView(withId(R.id.BrowseProfilesListView)).perform(click());
+            // check if opening event worked
+            intended(hasComponent(BrowseProfilesActivity.class.getName()));
+            // check if the 'delete' option exists
+            onView(withText(R.string.delete)).check(matches(isDisplayed()));
+        }
+
+    }
+
+    /*
+     *   Test if the BrowseImages Activity works properly
+     * */
+    @Test
+    public void testAdminBrowseImages() {
+        // Opens menu
+        Espresso.openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+        // clicks on Admin Page
+        onView(withText("Admin Page")).perform(click());
+        // check if intent worked
+        intended(hasComponent(AdminActivity.class.getName()));
+        // click on BrowsePage
+        onView(withText("Browse Images")).perform(click());
+        // check if intent worked
+        intended(hasComponent(BrowseProfilesActivity.class.getName()));
+        sleep(1500); // get some sleep sid zzz
+        // click on an image
+        AssertionError eCode = null;
+        try {
+            onView(withId(R.id.BrowseImagesListView)).check(matches(hasChildCount(0)));
+        } catch (AssertionError e) {
+            // listview is most likely empty, so didn't do anything.
+            eCode = e;
+        }
+        if (eCode == null) {
+            // listview is not empty. so open an Image.
+            onView(withId(R.id.BrowseImagesListView)).perform(click());
+        }
+    }
+
+    /*
+     *   Test viewing events
+     * */
+    @Test
+    public void testViewEvents() {
+        // Events click
+        onView(withId(R.id.navigation_events)).perform(click());
+        onView(withId(R.id.navigation_events)).check(matches(isDisplayed()));
+        sleep(1500); // get some sleep sid zzz
+        // click on an Event
+        AssertionError eCode = null;
+        try {
+            onView(withId(R.id.event_listview)).check(matches(hasChildCount(0)));
+        } catch (AssertionError e) {
+            // listview is most likely empty, so didn't do anything.
+            eCode = e;
+        }
+        if (eCode == null) {
+            // listview is not empty. so open an Event.
+            onView(withId(R.id.event_listview)).perform(click());
+            // check if intent worked
+            intended(hasComponent(ViewEventActivity.class.getName()));
+        }
+    }
+
+
+
+
 
 
 
