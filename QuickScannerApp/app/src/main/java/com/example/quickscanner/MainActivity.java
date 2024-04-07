@@ -129,9 +129,6 @@ public class MainActivity extends AppCompatActivity {
         // Fetch the list of events organized by the user
         //set listeners on them to track live count of attendance
         //Add announcement object to event if milestone is reached using fbAnnouncementController.addAnnouncement
-        
-
-
 
     }
 
