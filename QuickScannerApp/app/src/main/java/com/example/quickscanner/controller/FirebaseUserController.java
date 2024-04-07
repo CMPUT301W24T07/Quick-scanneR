@@ -1,5 +1,7 @@
 package com.example.quickscanner.controller;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.example.quickscanner.model.User;
@@ -230,7 +232,8 @@ public class FirebaseUserController
     }
 
     public Task<User> getUserByImageURL(String imageURL) {
-        Query query = usersRef.whereEqualTo("imageURL", imageURL);
+        Log.d("testing", "imageURL: " + imageURL);
+        Query query = usersRef.whereEqualTo(FieldPath.of("userProfile.imageUrl"), imageURL);
 
         Task<QuerySnapshot> task = query.get();
 
@@ -241,11 +244,14 @@ public class FirebaseUserController
                     QuerySnapshot querySnapshot = task.getResult();
                     if (querySnapshot != null && !querySnapshot.isEmpty()) {
                         DocumentSnapshot document = querySnapshot.getDocuments().get(0);
+                        Log.d("testing", "found user " + document.toObject(User.class).getUserProfile().getName());
                         return document.toObject(User.class);
                     } else {
+                        Log.d("testing", "then: yea " + imageURL);
                         throw new Exception("No user found with the given image URL");
                     }
                 } else {
+                    Log.d("testing", "gets in here");
                     throw task.getException();
                 }
             }
