@@ -162,7 +162,7 @@ public class ProfileActivity extends AppCompatActivity {
                                     ByteArrayOutputStream boas = new ByteArrayOutputStream();
                                     profileBitMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
                                     byte[] imageData = boas.toByteArray();
-                                    fbImageController.uploadImage(myUser.getUid(), imageData);
+                                    fbImageController.uploadImage(myUser.getUid(), "user", imageData);
                                 }
 
                                 myUser.setUserProfile(myProfile);

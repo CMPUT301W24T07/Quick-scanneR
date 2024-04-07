@@ -98,7 +98,7 @@ public class FirebaseImageController
      * @param imageData the byte data of the image to upload
      * @return an UploadTask that can be used to monitor the upload
      */
-    public UploadTask uploadImage(String path, byte[] imageData) {
+    public UploadTask uploadImage(String path, String source, byte[] imageData) {
         StorageReference imageLocation = idb.getReference().child(path);
 
         AggregateQuery imageQuery = imagesRef.whereEqualTo("URL", path).count();
@@ -109,6 +109,7 @@ public class FirebaseImageController
                if (documents == 0) {
                    Image newImage = new Image();
                    newImage.setImageUrl(path);
+                   newImage.setSource(source);
                    addImage(newImage);
                }
            }
