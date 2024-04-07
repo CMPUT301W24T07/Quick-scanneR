@@ -1,6 +1,5 @@
 package com.example.quickscanner.controller;
 
-import android.content.Context;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
@@ -9,7 +8,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.attendance.CheckInAdapter;
@@ -349,32 +347,22 @@ public class FirebaseAttendanceController {
     public Task<Void> removeFromSignUp(final String userId, final String eventId) {
         validateId(userId);
         validateId(eventId);
-        final DocumentReference userRef = db.collection("users").document(userId);
-        final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
         final DocumentReference eventRef = eventsRef.document(eventId);
         final DocumentReference signUpRef = eventRef.collection("signUps").document(userId);
+        final DocumentReference userRef = db.collection("users").document(userId);
         final DocumentReference userSignUpsRef = userRef.collection("Attendance")
                 .document("signedUpEvents");
+        final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
 
-        return userAnnouncementsRef.whereEqualTo("eventID", eventId).get().continueWithTask(task -> {
-            List<String> announcementIds = new ArrayList<>();
-            if (task.isSuccessful()) {
-                for (DocumentSnapshot document : task.getResult()) {
-                    if (document.exists()) {
-                        announcementIds.add(document.getId());
-                        Log.d("AnnouncementData", "Document ID: " + document.getId() + " Data: " + document.getData().toString());
-                    } else {
-                        // Optionally log documents that were found but do not exist anymore
-                        Log.d("AnnouncementData", "Found a document reference, but it no longer exists in the collection.");
-                    }
-                }
-            }
-
-            // Proceed with the transaction to perform sign-up deletion and updates
-            return db.runTransaction(transaction -> {
+        return db.runTransaction(new Transaction.Function<Void>() {
+            @Nullable
+            @Override
+            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
                 DocumentSnapshot signUpSnapshot = transaction.get(signUpRef);
 
-                if (signUpSnapshot.exists()) {
+                boolean isSignedUp = signUpSnapshot.exists();
+
+                if (isSignedUp) {
                     // Decrement the takenSpots field
                     transaction.update(eventRef, "takenSpots", FieldValue.increment(-1));
 
@@ -384,16 +372,30 @@ public class FirebaseAttendanceController {
                     // Remove the event from the user's signed-up events
                     transaction.update(userSignUpsRef, "eventIds", FieldValue.arrayRemove(eventId));
 
-                    // Delete each announcement document using its ID, only if there are IDs to delete
-                    if (!announcementIds.isEmpty()) {
-                        for (String announcementId : announcementIds) {
-                            DocumentReference announcementRef = userRef.collection("Announcements").document(announcementId);
-                            transaction.delete(announcementRef);
+//<<<<<<< HEAD
+//                    // Delete each announcement document using its ID, only if there are IDs to delete
+//                    if (!announcementIds.isEmpty()) {
+//                        for (String announcementId : announcementIds) {
+//                            DocumentReference announcementRef = userRef.collection("Announcements").document(announcementId);
+//                            transaction.delete(announcementRef);
+//=======
+                    // Fetch all the announcements related to the event from the user's Announcements subcollection
+                    userAnnouncementsRef.whereEqualTo("eventId", eventId).get().addOnCompleteListener(task ->
+                    {
+                        if (task.isSuccessful()) {
+                            for (DocumentSnapshot document : task.getResult()) {
+                                // Delete the announcement document
+                                if (document.exists()) {
+                                    transaction.delete(userAnnouncementsRef.document(document.getId()));
+                                }
+                            }
+//>>>>>>> main
                         }
-                    }
+                    });
                 }
-                return null; // Transaction must return null if Void
-            });
+
+                return null;
+            }
         });
     }
 
@@ -410,7 +412,6 @@ public class FirebaseAttendanceController {
             }
         });
     }
-
     /**
      * Fetches the events a user has signed up for.
      * <p>
@@ -549,7 +550,6 @@ public class FirebaseAttendanceController {
             return convertToObject(task.getResult(), User.class);
         });
     }
-
     //get the list of users who have checked in to a specific event
     public Task<List<User>> getEventCheckIns(String eventId) {
         // Validate the event ID
@@ -573,7 +573,6 @@ public class FirebaseAttendanceController {
             return convertToObject(task.getResult(), User.class);
         });
     }
-
     public Task<List<User>> getEventAttendees(String eventId) {
         // Validates the event ID
         validateId(eventId);
@@ -623,7 +622,6 @@ public class FirebaseAttendanceController {
             return users;
         });
     }
-
     public Task<List<String>> getEventAttendeeIds(String eventId) {
         // Validates the event ID
         validateId(eventId);
@@ -661,7 +659,8 @@ public class FirebaseAttendanceController {
         });
     }
 
-    public ListenerRegistration setupSignUpListListener(String eventId, ArrayList<User> signUpDataList, SignUpAdapter adapter, TextView emptyList, ListView listView) {
+    public ListenerRegistration setupSignUpListListener(String eventId, ArrayList<User> signUpDataList, SignUpAdapter adapter, TextView emptyList, ListView listView)
+    {
         validateId(eventId);
         return eventsRef.document(eventId).collection("signUps")
                 //TODO make people sign out so this wont break stuff
@@ -727,23 +726,26 @@ public class FirebaseAttendanceController {
                             Log.d("SignUpFragment", "Current data: null");
                         }
                     }
-
-                    private void updateVisibility() {
-                        if (signUpDataList.isEmpty()) {
+                    private void updateVisibility()
+                    {
+                        if (signUpDataList.isEmpty())
+                        {
                             listView.setVisibility(View.GONE);
                             emptyList.setVisibility(View.VISIBLE);
-                        } else {
+                        }
+                        else
+                        {
                             listView.setVisibility(View.VISIBLE);
                             emptyList.setVisibility(View.GONE);
                         }
                     }
                 });
-    }
+                }
 
 
     public ListenerRegistration setupCheckInListListener(String eventId, ArrayList<User> checkInDataList, CheckInAdapter adapter, TextView emptyList, ListView listView) {
         validateId(eventId);
-        return eventsRef.document(eventId).collection("checkIns")
+         return eventsRef.document(eventId).collection("checkIns")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
@@ -753,7 +755,8 @@ public class FirebaseAttendanceController {
                         }
 
                         if (queryDocumentSnapshots != null) {
-                            if (queryDocumentSnapshots.isEmpty()) {
+                            if(queryDocumentSnapshots.isEmpty())
+                            {
                                 emptyList.setVisibility(View.VISIBLE);
                             }
                             for (DocumentChange docChange : queryDocumentSnapshots.getDocumentChanges()) {
@@ -801,12 +804,15 @@ public class FirebaseAttendanceController {
                             Log.d("CheckInFragment", "Current data: null");
                         }
                     }
-
-                    private void updateVisibility() {
-                        if (checkInDataList.isEmpty()) {
+                    private void updateVisibility()
+                    {
+                        if (checkInDataList.isEmpty())
+                        {
                             listView.setVisibility(View.GONE);
                             emptyList.setVisibility(View.VISIBLE);
-                        } else {
+                        }
+                        else
+                        {
                             listView.setVisibility(View.VISIBLE);
                             emptyList.setVisibility(View.GONE);
                         }
@@ -814,30 +820,46 @@ public class FirebaseAttendanceController {
 
                 });
     }
-
     //method to get reference to live count collection for specific event
     public ListenerRegistration setupLiveCountListener(String eventId, TextView timesCheckedInTextView) {
         validateId(eventId);
         DocumentReference liveCountRef = getLiveCountRef(eventId);
-        return liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("CheckInFragment", "Listen failed.", e);
-                    return;
-                }
+//<<<<<<< HEAD
+//        return liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//            @Override
+//            public void onEvent(@Nullable DocumentSnapshot snapshot,
+//                                @Nullable FirebaseFirestoreException e) {
+//                if (e != null) {
+//                    Log.w("CheckInFragment", "Listen failed.", e);
+//                    return;
+//                }
+//
+//                Long liveCount = 0L;
+//                if (snapshot != null && snapshot.exists()) {
+//                    Long temp = snapshot.getLong("liveCount");
+//                    if (temp != null) {
+//                        liveCount = temp;
+//=======
+         return liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w("CheckInFragment", "Listen failed.", e);
+                            return;
+                        }
 
-                Long liveCount = 0L;
-                if (snapshot != null && snapshot.exists()) {
-                    Long temp = snapshot.getLong("liveCount");
-                    if (temp != null) {
-                        liveCount = temp;
+                        long liveCount = 0L;
+                        if (snapshot != null && snapshot.exists()) {
+                            Long temp = snapshot.getLong("liveCount");
+                            if (temp != null) {
+                                liveCount = temp;
+                            }
+                        }
+                        timesCheckedInTextView.setText(String.format("Live Attendance Count: %d", liveCount));
+//>>>>>>> main
                     }
-                }
-                timesCheckedInTextView.setText("Live Attendance Count: " + liveCount);
-            }
-        });
+                });
     }
 
     /**
@@ -865,13 +887,11 @@ public class FirebaseAttendanceController {
         validateId(eventId);
         return eventsRef.document(eventId).collection("liveCounts").document("currentAttendance");
     }
-
-
     /**
      * Checks if a user is checked in to a specific event.
      *
      * @param eventId The ID of the event.
-     * @param userId  The ID of the user.
+     * @param userId The ID of the user.
      * @return A Task that resolves to true if the user is checked in, false otherwise.
      */
     public Task<Boolean> isUserCheckedIn(String eventId, String userId) {
@@ -896,7 +916,7 @@ public class FirebaseAttendanceController {
      * Checks if a user is signed up to a specific event.
      *
      * @param eventId The ID of the event.
-     * @param userId  The ID of the user.
+     * @param userId The ID of the user.
      * @return A Task that resolves to true if the user is signed up, false otherwise.
      */
     public Task<Boolean> isUserSignedUp(String eventId, String userId) {
@@ -918,6 +938,8 @@ public class FirebaseAttendanceController {
     }
 
 
+
+
     /**
      * Converts a list of DocumentSnapshots to a list of objects of a specified class.
      * <p>
@@ -925,7 +947,7 @@ public class FirebaseAttendanceController {
      * If a DocumentSnapshot cannot be converted to an instance of the specified class, it is ignored.
      * can convert any document snapshot list to any class
      *
-     * @param objects     The list of DocumentSnapshots.
+     * @param objects The list of DocumentSnapshots.
      * @param objectClass The class to convert the DocumentSnapshots to.
      * @return A list of objects of the specified class.
      */
@@ -962,5 +984,65 @@ public class FirebaseAttendanceController {
         }
         return docList;
     }
+}
 
-   }
+//<<<<<<< HEAD
+//   }
+//=======
+//    public ListenerRegistration setupMaxSpotsListener(String eventId, TextView maxSpotsTextView) {
+//        validateId(eventId);
+//        DocumentReference maxSpotsRef = getMaxSpotsRef(eventId);
+//        return maxSpotsRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+//            @Override
+//            public void onEvent(@Nullable DocumentSnapshot snapshot,
+//                                @Nullable FirebaseFirestoreException e) {
+//                if (e != null) {
+//                    Log.w("AttendanceActivity", "Listen failed.", e);
+//                    return;
+//                }
+//
+//                int maxSpots = 0;
+//                if (snapshot != null && snapshot.exists()) {
+//                    Integer temp = snapshot.getLong("maxSpots") != null ? snapshot.getLong("maxSpots").intValue() : null;
+//                    if (temp != null) {
+//                        maxSpots = temp;
+//                    } else {
+//                        // MaxSpots is null, indicate that there is no maximum limit
+//                        maxSpotsTextView.setText("No Maximum Limit");
+//                        return;
+//                    }
+//                }
+//                maxSpotsTextView.setText("Max Spots: " + maxSpots);
+//            }
+//        });
+//    }
+//
+//    /**
+//     * Fetches the maximum attendance (MaxSpots) for a specific event.
+//     *
+//     * @param eventId The ID of the event.
+//     * @return A Task that resolves to the maximum attendance count.
+//     */
+//    public Task<Integer> getMaxSpots(String eventId) {
+//        // Validate the event ID
+//        validateId(eventId);
+//
+//        // Reference to the event's max spots document
+//        DocumentReference maxSpotsRef = eventsRef.document(eventId);
+//
+//        // Fetch the document and return the maximum attendance count
+//        return maxSpotsRef.get().continueWith(task -> {
+//            DocumentSnapshot document = task.getResult();
+//            return document.getLong("maxSpots").intValue();
+//        });
+//    }
+//
+//    // Method that gives reference to the max spots document for a specific event
+//    public DocumentReference getMaxSpotsRef(String eventId) {
+//        validateId(eventId);
+//        return eventsRef.document(eventId);
+//    }
+//
+//
+//}
+//>>>>>>> main
