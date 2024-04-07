@@ -32,6 +32,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.quickscanner.databinding.ActivityVieweventNewBinding;
 import com.example.quickscanner.ui.attendance.AttendanceActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseAttendanceController;
@@ -66,7 +67,7 @@ public class ViewEventActivity extends AppCompatActivity
     private FirebaseUserController fbUserController;
     private FirebaseAttendanceController fbAttendanceController;
     private Event event;
-    private ActivityVieweventBinding binding;
+    private ActivityVieweventNewBinding binding;
     private ProgressBar loading;
     private RelativeLayout contentLayout;
     private Integer  loadCount;
@@ -85,7 +86,7 @@ public class ViewEventActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        binding = ActivityVieweventBinding.inflate(getLayoutInflater());
+        binding = ActivityVieweventNewBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         //references
