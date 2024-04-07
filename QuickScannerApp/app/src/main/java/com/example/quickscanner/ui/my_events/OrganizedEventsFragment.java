@@ -54,7 +54,6 @@ public class OrganizedEventsFragment extends Fragment {
      * Can see more event details by clicking an event.
      */
 
-
     private @NonNull FragmentMyEventsBinding binding;
 
     // EventList References

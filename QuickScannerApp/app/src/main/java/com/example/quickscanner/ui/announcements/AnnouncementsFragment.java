@@ -6,12 +6,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-
-import com.example.quickscanner.AnnouncementArrayAdapter;
-import com.example.quickscanner.controller.FirebaseAnnouncementController;
-import com.example.quickscanner.controller.FirebaseAttendanceController;
-import com.example.quickscanner.controller.FirebaseEventController;
-import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.databinding.FragmentAnnouncementsBinding;
 import com.example.quickscanner.R;
 
@@ -21,23 +15,19 @@ import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.transition.AutoTransition;
 import android.transition.TransitionManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 
 import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.Announcement;
-import com.example.quickscanner.model.Event;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -64,13 +54,17 @@ public class AnnouncementsFragment extends Fragment {
     // AnnouncementList References
     ListView announcementListView;
     ArrayList<Announcement> AnnouncementsDataList;
-    AnnouncementArrayAdapter announcementsAdapter;
+    ArrayAdapter<Announcement> announcementsAdapter;
 
-    private FirebaseAnnouncementController fbAnnouncementController;
-    private FirebaseEventController fbEventController;
-    private FirebaseAttendanceController fbAttendanceController;
-    private FirebaseUserController fbUserController;
-    private ListenerRegistration registration;
+
+
+
+    // Firestore References
+    private FirebaseFirestore db;
+    private CollectionReference eventsRef;
+    private CollectionReference announcementsRef;
+
+
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -82,11 +76,9 @@ public class AnnouncementsFragment extends Fragment {
         View root = binding.getRoot();
 
         // Firebase references
-
-        fbAnnouncementController = new FirebaseAnnouncementController();
-        fbUserController = new FirebaseUserController();
-        fbEventController = new FirebaseEventController();
-        fbAttendanceController = new FirebaseAttendanceController();
+        db = FirebaseFirestore.getInstance(); // non-image db references
+        eventsRef = db.collection("Events");
+        announcementsRef = db.collection("Announcements");
 
         return root;
 
@@ -97,28 +89,35 @@ public class AnnouncementsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Store view References
-        announcementListView = binding.announcementListview;
-        TextView emptyAnnouncementsListTextView = binding.emptyAnnouncementListTextView;
+        announcementListView = view.findViewById(R.id.announcement_listview);
 
 
         // Initialize the Announcement data list and ArrayAdapter
         AnnouncementsDataList = new ArrayList<Announcement>();
-        announcementsAdapter = new AnnouncementArrayAdapter(getContext(), AnnouncementsDataList);
+        announcementsAdapter = new AnnouncementsArrayAdapter(getContext(), AnnouncementsDataList);
         // Set the adapter to the ListView
         announcementListView.setAdapter(announcementsAdapter);
-        announcementListView.setVisibility(View.GONE);
-        emptyAnnouncementsListTextView.setVisibility(View.GONE);
 
 
-        //here we call the method to set up announcement list listener
-
-        registration = fbAnnouncementController.setupAnnouncementListListener(
-                fbUserController.getCurrentUserUid(),
-                AnnouncementsDataList,
-                announcementsAdapter,
-                emptyAnnouncementsListTextView,
-                announcementListView);
-
+        // create listener for updates to the Announcements list.
+        announcementsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot querySnapshots,
+                                @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.e("Firestore", error.toString());
+                    return;
+                }
+                if (querySnapshots != null) {
+                    AnnouncementsDataList.clear();  // removes current data
+                    for (QueryDocumentSnapshot doc : querySnapshots) { // set of documents
+                        Announcement qryAnnouncement = doc.toObject(Announcement.class);
+                        AnnouncementsDataList.add((qryAnnouncement)); // adds new data from db
+                    }
+                }
+                announcementsAdapter.notifyDataSetChanged();
+            }
+        });
 
 
 
@@ -136,7 +135,7 @@ public class AnnouncementsFragment extends Fragment {
                 fullRowLayout = view.findViewById(R.id.announcementsContent_Row);
 
                 // display fragment
-                if (dropDownLayout.getVisibility() == View.GONE) {
+                if (dropDownLayout.getVisibility() == View.GONE){
                     dropDownLayout.setVisibility(View.VISIBLE);
                     expandableArrow.setImageResource(R.drawable.ic_up_arrow);
                 } else {
@@ -148,14 +147,9 @@ public class AnnouncementsFragment extends Fragment {
         });
     }
 
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (registration != null) {
-            registration.remove();
-            registration = null;
-        }
         binding = null;
     }
 
