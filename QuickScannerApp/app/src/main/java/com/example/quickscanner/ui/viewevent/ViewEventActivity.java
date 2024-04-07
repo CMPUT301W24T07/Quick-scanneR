@@ -717,6 +717,19 @@ public class ViewEventActivity extends AppCompatActivity
                 .show();
     }
 
+    private void showContent() {
+        loading.setVisibility(View.GONE);
+        binding.signUpButton.setVisibility(View.VISIBLE);
+        contentLayout.setVisibility(View.VISIBLE);
+    }
+    private synchronized void decrementLoadCount(String location) {
+        loadCount--;
+        Log.d(TAG, "loadCount after decrement " + location + " : " + loadCount); // Corrected to log after decrement
+        if (loadCount == 0) {
+            showContent();
+        }
+    }
+
 
 }
 
