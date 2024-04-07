@@ -18,7 +18,13 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.quickscanner.MainActivity;
+import com.example.quickscanner.controller.FirebaseAnnouncementController;
+import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.singletons.SettingsDataSingleton;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import androidx.annotation.NonNull;
@@ -40,6 +46,9 @@ import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.internal.api.FirebaseNoSignedInUserException;
 
 import java.io.IOException;
@@ -75,6 +84,7 @@ public class ScannerFragment extends Fragment {
     private FirebaseUserController fbUserController;
     private FirebaseQrCodeController fbQrCodeController;
     private FirebaseEventController fbEventController;
+    private FirebaseAnnouncementController fbAnnouncementController;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -94,6 +104,7 @@ public class ScannerFragment extends Fragment {
         fbQrCodeController = new FirebaseQrCodeController();
         fbEventController = new FirebaseEventController();
         firebaseUserController = new FirebaseUserController();
+        fbAnnouncementController = new FirebaseAnnouncementController();
 
         return view;
     }
@@ -106,8 +117,8 @@ public class ScannerFragment extends Fragment {
 
         // Example Usage: Get the Hashed Location from the Singleton
         /*         - Note: This usage returns NULL if device permissions are disabled
-        *                  If permissions are enabled, returns hashed geolocation as a String
-        */
+         *                  If permissions are enabled, returns hashed geolocation as a String
+         */
         hashedUserLocation = SettingsDataSingleton.getInstance().getHashedGeoLocation();
 
 
@@ -136,6 +147,7 @@ public class ScannerFragment extends Fragment {
                         if (event != null) {
                             // If it's a check-in QR code, try checking in
                             tryCheckIn(usedId, event);
+
                         } else {
                             // If it's not a check-in code, try to get it as a promo code
                             fbQrCodeController.getPromoEventFromQr(qrCodeValue).addOnCompleteListener(promoTask -> {
@@ -154,6 +166,7 @@ public class ScannerFragment extends Fragment {
                                 }
                             });
                         }
+
                     } else {
                         // If there was an error getting check-in event, show error message
                         Toast.makeText(getContext(), "Error getting check-in event", Toast.LENGTH_LONG).show();
@@ -176,15 +189,76 @@ public class ScannerFragment extends Fragment {
             Log.d("testerrr", "Checked in successfully!");
             Toast.makeText(getContext(), "Checked in successfully!", Toast.LENGTH_LONG).show();
 
+            checkMilestones(event);
+
             launchEventDetails(getContext(), event.getEventID());
 
 
         }).addOnFailureListener(e ->
         {
             Toast.makeText(getContext(), "Failed to check in", Toast.LENGTH_LONG).show();
-                Log.e("testerrr", "Failed to check in: " + e.getMessage());
+            Log.e("testerrr", "Failed to check in: " + e.getMessage());
         });
         return null;
+    }
+
+    private void checkMilestones(Event event) {
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference eventsRef = db.collection("Events").document(event.getEventID()).collection("liveCounts").document("currentAttendance");
+
+        eventsRef.get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            // Get the field value
+                            Object fieldValue = documentSnapshot.get("attendanceCount");
+                            // Log the field value
+                            Log.d("miless", "Field value: " + fieldValue);
+
+                            //convert to int
+                            int currentAttendance = Integer.parseInt(fieldValue.toString());
+
+                            //setup milestones code
+
+                            //int list of milestones: 1,5,10
+                            int[] milestones = {1,2,3,4, 5,6, 10, 25, 50, 100};
+
+                            for (int milestone: milestones) {
+                                if (currentAttendance == milestone) {
+                                    //if the current attendance is equal to a milestone, give the user a badge
+                                    //and show a toast message
+                                    Log.d("miless", "Milestone reached: " + milestone);
+                                    Toast.makeText(getContext(), "Milestone reached: " + milestone, Toast.LENGTH_LONG).show();
+
+                                    String msg = "Congratulations, your event "+event.getName()+" has reached a milestone of "+milestone+" attendees!";
+                                    //add announcement to the event
+                                    Announcement ann_actual = new Announcement(msg, event.getName());
+                                    ann_actual.setOrganizerID(event.getOrganizerID());
+                                    ann_actual.setIsMilestone(true);
+                                    ann_actual.setEventID(event.getEventID());
+                                    fbAnnouncementController.addAnnouncement(event.getEventID(), ann_actual);
+
+                                }
+                            }
+
+
+
+                        } else {
+                            Log.d("miless", "No such document");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("Firestore", "Error getting document", e);
+                    }
+                });
+
+
+//        Log.d("miless", "Current attendance: " + currentAttendance);
     }
 
     private void launchEventDetails(Context context, String eventId) {
