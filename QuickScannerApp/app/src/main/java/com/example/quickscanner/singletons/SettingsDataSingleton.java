@@ -26,6 +26,7 @@ public class SettingsDataSingleton {
     /*
     * Only use once in MainActivity to initialize this Singleton
     * Using it again does nothing
+    * Usage: SettingsDataSingleton.initInstance();
      */
     public static void initInstance(){
         if (instance == null)
@@ -44,14 +45,14 @@ public class SettingsDataSingleton {
      *   If User or Phone has permissions disabled, returns NULL.
      *   If Both Permissions are enabled, returns a hashed String.
      */
-    public String getHashedGeoLocation() {
+    public static String getHashedGeoLocation() {
         return hashedGeoLocation;
     }
 
     /*
      * Sets the device's hashed geolocation
      */
-    public void setHashedGeoLocation(String hashedGeoLocation) {
+    public static void setHashedGeoLocation(String hashedGeoLocation) {
         SettingsDataSingleton.hashedGeoLocation = hashedGeoLocation;
     }
 
