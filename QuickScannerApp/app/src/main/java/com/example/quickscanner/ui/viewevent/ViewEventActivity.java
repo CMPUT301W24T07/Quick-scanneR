@@ -616,7 +616,6 @@ public class ViewEventActivity extends AppCompatActivity {
             // Create and show the QR code dialog fragment
             QRCodeDialogFragment.newInstance(promoQrCode).show(getSupportFragmentManager(), "QRCodeDialogFragment");
 
-
             return true;
 
         } else if (itemId == R.id.map) {

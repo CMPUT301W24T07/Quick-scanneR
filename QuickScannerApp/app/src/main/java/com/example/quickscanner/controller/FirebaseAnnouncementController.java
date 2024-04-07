@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import com.example.quickscanner.AnnouncementArrayAdapter;
 import com.example.quickscanner.model.Announcement;
+import com.example.quickscanner.model.Event;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
@@ -28,6 +29,7 @@ public class FirebaseAnnouncementController {
 
     private final CollectionReference usersRef;
     private final FirebaseAttendanceController fbAttendanceController;
+    private FirebaseEventController fbEventController;
 
     /**
      * Constructor for FirebaseAnnouncementController.
@@ -38,6 +40,7 @@ public class FirebaseAnnouncementController {
         eventsRef = db.collection("Events");
         usersRef = db.collection("users");
         fbAttendanceController = new FirebaseAttendanceController();
+        fbEventController = new FirebaseEventController();
     }
 
     /**
@@ -240,6 +243,8 @@ public class FirebaseAnnouncementController {
                                 }
                             }
                         }
+
+
                     }
 
 
@@ -270,12 +275,14 @@ public class FirebaseAnnouncementController {
     public void addMilestoneAnnouncement(String eventId, long count, String milestoneType) {
         validateId(eventId);
 
+        Event actual_event= fbEventController.getEvent(eventId).getResult();
+
         if (count == 10 || count == 20) {
             Announcement milestoneAnnouncement = new Announcement();
             milestoneAnnouncement.setEventName(milestoneType + " Milestone Reached");
             milestoneAnnouncement.setMessage("Your event has reached " + count + " " + milestoneType.toLowerCase() + "!");
             milestoneAnnouncement.setIsMilestone(true);
-            milestoneAnnouncement.setOrganizerID("system announcement");
+            milestoneAnnouncement.setOrganizerID(actual_event.getOrganizerID());
 
             addAnnouncement(eventId, milestoneAnnouncement);
         }

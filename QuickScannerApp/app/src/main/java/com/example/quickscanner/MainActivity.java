@@ -11,15 +11,21 @@ import android.util.Log;
 import android.view.Menu; // Import Menu class
 import android.view.MenuItem; // Import Menu class
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 
+import com.example.quickscanner.controller.FirebaseAnnouncementController;
+import com.example.quickscanner.controller.FirebaseAttendanceController;
+import com.example.quickscanner.controller.FirebaseEventController;
 import com.example.quickscanner.controller.FirebaseUserController;
+import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 import com.example.quickscanner.singletons.SettingsDataSingleton;
+import com.example.quickscanner.ui.homepage_event.EventArrayAdapter;
 import com.example.quickscanner.ui.my_events.MyEvents_Activity;
 import com.example.quickscanner.ui.profile.ProfileActivity;
 import com.example.quickscanner.ui.adminpage.AdminActivity;
@@ -29,6 +35,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.navigation.NavController;
@@ -38,9 +45,14 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.quickscanner.databinding.ActivityMainBinding;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ch.hsr.geohash.GeoHash;
 
@@ -58,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
     private ListView eventsListView;
     private ArrayList<Event> eventsDataList;
     private FirebaseUserController fbUserController;
+    private FirebaseAttendanceController fbAttendanceController;
+    private FirebaseAnnouncementController fbAnnouncementController;
+    private FirebaseEventController fbEventController;
 
 
 
@@ -69,6 +84,9 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         fbUserController = new FirebaseUserController();
+        fbAttendanceController = new FirebaseAttendanceController();
+        fbAnnouncementController = new FirebaseAnnouncementController();
+        fbEventController = new FirebaseEventController();
 
         // create Singletons
         initSingletons();
@@ -90,10 +108,32 @@ public class MainActivity extends AppCompatActivity {
         // Create bottom menu for MainActivity.
         createBottomMenu();
 
+//        List of milestones
+        List milestones = new ArrayList<Integer>();
+        milestones.add(1);
+        milestones.add(2);
+        milestones.add(3);
+        milestones.add(4);
+        milestones.add(5);
+        milestones.add(6);
+
+        milestones.add(10);
+        milestones.add(20);
+        trackAndAnnounceMilestone(fbUserController.getCurrentUserUid(), milestones);
+
+//        fbAttendanceController.trackAndAnnounceMilestone(fbUserController.getCurrentUserUid(), milestones, this);
 
     }
 
+    public void trackAndAnnounceMilestone(String userId, List<Integer> milestones) {
+        // Fetch the list of events organized by the user
+        //set listeners on them to track live count of attendance
+        //Add announcement object to event if milestone is reached using fbAnnouncementController.addAnnouncement
+        
 
+
+
+    }
 
 
     /*                                           *

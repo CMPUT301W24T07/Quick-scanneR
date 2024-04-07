@@ -52,6 +52,7 @@ public class AttendanceActivity extends AppCompatActivity
 
         // Create bottom menu for Attendance Activity.
         createBottomMenu(eventID);
+
         liveAttendanceCount = findViewById(R.id.live_attendance_count);
         fbAttendanceController = new FirebaseAttendanceController();
         liveCountListenerReg = fbAttendanceController.setupLiveCountListener(eventID, liveAttendanceCount);
