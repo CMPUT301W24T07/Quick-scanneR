@@ -12,6 +12,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseImageController;
@@ -25,6 +27,7 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
 
     private ArrayList<Event> events;
     private Context context;
+    private Map<Integer, Boolean> imageLoadedMap; // Map to track image loading status
 
     // TextView References
     TextView eventName;
@@ -40,6 +43,7 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
         super(context,0, events);
         this.events = events;
         this.context = context;
+        this.imageLoadedMap = new HashMap<>();
     }
 
 
@@ -50,8 +54,7 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
 
         if(convertView == null){
             view = LayoutInflater.from(context).inflate(R.layout.fragment_events_content, parent,false);
-        }
-        else{
+        } else {
             view = convertView;
         }
         /* Gets the Event object at a given row (position) */
@@ -63,11 +66,33 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
         eventTime = view.findViewById(R.id.EventFragment_Time);
         eventDescription = view.findViewById(R.id.EventFragment_LongDescription);
         eventLocation = view.findViewById(R.id.EventFragment_Location);
+
         eventName.setText(event.getName());
         eventDescription.setText(event.getDescription());
         eventLocation.setText(event.getLocation());
         eventTime.setText(event.getTimeAsString());
 
+
+        // Check if the image is already loaded for this position
+        if (imageLoadedMap.containsKey(position) && imageLoadedMap.get(position)) {
+            Log.d("EventArrayAdapter", "Image already loaded for position: " + position);
+            // Image already loaded, do nothing
+        } else {
+            Log.d("EventArrayAdapter", "Loading image for position: " + position);
+            // Image not loaded, load it using Picasso
+            FirebaseImageController fbImageController = new FirebaseImageController();
+            fbImageController.downloadImage(event.getImagePath()).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    String url = String.valueOf(task.getResult());
+                    Picasso.get().load(url).placeholder(null).into(eventImage);
+                    // Mark image as loaded for this position
+                    imageLoadedMap.put(position, true);
+                    Log.d("EventArrayAdapter", "Image loaded successfully for position: " + position);
+                } else {
+                    Log.d("EventArrayAdapter", "Failed to download event image for position: " + position);
+                }
+            });
+        }
 
         return view;
     }
