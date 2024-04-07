@@ -109,28 +109,12 @@ public class MainActivity extends AppCompatActivity {
         createBottomMenu();
 
 //        List of milestones
-        List milestones = new ArrayList<Integer>();
-        milestones.add(1);
-        milestones.add(2);
-        milestones.add(3);
-        milestones.add(4);
-        milestones.add(5);
-        milestones.add(6);
-
-        milestones.add(10);
-        milestones.add(20);
-        trackAndAnnounceMilestone(fbUserController.getCurrentUserUid(), milestones);
 
 //        fbAttendanceController.trackAndAnnounceMilestone(fbUserController.getCurrentUserUid(), milestones, this);
 
     }
 
-    public void trackAndAnnounceMilestone(String userId, List<Integer> milestones) {
-        // Fetch the list of events organized by the user
-        //set listeners on them to track live count of attendance
-        //Add announcement object to event if milestone is reached using fbAnnouncementController.addAnnouncement
 
-    }
 
 
     /*                                           *
