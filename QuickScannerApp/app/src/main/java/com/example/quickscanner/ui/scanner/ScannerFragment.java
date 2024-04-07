@@ -223,7 +223,7 @@ public class ScannerFragment extends Fragment {
                             //setup milestones code
 
                             //int list of milestones: 1,5,10
-                            int[] milestones = {1, 5, 10, 25, 50, 100};
+                            int[] milestones = {1,2,3,4, 5,6, 10, 25, 50, 100};
 
                             for (int milestone: milestones) {
                                 if (currentAttendance == milestone) {
