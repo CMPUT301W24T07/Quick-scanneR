@@ -92,11 +92,11 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.e("Testing", "first signin not detected");
             requestHashedGeolocation();
+            checkIfUserAdmin();
         }
 
-        Log.d("UserCodesss",fbUserController.getCurrentUserUid());
+        // Log.d("UserCodesss",fbUserController.getCurrentUserUid());
 
-        checkIfUserAdmin();
 
         // Create bottom menu for MainActivity.
         createBottomMenu();
