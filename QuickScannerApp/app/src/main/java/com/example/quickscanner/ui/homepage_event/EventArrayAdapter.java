@@ -1,6 +1,8 @@
 package com.example.quickscanner.ui.homepage_event;
 
 import android.content.Context;
+import android.net.Uri;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +15,14 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import android.os.Handler;
+
 
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.model.*;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
 //javadocs
@@ -24,22 +30,10 @@ import com.squareup.picasso.Picasso;
  * This Array Adapter customizes the presentation of the Events list
  */
 public class EventArrayAdapter extends ArrayAdapter<Event> {
-    /*
-        This Array Adapter customizes the presentation of the Events list
-    */
 
     private ArrayList<Event> events;
     private Context context;
-    private Map<Integer, Boolean> imageLoadedMap; // Map to track image loading status
-
-    // TextView References
-    TextView eventName;
-    TextView eventDescription;
-    TextView eventLocation;
-    TextView eventOrganizers;
-    TextView eventTime;
-    ImageView eventImage;
-    //ProgressBar imageLoading;
+    private FirebaseImageController imageController;
 
 
     //javadocs
@@ -52,7 +46,7 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
         super(context,0, events);
         this.events = events;
         this.context = context;
-        this.imageLoadedMap = new HashMap<>();
+        this.imageController = new FirebaseImageController();
     }
 
 
@@ -67,50 +61,87 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        View view;
+        View view = convertView;
+        ViewHolder holder;
 
-        if(convertView == null){
-            view = LayoutInflater.from(context).inflate(R.layout.fragment_events_content, parent,false);
+        if (view == null) {
+            view = LayoutInflater.from(context).inflate(R.layout.fragment_events_content, parent, false);
+            holder = new ViewHolder();
+            holder.eventName = view.findViewById(R.id.EventFragment_Name_text);
+            holder.eventImage = view.findViewById(R.id.EventFragment_Image);
+            holder.eventTime = view.findViewById(R.id.EventFragment_Time);
+            holder.eventDescription = view.findViewById(R.id.EventFragment_LongDescription);
+            holder.eventLocation = view.findViewById(R.id.EventFragment_Location);
+            view.setTag(holder);
         } else {
-            view = convertView;
+            holder = (ViewHolder) view.getTag();
+            // Reset image to default while waiting for the new image to load
+            holder.eventImage.setImageResource(R.drawable.ic_home_black_24dp);
         }
-        /* Gets the Event object at a given row (position) */
+
+        // Gets the Event object at a given row (position)
         Event event = events.get(position);
-        //ProgressBar imageLoading = view.findViewById(R.id.image_loading);
 
-        eventName = view.findViewById(R.id.EventFragment_Name_text);
-        eventImage = view.findViewById(R.id.EventFragment_Image);
-        eventTime = view.findViewById(R.id.EventFragment_Time);
-        eventDescription = view.findViewById(R.id.EventFragment_LongDescription);
-        eventLocation = view.findViewById(R.id.EventFragment_Location);
+        // Set text data
+        holder.eventName.setText(event.getName());
+        holder.eventDescription.setText(event.getDescription());
+        holder.eventLocation.setText(event.getLocation());
+        holder.eventTime.setText(event.getTimeAsString());
 
-        eventName.setText(event.getName());
-        eventDescription.setText(event.getDescription());
-        eventLocation.setText(event.getLocation());
-        eventTime.setText(event.getTimeAsString());
-
-
-        // Check if the image is already loaded for this position
-        if (imageLoadedMap.containsKey(position) && imageLoadedMap.get(position)) {
-            Log.d("EventArrayAdapter", "Image already loaded for position: " + position);
-            // Image already loaded, do nothing
-        } else {
-            Log.d("EventArrayAdapter", "Loading image for position: " + position);
-            // Image not loaded, load it using Picasso
-            FirebaseImageController fbImageController = new FirebaseImageController();
-            fbImageController.downloadImage(event.getImagePath()).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    String url = String.valueOf(task.getResult());
-                    Picasso.get().load(url).placeholder(null).into(eventImage);
-                    // Mark image as loaded for this position
-                    imageLoadedMap.put(position, true);
-                    Log.d("EventArrayAdapter", "Image loaded successfully for position: " + position);
-                } else {
-                    Log.d("EventArrayAdapter", "Failed to download event image for position: " + position);
-                }
-            });
-        }
+        // Load event image
+        loadImageForEvent(event, holder.eventImage);
 
         return view;
     }
+
+    public void loadImageForEvent(Event event, ImageView imageView) {
+        FirebaseImageController imageController = new FirebaseImageController();
+        Log.d("EventArrayAdapter", "Loading image for event: " + event.getName() + " from path: " + event.getImagePath());
+        loadImage(imageController, event.getImagePath(), imageView, 3); // Retry up to 3 times
+    }
+
+    private void loadImage(FirebaseImageController imageController, String imagePath, ImageView imageView, int retryCount) {
+        imageController.downloadImage(imagePath)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Uri downloadUri = task.getResult();
+                        if (downloadUri != null) {
+                            String url = downloadUri.toString();
+                            Picasso.get().load(url).into(imageView);
+                        } else {
+                            Log.d("EventArrayAdapter", "Downloaded URI is null, setting default image");
+                            imageView.setImageResource(R.drawable.ic_home_black_24dp);
+                        }
+                    } else {
+                        Log.e("EventArrayAdapter", "Failed to download event image: " + task.getException().getMessage());
+                        if (retryCount > 0) {
+                            // Retry the operation after a delay
+                            new Handler(Looper.getMainLooper()).postDelayed(() -> loadImage(imageController, imagePath, imageView, retryCount - 1), 1000); // Retry after 1 second
+                        } else {
+                            // Retry limit exceeded, set default image
+                            imageView.setImageResource(R.drawable.ic_home_black_24dp);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EventArrayAdapter", "Failed to download event image: " + e.getMessage());
+                    if (retryCount > 0) {
+                        // Retry the operation after a delay
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> loadImage(imageController, imagePath, imageView, retryCount - 1), 1000); // Retry after 1 second
+                    } else {
+                        // Retry limit exceeded, set default image
+                        imageView.setImageResource(R.drawable.ic_home_black_24dp);
+                    }
+                });
+    }
+
+
+    private static class ViewHolder {
+        TextView eventName;
+        TextView eventDescription;
+        TextView eventLocation;
+        TextView eventTime;
+        ImageView eventImage;
+    }
 }
+
