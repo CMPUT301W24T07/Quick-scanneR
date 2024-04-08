@@ -459,4 +459,27 @@ public class FirebaseEventController
                     }
                 });
     }
+
+    public Task<Event> getEventByImageURL(String imageURL) {
+        Query query = eventsRef.whereEqualTo("imagePath", imageURL);
+
+        Task<QuerySnapshot> task = query.get();
+
+        return task.continueWith(new Continuation<QuerySnapshot, Event>() {
+            @Override
+            public Event then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                if (task.isSuccessful()) {
+                    QuerySnapshot querySnapshot = task.getResult();
+                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                        DocumentSnapshot document = querySnapshot.getDocuments().get(0);
+                        return document.toObject(Event.class);
+                    } else {
+                        throw new Exception("No event found with the given image URL");
+                    }
+                } else {
+                    throw task.getException();
+                }
+            }
+        });
+    }
 }
