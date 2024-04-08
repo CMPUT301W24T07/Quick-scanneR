@@ -239,7 +239,6 @@ public class AddEventActivity extends AppCompatActivity
                             documentReference.getId());
                     // additional actions if needed
                     event.setEventID(documentReference.getId());
-                    eventsDataList.add(event);
                     if (eventImageMap != null)
                     {
                         event.setImagePath(event.getEventID() + "primary");
@@ -248,6 +247,40 @@ public class AddEventActivity extends AppCompatActivity
                         byte[] imageData = boas.toByteArray();
                         fbImageController.uploadImage(event.getImagePath(), "event", imageData);
                     }
+                    //promo qr code
+                    fbQrCodeController.addQrCode(fbUserController.getCurrentUserUid())
+                            .addOnSuccessListener(promoDocumentReference ->
+                            {
+                                Log.d("testerrrr", "QR code added with ID: " + promoDocumentReference.getId());
+                                // additional actions if needed
+                                event.setPromoQrCode(promoDocumentReference.getId());
+                                Log.d("testerrrr", "event has set check in code: " + event.getPromoQrCode());
+                                //check in qr code
+                                fbQrCodeController.addQrCode(fbUserController.getCurrentUserUid())
+                                        .addOnSuccessListener(checkDocumentReference ->
+                                        {
+                                            Log.d("testerrrr", "QR code added with ID: " + checkDocumentReference.getId());
+                                            // additional actions if needed
+                                            event.setCheckInQrCode(checkDocumentReference.getId());
+
+                                            Log.d("testerrrr", "event has set check in code: " + event.getCheckInQrCode());
+                                            Log.d("uteeee", "event is is: " + event.getEventID());
+                                            Log.d("AddEventActivity", "before updateEvent: updating event with ID: " + event.getEventID());
+                                            addEventToUserOrganizedEvents(event.getEventID());
+
+                                            fbEventController.updateEvent(event);
+                                            finish();
+
+                                            //show the event details page on this event
+                                        });
+
+
+                            })
+                            .addOnFailureListener(e ->
+                            {
+                                Log.e("AddEventActivity", "Error adding QR code", e);
+                                // Handle the error appropriately
+                            });
 
                 })
                 .addOnFailureListener(e ->
@@ -256,39 +289,9 @@ public class AddEventActivity extends AppCompatActivity
                     // Handle the error appropriately
                 });
 
-        //promo qr code
-        fbQrCodeController.addQrCode(fbUserController.getCurrentUserUid())
-                .addOnSuccessListener(documentReference ->
-                {
-                    Log.d("testerrrr", "QR code added with ID: " + documentReference.getId());
-                    // additional actions if needed
-                    event.setPromoQrCode(documentReference.getId());
-                    Log.d("testerrrr", "event has set check in code: " + event.getPromoQrCode());
 
 
-                })
-                .addOnFailureListener(e ->
-                {
-                    Log.e("AddEventActivity", "Error adding QR code", e);
-                    // Handle the error appropriately
-                });
 
-        //check in qr code
-        fbQrCodeController.addQrCode(fbUserController.getCurrentUserUid())
-                .addOnSuccessListener(documentReference ->
-                {
-                    Log.d("testerrrr", "QR code added with ID: " + documentReference.getId());
-                    // additional actions if needed
-                    event.setCheckInQrCode(documentReference.getId());
-
-                    Log.d("testerrrr", "event has set check in code: " + event.getCheckInQrCode());
-                    Log.d("uteeee", "event is is: " + event.getEventID());
-                    addEventToUserOrganizedEvents(event.getEventID());
-                    fbEventController.updateEvent(event);
-                    finish();
-
-                    //show the event details page on this event
-                });
 
         //get current event id instance
 

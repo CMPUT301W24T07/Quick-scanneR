@@ -54,6 +54,8 @@
 
         <activity
             android:name=".ui.viewevent.ViewEventActivity"
+            android:windowSoftInputMode="adjustPan"
+            android:isScrollContainer="true"
             android:exported="false" />
         <activity
             android:name=".ui.addevent.AddEventActivity"

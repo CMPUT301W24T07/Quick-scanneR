@@ -1,6 +1,7 @@
 package com.example.quickscanner.ui.attendance;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,7 +68,10 @@ public class CheckedInFragment extends Fragment {
             checkInDataList = new ArrayList<>();
             adapter = new CheckInAdapter(getContext(), checkInDataList,eventId);
             listView.setAdapter(adapter);
-            checkInListenerReg = fbAttendanceController.setupCheckInListListener(eventId,checkInDataList,adapter,emptyCheckIn,listView);
+            if (checkInListenerReg == null) {
+                checkInListenerReg = fbAttendanceController.setupCheckInListListener(eventId,checkInDataList,adapter,emptyCheckIn,listView);
+            }
+
         }
 
 
@@ -85,37 +89,10 @@ public class CheckedInFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        Log.d("event list testing", "check in frag onDestroyView: Removing event list listener");
         if (checkInListenerReg != null) {
             checkInListenerReg.remove();
             checkInListenerReg = null;
-        }
-    }
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Detach the Firestore listener
-        if (checkInListenerReg != null) {
-            checkInListenerReg.remove();
-            checkInListenerReg = null;
-        }
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Reattach the Firestore listener if it was previously detached
-        if (checkInListenerReg == null) { // Check to ensure we don't attach it multiple times
-            Bundle bundle = this.getArguments();
-            if (bundle != null) {
-                String eventId = bundle.getString("eventID", "");
-                if (!eventId.isEmpty()) {
-                    checkInListenerReg = fbAttendanceController.setupCheckInListListener(
-                            eventId,
-                            checkInDataList,
-                            adapter,
-                            emptyCheckIn,
-                            listView);
-                }
-            }
         }
     }
 }

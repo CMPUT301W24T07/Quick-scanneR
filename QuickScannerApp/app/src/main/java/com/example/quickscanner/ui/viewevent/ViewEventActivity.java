@@ -3,9 +3,15 @@ package com.example.quickscanner.ui.viewevent;
 import static android.content.ContentValues.TAG;
 import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_NULL;
+import static android.text.InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE;
+import static android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+
+import static com.google.android.material.internal.ViewUtils.hideKeyboard;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -19,6 +25,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -29,6 +36,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.RelativeLayout;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -63,6 +72,8 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Objects;
 
 public class ViewEventActivity extends AppCompatActivity {
@@ -90,6 +101,8 @@ public class ViewEventActivity extends AppCompatActivity {
     private Bitmap qrCodeBitmap;
 
 
+    private Bitmap eventBitMap;
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +118,7 @@ public class ViewEventActivity extends AppCompatActivity {
         fbQRCodeController = new FirebaseQrCodeController();
         fbAnnouncementController = new FirebaseAnnouncementController();
         fbUserController = new FirebaseUserController();
+        Log.d(TAG, "onCreate: " + fbUserController.getCurrentUserUid());
         fbAttendanceController = new FirebaseAttendanceController();
         toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
         loading = findViewById(R.id.loading);
@@ -115,6 +129,29 @@ public class ViewEventActivity extends AppCompatActivity {
         loadCount = 5;
 
         Log.d("LoadCount", "Decrementing loadCount, current value: " + loadCount);
+
+        ActivityResultLauncher<Intent> activityResultLauncher =
+                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        Uri uri = data.getData();
+                        try {
+                            eventBitMap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                            binding.eventImageImage.setImageBitmap(eventBitMap);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+
+        binding.eventImageImage.setOnClickListener(v -> {
+            Log.d(TAG, "onCreate: EditMode " + editMode);
+            if (editMode) {
+                Intent galleryIntent = new Intent(Intent.ACTION_PICK);
+                galleryIntent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                activityResultLauncher.launch(galleryIntent);
+            }
+        });
 
 
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
@@ -161,7 +198,6 @@ public class ViewEventActivity extends AppCompatActivity {
             Log.e("halpp", "Event ID is: " + eventID);
         }
         fetchEventData();
-        //Toast.makeText(this, eventID, Toast.LENGTH_SHORT).show();
 
 
         // Get a reference to the announcement button
@@ -412,9 +448,21 @@ public class ViewEventActivity extends AppCompatActivity {
 
                             binding.locationTextview.setInputType(TYPE_NULL);
                             binding.eventTitleText.setInputType(TYPE_NULL);
-                            binding.eventDescriptionText.setInputType(TYPE_NULL);
+                            //binding.eventDescriptionText.setInputType(TYPE_NULL);
+                            binding.eventDescriptionText.setFocusable(true);
+                            binding.eventDescriptionText.setFocusableInTouchMode(true);
                             editMode = false;
 
+                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+
+                            if (eventBitMap != null) {
+                                event.setImagePath(event.getEventID() + "primary");
+                                ByteArrayOutputStream boas = new ByteArrayOutputStream();
+                                eventBitMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
+                                byte[] imageData = boas.toByteArray();
+                                fbImageController.uploadImage(event.getEventID() + "primary", "event", imageData);
+                            }
                             fbEventController.updateEvent(event);
                         }
                     }
@@ -464,10 +512,10 @@ public class ViewEventActivity extends AppCompatActivity {
     }
 
     private void setEditConstraint() {
-        Button timeButton = binding.setTimeButton;
+        /*Button timeButton = binding.setTimeButton;
         Button locationButton = binding.setLocationButton;
-        timeButton.setVisibility(View.VISIBLE);
-        locationButton.setVisibility(View.VISIBLE);
+        //timeButton.setVisibility(View.VISIBLE);
+        //locationButton.setVisibility(View.VISIBLE);
 
         EditText timeText = binding.eventTimeText;
         EditText locationText = binding.locationTextview;
@@ -489,17 +537,21 @@ public class ViewEventActivity extends AppCompatActivity {
         timeParams.topToBottom = ConstraintLayout.LayoutParams.UNSET;
 
 
-        descriptionParams.topMargin = 30;
+        //descriptionParams.topMargin = 30;
 
-        timeText.setLayoutParams(timeParams);
-        locationText.setLayoutParams(locationParams);
-        descriptionText.setLayoutParams(descriptionParams);
+        //timeText.setLayoutParams(timeParams);
+        //locationText.setLayoutParams(locationParams);
+        //descriptionText.setLayoutParams(descriptionParams);*/
     }
 
     private void setEventDataToUI(Event event, String UiD) {
         editMode = false;
         //use event object to update all the views
         setNonEditConstraint();
+        binding.constraintLayout.setOnClickListener(v -> {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        });
         binding.eventTitleText.setText(event.getName());
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
@@ -510,7 +562,14 @@ public class ViewEventActivity extends AppCompatActivity {
             announcementButton.setEnabled(false);
         }
 
+
+        binding.eventDescriptionText.setFocusable(false);
+        binding.eventDescriptionText.setFocusableInTouchMode(false);
         binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
+        if (!event.getOrganizerID().equals(fbUserController.getCurrentUserUid())) {
+            toggleGeolocation.setVisibility(View.GONE);
+            binding.textView5.setVisibility(View.GONE);
+        }
         // disabling the set buttons for location and time
         fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
             public void onSuccess(User user) {
@@ -597,6 +656,7 @@ public class ViewEventActivity extends AppCompatActivity {
         });
 
 
+
         binding.eventTimeText.setText(event.getTimeAsString());
 
         Log.d("halpp", "Event ID is: " + eventID);
@@ -663,6 +723,7 @@ public class ViewEventActivity extends AppCompatActivity {
                         menu.findItem(R.id.navigation_QR_check_in).setVisible(true);
                         menu.findItem(R.id.navigation_edit).setVisible(true);
                         menu.findItem(R.id.map).setVisible(true);
+                        menu.findItem(R.id.navigation_delete).setVisible(true);
                     }
 
                 }
@@ -694,12 +755,15 @@ public class ViewEventActivity extends AppCompatActivity {
 
             binding.locationTextview.setInputType(TYPE_CLASS_TEXT);
             binding.eventTitleText.setInputType(TYPE_CLASS_TEXT);
-            binding.eventDescriptionText.setInputType(TYPE_CLASS_TEXT);
+            binding.eventDescriptionText.setInputType(TYPE_TEXT_FLAG_MULTI_LINE);
+            binding.eventDescriptionText.setFocusable(true);
+            binding.eventDescriptionText.setFocusableInTouchMode(true);
+            binding.eventDescriptionText.setSingleLine(false);
+            editMode = true;
         }
         else if (itemId == R.id.navigation_QR_check_in)
         {
             // Handle Click
-            Toast.makeText(this, "navigation_QR_check_in clicked", Toast.LENGTH_SHORT).show();
 
             //todo: implement dialog fragment for check in qr code
             String checkinQrCode = event.getCheckInQrCode();
@@ -712,7 +776,6 @@ public class ViewEventActivity extends AppCompatActivity {
 
         } else if (itemId == R.id.navigation_QR_promotional) {
             // Handle click
-            Toast.makeText(this, "navigation_QR_promotional clicked", Toast.LENGTH_SHORT).show();
 
             //todo: implement dialog fragment for promotional qr code
             String promoQrCode = event.getPromoQrCode();

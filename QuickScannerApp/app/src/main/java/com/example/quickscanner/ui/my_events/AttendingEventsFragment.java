@@ -2,6 +2,7 @@ package com.example.quickscanner.ui.my_events;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -99,8 +100,10 @@ public class AttendingEventsFragment extends Fragment {
         String attendingId = fbUserController.getCurrentUserUid();
         ListView myEventListView = binding.myEventListview;
         TextView noaattendTextView = binding.noAttendTextview;
-        attendListener = fbEventController.setupAttendListListener(attendingId, eventsDataList,
-                eventAdapter, noaattendTextView, myEventListView);
+        if (attendListener == null) {
+            attendListener = fbEventController.setupAttendListListener(attendingId, eventsDataList,
+                    eventAdapter, noaattendTextView, myEventListView);
+        }
 
 
 
@@ -129,31 +132,14 @@ public class AttendingEventsFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        Log.d("event list testing", "attending onDestroyView: Removing event list listener");
         if (attendListener != null) {
             attendListener.remove();
             attendListener = null;
         }
         binding = null;
     }
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Detach the Firestore listener
-        if (attendListener != null) {
-            attendListener.remove();
-            attendListener = null;
-        }
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Reattach the Firestore listener if it was detached
-        if (attendListener == null) { // Check to ensure we don't attach multiple listeners
-            String attendingId = fbUserController.getCurrentUserUid();
-            attendListener = fbEventController.setupAttendListListener(attendingId, eventsDataList,
-                    eventAdapter, binding.noAttendTextview, binding.myEventListview);
-        }
-    }
+
 
 
 }
