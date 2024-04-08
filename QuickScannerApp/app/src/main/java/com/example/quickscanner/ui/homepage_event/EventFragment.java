@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -89,7 +88,7 @@ public class EventFragment extends Fragment {
         eventListView = binding.eventListview;
 
         // Initialize the event data list and ArrayAdapter
-        eventsDataList = new ArrayList<Event>();
+        eventsDataList = new ArrayList<>();
         eventAdapter = new EventArrayAdapter(getContext(), eventsDataList);
         // Set the adapter to the ListView
         eventListView.setAdapter(eventAdapter);
@@ -103,20 +102,14 @@ public class EventFragment extends Fragment {
 
         /*     Fob Button (add event) Click       */
         fobButton = view.findViewById(R.id.fob_createEvent);
-        fobButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // start new create event activity
-                Intent intent = new Intent(requireContext(), AddEventActivity.class);
-                startActivity(intent);
-            }
-
+        fobButton.setOnClickListener(view1 -> {
+            // start new create event activity
+            Intent intent = new Intent(requireContext(), AddEventActivity.class);
+            startActivity(intent);
         });
 
         /*      Event ListView Click       */
-        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        eventListView.setOnItemClickListener((adapterView, view12, position, id) -> {
             // get the clicked event
             Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
             // move to new activity and pass the clicked event's unique ID.
@@ -127,8 +120,7 @@ public class EventFragment extends Fragment {
             intent.putExtras(bundle);
             // Start new Activity
             requireContext().startActivity(intent);
-        }
-    });
+        });
     }
 
     private void setupTimeListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter)
@@ -149,14 +141,7 @@ public class EventFragment extends Fragment {
 
                 // Notify the adapter of the changes
                 // Notify the adapter of the changes on the main thread
-                eventListView.post(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        eventAdapter.notifyDataSetChanged();
-                    }
-                });
+                eventListView.post(eventAdapter::notifyDataSetChanged);
 
                 // Start the time listener
                 timer = new Timer();

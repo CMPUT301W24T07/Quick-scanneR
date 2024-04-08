@@ -16,7 +16,6 @@ import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseAttendanceController;
 import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.databinding.AttendanceCheckInContentBinding;
-import com.example.quickscanner.databinding.AttendanceSignUpContentBinding;
 import com.example.quickscanner.model.User;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -26,7 +25,6 @@ import java.util.ArrayList;
 public class CheckInAdapter extends ArrayAdapter<User> {
     private Context mContext;
     private ArrayList<User> mAttendees;
-    private FirebaseImageController fbImageController;
     private FirebaseAttendanceController fbAttendanceController;
 
     public CheckInAdapter(@NonNull Context context, ArrayList<User> attendees) {
@@ -70,21 +68,19 @@ public class CheckInAdapter extends ArrayAdapter<User> {
             name.setText(currentName);
         }
         FirebaseImageController fbImageController = new FirebaseImageController();
-        fbImageController.downloadImage(profilePicturePath).addOnSuccessListener(uri -> {
-            Picasso.get()
-                    .load(uri)
-                    .into(profilePicture, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            loadingSpinner.setVisibility(View.GONE);
-                        }
+        fbImageController.downloadImage(profilePicturePath).addOnSuccessListener(uri -> Picasso.get()
+                .load(uri)
+                .into(profilePicture, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        loadingSpinner.setVisibility(View.GONE);
+                    }
 
-                        @Override
-                        public void onError(Exception e) {
-                            loadingSpinner.setVisibility(View.GONE);
-                        }
-                    });
-        });
+                    @Override
+                    public void onError(Exception e) {
+                        loadingSpinner.setVisibility(View.GONE);
+                    }
+                }));
 
 
         return view;
