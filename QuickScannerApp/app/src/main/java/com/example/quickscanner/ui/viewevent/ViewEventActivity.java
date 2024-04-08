@@ -1,6 +1,8 @@
 package com.example.quickscanner.ui.viewevent;
 
 import static android.content.ContentValues.TAG;
+import static android.text.InputType.TYPE_CLASS_TEXT;
+import static android.text.InputType.TYPE_NULL;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -423,6 +425,20 @@ public class ViewEventActivity extends AppCompatActivity
                             intent.putExtra("eventID", eventID);
                             // Start the AttendanceActivity
                             startActivity(intent);
+                        } else if (buttonText.equals("Save")) {
+                            setNonEditConstraint();
+                            binding.signUpButton.setText("Attendance Information");
+
+                            event.setLocation(String.valueOf(binding.locationTextview.getText()));
+                            event.setName(String.valueOf(binding.eventTitleText.getText()));
+                            event.setDescription(String.valueOf(binding.eventDescriptionText.getText()));
+
+                            binding.locationTextview.setInputType(TYPE_NULL);
+                            binding.eventTitleText.setInputType(TYPE_NULL);
+                            binding.eventDescriptionText.setInputType(TYPE_NULL);
+                            editMode = false;
+
+                            fbEventController.updateEvent(event);
                         }
                     }
                 });
@@ -674,12 +690,12 @@ public class ViewEventActivity extends AppCompatActivity
     {
         int itemId = item.getItemId();
         if (itemId == R.id.navigation_edit) {
-            if (editMode) {
-                setNonEditConstraint();
-            } else {
-                setEditConstraint();
-            }
-            editMode = !editMode;
+            setEditConstraint();
+            binding.signUpButton.setText("Save");
+
+            binding.locationTextview.setInputType(TYPE_CLASS_TEXT);
+            binding.eventTitleText.setInputType(TYPE_CLASS_TEXT);
+            binding.eventDescriptionText.setInputType(TYPE_CLASS_TEXT);
         }
         else if (itemId == R.id.navigation_attendance_list)
         {// Handle Edit Profile click
