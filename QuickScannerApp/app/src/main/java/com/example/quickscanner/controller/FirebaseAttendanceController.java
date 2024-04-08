@@ -336,6 +336,7 @@ public class FirebaseAttendanceController {
     public Task<Void> removeFromCheckIn(final String userId, final String eventId) {
         validateId(userId);
         validateId(eventId);
+
         final DocumentReference eventRef = eventsRef.document(eventId);
         final DocumentReference checkInRef = eventRef.collection("checkIns").document(userId);
         final DocumentReference userRef = usersRef.document(userId);
@@ -343,41 +344,47 @@ public class FirebaseAttendanceController {
                 .document("checkedInEvents");
         final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
 
+        // First, pre-fetch the IDs of the announcements to be deleted.
+        return userAnnouncementsRef.whereEqualTo("eventID", eventId).get().continueWithTask(task -> {
+            List<String> announcementIds = new ArrayList<>();
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot document : task.getResult()) {
+                    if (document.exists()) {
+                        announcementIds.add(document.getId());
+                        // Optionally log for debugging
+                        Log.d("AnnouncementData", "Pre-fetch Announcement ID: " + document.getId());
+                    }
+                }
+            } else {
+                throw task.getException();
+            }
 
-        return db.runTransaction(new Transaction.Function<Void>() {
-            @Nullable
-            @Override
-            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+            // Then, run the transaction to perform all necessary operations.
+            return db.runTransaction(transaction -> {
                 DocumentSnapshot checkInSnapshot = transaction.get(checkInRef);
 
                 if (checkInSnapshot.exists()) {
-                    // Decrement the currentAttendees event doc and current attendance count
+                    // Decrement the attendance count and taken spots on the event document.
                     transaction.update(eventRef, "attendanceCount", FieldValue.increment(-1));
                     transaction.update(eventRef, "takenSpots", FieldValue.increment(-1));
 
-                    // Delete the check-in document
+                    // Delete the user's check-in document.
                     transaction.delete(checkInRef);
 
-                    // Remove the event from the user's checked-in events
+                    // Remove the event from the user's checked-in events list.
                     transaction.update(userAttendanceRef, "eventIds", FieldValue.arrayRemove(eventId));
 
-                    userAnnouncementsRef.whereEqualTo("eventId", eventId).get().addOnCompleteListener(task ->
-                    {
-                        if (task.isSuccessful()) {
-                            for (DocumentSnapshot document : task.getResult()) {
-                                // Delete the announcement document
-                                if (document.exists()) {
-                                    transaction.delete(userAnnouncementsRef.document(document.getId()));
-                                }
-                            }
-                        }
-                    });
+                    // Delete all pre-fetched announcements within the transaction.
+                    for (String announcementId : announcementIds) {
+                        transaction.delete(userAnnouncementsRef.document(announcementId));
+                    }
                 }
 
-                return null;
-            }
+                return null; // Return null because this is a void method.
+            });
         });
     }
+
 
     /**
      * Removes a user from the sign-ups of an event.
@@ -395,6 +402,7 @@ public class FirebaseAttendanceController {
     public Task<Void> removeFromSignUp(final String userId, final String eventId) {
         validateId(userId);
         validateId(eventId);
+
         final DocumentReference eventRef = eventsRef.document(eventId);
         final DocumentReference signUpRef = eventRef.collection("signUps").document(userId);
         final DocumentReference userRef = db.collection("users").document(userId);
@@ -402,15 +410,29 @@ public class FirebaseAttendanceController {
                 .document("signedUpEvents");
         final CollectionReference userAnnouncementsRef = userRef.collection("Announcements");
 
-        return db.runTransaction(new Transaction.Function<Void>() {
-            @Nullable
-            @Override
-            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+        // Pre-fetch the announcements
+        return userAnnouncementsRef.whereEqualTo("eventID", eventId).get().continueWithTask(task -> {
+            List<String> announcementIds = new ArrayList<>();
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot document : task.getResult()) {
+                    if (document.exists()) {
+                        announcementIds.add(document.getId());
+                        // Log data for debugging
+                        Log.d("AnnouncementData", "Document ID: " + document.getId() + " Data: " + document.getData().toString());
+                    }
+                }
+            } else {
+                throw task.getException();
+            }
+
+            // Continue with the transaction
+            return db.runTransaction(transaction -> {
                 DocumentSnapshot signUpSnapshot = transaction.get(signUpRef);
 
                 boolean isSignedUp = signUpSnapshot.exists();
 
-                if (isSignedUp) {
+                if (isSignedUp)
+                {
                     // Decrement the takenSpots field
                     transaction.update(eventRef, "takenSpots", FieldValue.increment(-1));
 
@@ -420,24 +442,22 @@ public class FirebaseAttendanceController {
                     // Remove the event from the user's signed-up events
                     transaction.update(userSignUpsRef, "eventIds", FieldValue.arrayRemove(eventId));
 
-                    // Fetch all the announcements related to the event from the user's Announcements subcollection
-                    userAnnouncementsRef.whereEqualTo("eventId", eventId).get().addOnCompleteListener(task ->
+                    // Delete all fetched announcements within the transaction
+                    if (!announcementIds.isEmpty())
                     {
-                        if (task.isSuccessful()) {
-                            for (DocumentSnapshot document : task.getResult()) {
-                                // Delete the announcement document
-                                if (document.exists()) {
-                                    transaction.delete(userAnnouncementsRef.document(document.getId()));
-                                }
-                            }
+                        for (String announcementId : announcementIds)
+                        {
+                            DocumentReference announcementRef = userRef.collection("Announcements").document(announcementId);
+                            transaction.delete(announcementRef);
                         }
-                    });
+                    }
                 }
 
-                return null;
-            }
+                return null; // Transaction must return null if it's a void return type.
+            });
         });
     }
+
 
     //gets the times checked in for a user
     public Task<String> getTimesCheckedIn(String userId) {

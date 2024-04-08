@@ -59,7 +59,17 @@
         android:textAllCaps="false"
         />
 
-
+    <Button
+        android:id="@+id/AdminQRButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/BrowseProfilesButton"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="145dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="143dp"
+        android:text="Admin QR" />
 
 
 </RelativeLayout>

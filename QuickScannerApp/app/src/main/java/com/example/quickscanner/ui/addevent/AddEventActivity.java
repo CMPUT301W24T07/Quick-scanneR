@@ -249,7 +249,7 @@ public class AddEventActivity extends AppCompatActivity
                         ByteArrayOutputStream boas = new ByteArrayOutputStream();
                         eventImageMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
                         byte[] imageData = boas.toByteArray();
-                        fbImageController.uploadImage(event.getImagePath(), imageData);
+                        fbImageController.uploadImage(event.getImagePath(), "event", imageData);
                     }
 
 

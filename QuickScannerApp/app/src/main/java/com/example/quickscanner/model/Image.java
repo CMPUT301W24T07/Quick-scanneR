@@ -3,6 +3,7 @@ package com.example.quickscanner.model;
 public class Image {
     private String imageUrl;
     public boolean isSelected;
+    private String source;
 
     public Image() {
     }
@@ -22,4 +23,12 @@ public class Image {
     public boolean isSelected() { return isSelected; }
 
     public void setSelected(boolean selected) { isSelected = selected; }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 }

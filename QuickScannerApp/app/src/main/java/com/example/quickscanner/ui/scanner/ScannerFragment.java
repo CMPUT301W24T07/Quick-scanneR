@@ -5,8 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -17,8 +15,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.quickscanner.MainActivity;
+import com.example.quickscanner.controller.FirebaseAnnouncementController;
+import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.singletons.SettingsDataSingleton;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import androidx.annotation.NonNull;
@@ -37,13 +39,12 @@ import com.example.quickscanner.controller.FirebaseQrCodeController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.controller.QRScanner;
 import com.example.quickscanner.model.Event;
-import com.example.quickscanner.model.User;
 import com.example.quickscanner.ui.viewevent.ViewEventActivity;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.internal.api.FirebaseNoSignedInUserException;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*basically:
     if user scans sign up/registration/rsvp code, register them for event
@@ -52,8 +53,6 @@ import java.util.Objects;
     if user scans invalid code, show them an error message
     if user scans admin code, make them an admin
 * */
-
-import ch.hsr.geohash.GeoHash;
 
 public class ScannerFragment extends Fragment {
 
@@ -75,6 +74,7 @@ public class ScannerFragment extends Fragment {
     private FirebaseUserController fbUserController;
     private FirebaseQrCodeController fbQrCodeController;
     private FirebaseEventController fbEventController;
+    private FirebaseAnnouncementController fbAnnouncementController;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -94,6 +94,7 @@ public class ScannerFragment extends Fragment {
         fbQrCodeController = new FirebaseQrCodeController();
         fbEventController = new FirebaseEventController();
         firebaseUserController = new FirebaseUserController();
+        fbAnnouncementController = new FirebaseAnnouncementController();
 
         return view;
     }
@@ -106,8 +107,8 @@ public class ScannerFragment extends Fragment {
 
         // Example Usage: Get the Hashed Location from the Singleton
         /*         - Note: This usage returns NULL if device permissions are disabled
-        *                  If permissions are enabled, returns hashed geolocation as a String
-        */
+         *                  If permissions are enabled, returns hashed geolocation as a String
+         */
         hashedUserLocation = SettingsDataSingleton.getInstance().getHashedGeoLocation();
 
 
@@ -127,38 +128,71 @@ public class ScannerFragment extends Fragment {
         scanButton.setOnClickListener(v -> {
             // Scan the QR code
             qrScanner.scanQRCode(qrCodeValue -> {
-                String usedId = fbUserController.getCurrentUserUid();
 
-                // Check if it's a check-in QR code
-                fbQrCodeController.getCheckInEventFromQr(qrCodeValue).addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Event event = task.getResult();
-                        if (event != null) {
-                            // If it's a check-in QR code, try checking in
-                            tryCheckIn(usedId, event);
-                        } else {
-                            // If it's not a check-in code, try to get it as a promo code
-                            fbQrCodeController.getPromoEventFromQr(qrCodeValue).addOnCompleteListener(promoTask -> {
-                                if (promoTask.isSuccessful()) {
-                                    Event promoEvent = promoTask.getResult();
-                                    if (promoEvent != null) {
-                                        // If it's a promo code, launch event details
-                                        launchEventDetails(getContext(), promoEvent.getEventID());
-                                    } else {
-                                        // If it's neither a check-in nor a promo code, show error message
-                                        Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_LONG).show();
-                                    }
-                                } else {
-                                    // If there was an error getting promo event, show error message
-                                    Toast.makeText(getContext(), "Error getting promo event", Toast.LENGTH_LONG).show();
+                AtomicBoolean isUserAdmin = new AtomicBoolean(false);
+                String usedId = fbUserController.getCurrentUserUid();
+                DocumentReference adminAuthRef = FirebaseFirestore.getInstance().collection("config").document("Admin Auth Code");
+
+                adminAuthRef.get().addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String adminAuthCode = documentSnapshot.getString("Code");
+                        if (qrCodeValue.equals(adminAuthCode)) {
+                            //get current user reference, and make the isAdmin field true in firebase
+                            DocumentReference userRef = FirebaseFirestore.getInstance().collection("users").document(usedId);
+
+                            userRef.update("admin", true).addOnSuccessListener(aVoid -> {
+                                Log.d("testerrr", "User is now an admin");
+                                isUserAdmin.set(true);
+
+
+                                if (getActivity() != null) {
+                                    getActivity().runOnUiThread(() -> getActivity().invalidateOptionsMenu()); // Invalidate the options menu
                                 }
+
+                                Toast.makeText(getContext(), "Admin Privileges Unlocked", Toast.LENGTH_LONG).show();
                             });
                         }
-                    } else {
-                        // If there was an error getting check-in event, show error message
-                        Toast.makeText(getContext(), "Error getting check-in event", Toast.LENGTH_LONG).show();
                     }
                 });
+
+
+                //continue only if user is not an admin
+                if (!isUserAdmin.get()) {
+
+                    // Check if it's a check-in QR code
+                    fbQrCodeController.getCheckInEventFromQr(qrCodeValue).addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Event event = task.getResult();
+                            if (event != null) {
+                                // If it's a check-in QR code, try checking in
+                                tryCheckIn(usedId, event);
+
+                            } else {
+                                // If it's not a check-in code, try to get it as a promo code
+                                fbQrCodeController.getPromoEventFromQr(qrCodeValue).addOnCompleteListener(promoTask -> {
+                                    if (promoTask.isSuccessful()) {
+                                        Event promoEvent = promoTask.getResult();
+                                        if (promoEvent != null) {
+                                            // If it's a promo code, launch event details
+                                            launchEventDetails(getContext(), promoEvent.getEventID());
+                                        } else {
+                                            // If it's neither a check-in nor a promo code, show error message
+                                            Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_LONG).show();
+                                        }
+                                    } else {
+                                        // If there was an error getting promo event, show error message
+                                        Toast.makeText(getContext(), "Error getting promo event", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
+
+                        }
+                        else {
+                            // If there was an error getting check-in event, show error message
+                            Toast.makeText(getContext(), "Error getting check-in event", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
             });
         });
 
@@ -176,15 +210,75 @@ public class ScannerFragment extends Fragment {
             Log.d("testerrr", "Checked in successfully!");
             Toast.makeText(getContext(), "Checked in successfully!", Toast.LENGTH_LONG).show();
 
+            checkMilestones(event);
+
             launchEventDetails(getContext(), event.getEventID());
 
 
         }).addOnFailureListener(e ->
         {
             Toast.makeText(getContext(), "Failed to check in", Toast.LENGTH_LONG).show();
-                Log.e("testerrr", "Failed to check in: " + e.getMessage());
+            Log.e("testerrr", "Failed to check in: " + e.getMessage());
         });
         return null;
+    }
+
+    private void checkMilestones(Event event) {
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference eventsRef = db.collection("Events").document(event.getEventID()).collection("liveCounts").document("currentAttendance");
+
+        eventsRef.get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            // Get the field value
+                            Object fieldValue = documentSnapshot.get("attendanceCount");
+                            // Log the field value
+                            Log.d("miless", "Field value: " + fieldValue);
+
+                            //convert to int
+                            int currentAttendance = Integer.parseInt(fieldValue.toString());
+
+                            //setup milestones code
+
+                            //int list of milestones: 1,5,10
+                            int[] milestones = {1, 2, 3, 4, 5, 6, 10, 25, 50, 100};
+
+                            for (int milestone : milestones) {
+                                if (currentAttendance == milestone) {
+                                    //if the current attendance is equal to a milestone, give the user a badge
+                                    //and show a toast message
+                                    Log.d("miless", "Milestone reached: " + milestone);
+                                    Toast.makeText(getContext(), "Milestone reached: " + milestone, Toast.LENGTH_LONG).show();
+
+                                    String msg = "Congratulations, your event " + event.getName() + " has reached a milestone of " + milestone + " attendees!";
+                                    //add announcement to the event
+                                    Announcement ann_actual = new Announcement(msg, event.getName());
+                                    ann_actual.setOrganizerID(event.getOrganizerID());
+                                    ann_actual.setIsMilestone(true);
+                                    ann_actual.setEventID(event.getEventID());
+                                    fbAnnouncementController.addAnnouncement(event.getEventID(), ann_actual);
+
+                                }
+                            }
+
+
+                        } else {
+                            Log.d("miless", "No such document");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("Firestore", "Error getting document", e);
+                    }
+                });
+
+
+//        Log.d("miless", "Current attendance: " + currentAttendance);
     }
 
     private void launchEventDetails(Context context, String eventId) {
@@ -246,7 +340,9 @@ public class ScannerFragment extends Fragment {
                                             launchEventDetails(getContext(), promoEvent.getEventID());
                                         } else {
                                             // If it's neither a check-in nor a promo code, show error message
-                                            Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_LONG).show();
+
+//                                            Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_LONG).show();
+                                            Log.d("testerrr", "Invalid QR code");
                                         }
                                     } else {
                                         // If there was an error getting promo event, show error message

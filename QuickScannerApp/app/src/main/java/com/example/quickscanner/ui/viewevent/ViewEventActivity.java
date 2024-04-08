@@ -34,7 +34,9 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.quickscanner.controller.FirebaseAnnouncementController;
 import com.example.quickscanner.databinding.ActivityVieweventNewBinding;
+import com.example.quickscanner.model.Announcement;
 import com.example.quickscanner.ui.attendance.AttendanceActivity;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseAttendanceController;
@@ -73,6 +75,7 @@ public class ViewEventActivity extends AppCompatActivity
     private ProgressBar loading;
     private RelativeLayout contentLayout;
     private Integer  loadCount;
+    private FirebaseAnnouncementController fbAnnouncementController;
 
 
     private FirebaseQrCodeController fbQRCodeController;
@@ -80,6 +83,7 @@ public class ViewEventActivity extends AppCompatActivity
     private Switch toggleGeolocation;
 
     private boolean editMode;
+    public boolean doneSetting;
 
 
     private Event currentEvent;
@@ -93,10 +97,13 @@ public class ViewEventActivity extends AppCompatActivity
         binding = ActivityVieweventNewBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        doneSetting = false;
+
         //references
         fbEventController = new FirebaseEventController();
         fbImageController = new FirebaseImageController();
         fbQRCodeController = new FirebaseQrCodeController();
+        fbAnnouncementController = new FirebaseAnnouncementController();
         fbUserController = new FirebaseUserController();
         fbAttendanceController = new FirebaseAttendanceController();
         toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
@@ -160,11 +167,9 @@ public class ViewEventActivity extends AppCompatActivity
         FloatingActionButton announcementButton = findViewById(R.id.announcement_button);
 
         // Set an OnClickListener to the button
-        announcementButton.setOnClickListener(new View.OnClickListener()
-        {
+        announcementButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 // Create an EditText for the user to input their announcement
                 final EditText input = new EditText(ViewEventActivity.this);
 
@@ -173,14 +178,32 @@ public class ViewEventActivity extends AppCompatActivity
                         .setTitle("Announcement")
                         .setMessage("What do you wish to announce?")
                         .setView(input)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener()
-                        {
-                            public void onClick(DialogInterface dialog, int whichButton)
-                            {
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
                                 // Get the user's input
-                                String announcement = input.getText().toString();
+                                String announcement_content = input.getText().toString();
+
+                                Announcement announcement_actual = new Announcement(announcement_content, event.getName());
+                                announcement_actual.setEventID(eventID);
+                                announcement_actual.setIsMilestone(false);
+                                announcement_actual.setOrganizerID(event.getOrganizerID());
 
                                 // TODO: Handle the announcement (e.g., send it to Firebase)
+
+                                fbAnnouncementController.addAnnouncement(eventID, announcement_actual)
+                                        .addOnSuccessListener(new OnSuccessListener() {
+                                            @Override
+                                            public void onSuccess(Object o) {
+                                                Toast.makeText(ViewEventActivity.this, "Announcement made successfully", Toast.LENGTH_LONG).show();
+
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(ViewEventActivity.this, "Failed to add announcement", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
 
                             }
                         })
@@ -188,6 +211,7 @@ public class ViewEventActivity extends AppCompatActivity
                         .show();
             }
         });
+
 
 
         // Get a reference to the share button
@@ -227,7 +251,7 @@ public class ViewEventActivity extends AppCompatActivity
             @Override
             public void onCheckedChanged(CompoundButton switchView, boolean isChecked)
             {
-                if (event != null)
+                if (event != null && doneSetting == true)
                 {
                     // toggle user's geolocation preferences
                     event.toggleIsGeolocationEnabled();
@@ -235,7 +259,6 @@ public class ViewEventActivity extends AppCompatActivity
                     fbEventController.updateEvent(event)
                             .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
                             .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
-
                 }
                 else
                 {
@@ -348,6 +371,7 @@ public class ViewEventActivity extends AppCompatActivity
                 boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
                 toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
                 event.setGeolocationEnabled(oldIsGeolocationEnabled);
+                doneSetting = true;
                 fbEventController.updateEvent(event)
                         .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
                         .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
@@ -506,10 +530,6 @@ public class ViewEventActivity extends AppCompatActivity
                     binding.organiserText.setText(content);
 
                     Log.d("halpp", "Organiser name is: " + user.getUserProfile().getName());
-
-
-                    //SIDDHARTH HERE PAY ATTENTION
-                    //TODO: set the profile picture of the organiser
 
 //                    Profile organizerProfile = organizer.getUserProfile();
 
