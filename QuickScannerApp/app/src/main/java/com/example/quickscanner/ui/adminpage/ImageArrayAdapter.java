@@ -1,6 +1,7 @@
 package com.example.quickscanner.ui.adminpage;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -70,7 +71,15 @@ public class ImageArrayAdapter extends ArrayAdapter<Image> {
         });
         checkBox.setFocusable(false);  // Prevents the checkbox from being selected when the list item is clicked
 
-
+        // Set OnClickListener to start ImageDetailActivity when the list item is clicked
+        listItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, ImageDetailActivity.class);
+                intent.putExtra("imageUrl", currentImage.getImageUrl());
+                mContext.startActivity(intent);
+            }
+        });
         // Fetch and display user or event name
         TextView name = listItem.findViewById(R.id.name);
         Log.d("testing", "Source: " + currentImage.getSource());
