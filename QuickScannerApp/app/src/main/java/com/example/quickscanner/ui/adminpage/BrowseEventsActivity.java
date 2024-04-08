@@ -81,6 +81,7 @@ public class BrowseEventsActivity extends AppCompatActivity {
             
         });
 
+
         // Create FireStore Listener for Updates to the Events List.
         fbEventController.getEvents().addOnCompleteListener(events ->
         {
