@@ -228,4 +228,9 @@ public class FirebaseUserController
         //TODO remove this and replace with other get user method
         return usersRef.document(userId).get();
     }
+/*
+    public Task<DocumentSnapshot> deleteEventFromUser(String eventID) {
+       //return
+    }
+ */
 }

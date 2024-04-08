@@ -114,7 +114,12 @@ public class FirebaseEventController
     public Task<Void> deleteEvent(String eventId)
     {
         validateId(eventId);
+        deleteFromAttendance(eventId);
         return eventsRef.document(eventId).delete();
+    }
+
+    public void deleteFromAttendance(String eventId) {
+
     }
 
 

@@ -474,7 +474,7 @@ public class ViewEventActivity extends AppCompatActivity
         timeParams.topToBottom = ConstraintLayout.LayoutParams.UNSET;
 
 
-        descriptionParams.topMargin = 15;
+        descriptionParams.topMargin = 30;
 
         timeText.setLayoutParams(timeParams);
         locationText.setLayoutParams(locationParams);

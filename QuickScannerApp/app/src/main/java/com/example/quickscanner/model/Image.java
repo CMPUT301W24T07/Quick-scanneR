@@ -2,7 +2,6 @@ package com.example.quickscanner.model;
 
 public class Image {
     private String imageUrl;
-
     public boolean isSelected;
 
     public Image() {
