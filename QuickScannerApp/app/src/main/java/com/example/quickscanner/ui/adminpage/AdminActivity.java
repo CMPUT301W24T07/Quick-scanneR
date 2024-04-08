@@ -28,9 +28,20 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.util.Objects;
 
+//javadocs
+/**
+ * This activity is the Admin Activity that allows the admin to browse events, profiles, and images.
+ * The admin can also generate a QR code that encodes the admin auth code.
+ */
 public class AdminActivity extends AppCompatActivity {
 
 
+    //javadocs
+    /**
+     * This method creates the Admin Activity and sets up the buttons for browsing events, profiles, and images.
+     * The method also sets up the button for generating a QR code that encodes the admin auth code.
+     * @param savedInstanceState The saved instance state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +78,10 @@ public class AdminActivity extends AppCompatActivity {
 
     }
 
+    //javadocs
+    /**
+     * This method launches a dialog that displays a QR code image encoding the admin auth code.
+     */
     private void launchAdminQRDialog() {
 
         //get admin auth code from firebase
@@ -81,6 +96,11 @@ public class AdminActivity extends AppCompatActivity {
 
 
     }
+        //javadocs
+        /**
+         * This method generates a QR code image based on the given code and displays it in a dialog.
+         * @param code The code to generate the QR code for.
+         */
         public void generateQRCode(String code) {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
             try {
@@ -122,6 +142,12 @@ public class AdminActivity extends AppCompatActivity {
 
     }
 
+    //javadocs
+    /**
+     * This method handles the top bar menu clicks.
+     * @param item The menu item that was clicked.
+     * @return True if the menu item was handled, false otherwise.
+     */
     // Handles The Top Bar menu clicks
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

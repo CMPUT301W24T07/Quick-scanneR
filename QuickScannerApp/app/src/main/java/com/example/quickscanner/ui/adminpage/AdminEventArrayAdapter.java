@@ -14,6 +14,11 @@ import java.util.ArrayList;
 import com.example.quickscanner.R;
 import com.example.quickscanner.model.*;
 
+
+//javadocs
+/**
+ * This Array Adapter customizes the presentation of the Events list
+ */
 public class AdminEventArrayAdapter extends ArrayAdapter<Event> {
     /*
         This Array Adapter customizes the presentation of the Events list
@@ -30,7 +35,12 @@ public class AdminEventArrayAdapter extends ArrayAdapter<Event> {
     TextView eventTime;
 
 
-
+    //javadocs
+    /**
+     * Constructor for AdminEventArrayAdapter
+     * @param context
+     * @param events
+     */
     public AdminEventArrayAdapter(Context context, ArrayList<Event> events){
         super(context,0, events);
         this.events = events;
@@ -38,6 +48,15 @@ public class AdminEventArrayAdapter extends ArrayAdapter<Event> {
     }
 
 
+    //javadocs
+    /**
+     * Responsible for creating the View for each row in the ListView.
+     * Called for each item(row) in the listview.
+     * @param position
+     * @param convertView
+     * @param parent
+     * @return view
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -82,6 +101,11 @@ public class AdminEventArrayAdapter extends ArrayAdapter<Event> {
         return view;
     }
 
+    //javadocs
+    /**
+     * This method returns the list of selected events.
+     * @return selectedEvents
+     */
     public boolean isAnyEventSelected() {
         for (Event event : events) {
             if (event.isSelected()) {

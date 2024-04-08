@@ -20,6 +20,11 @@ import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 
+//javadocs
+/**
+ * This Fragment hosts our CheckedIn list for users to view.
+ * Can see more event details by clicking an event.
+ */
 public class SignedUpFragment extends Fragment {
 
     private ListView listView;
@@ -32,6 +37,11 @@ public class SignedUpFragment extends Fragment {
     private ListenerRegistration signUpListenerReg;
 
 
+    //javadocs
+    /**
+     * This Fragment hosts our CheckedIn list for users to view.
+     * Can see more event details by clicking an event.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -39,6 +49,11 @@ public class SignedUpFragment extends Fragment {
         return binding.getRoot();
     }
 
+    //javadocs
+    /**
+     * This Fragment hosts our CheckedIn list for users to view.
+     * Can see more event details by clicking an event.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -63,6 +78,11 @@ public class SignedUpFragment extends Fragment {
         }
     }
 
+    //javadocs
+    /**
+     * This Fragment hosts our CheckedIn list for users to view.
+     * Can see more event details by clicking an event.
+     */
     @Override
     public void onDestroy()
     {
