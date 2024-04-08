@@ -1,5 +1,6 @@
 package com.example.quickscanner.controller;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
@@ -904,25 +905,21 @@ public class FirebaseAttendanceController {
     public ListenerRegistration setupLiveCountListener(String eventId, TextView timesCheckedInTextView) {
         validateId(eventId);
         DocumentReference liveCountRef = getLiveCountRef(eventId);
-         return liveCountRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w("CheckInFragment", "Listen failed.", e);
-                            return;
-                        }
+         return liveCountRef.addSnapshotListener((snapshot, e) -> {
+             if (e != null) {
+                 Log.w("CheckInFragment", "Listen failed.", e);
+                 return;
+             }
 
-                        long liveCount = 0L;
-                        if (snapshot != null && snapshot.exists()) {
-                            Long temp = snapshot.getLong("liveCount");
-                            if (temp != null) {
-                                liveCount = temp;
-                            }
-                        }
-                        timesCheckedInTextView.setText(String.format("Live Attendance Count: %d", liveCount));
-                    }
-                });
+             long liveCount = 0L;
+             if (snapshot != null && snapshot.exists()) {
+                 Long temp = snapshot.getLong("liveCount");
+                 if (temp != null) {
+                     liveCount = temp;
+                 }
+             }
+             timesCheckedInTextView.setText(String.format("Live Attendance Count: %d", liveCount));
+         });
     }
 
     /**
@@ -1045,31 +1042,28 @@ public class FirebaseAttendanceController {
         return docList;
     }
 
+    @SuppressLint("SetTextI18n")
     public ListenerRegistration setupMaxSpotsListener(String eventId, TextView maxSpotsTextView) {
         validateId(eventId);
         DocumentReference maxSpotsRef = getMaxSpotsRef(eventId);
-        return maxSpotsRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("AttendanceActivity", "Listen failed.", e);
+        return maxSpotsRef.addSnapshotListener((snapshot, e) -> {
+            if (e != null) {
+                Log.w("AttendanceActivity", "Listen failed.", e);
+                return;
+            }
+
+            int maxSpots = 0;
+            if (snapshot != null && snapshot.exists()) {
+                Integer temp = snapshot.getLong("maxSpots") != null ? snapshot.getLong("maxSpots").intValue() : null;
+                if (temp != null) {
+                    maxSpots = temp;
+                } else {
+                    // MaxSpots is null, indicate that there is no maximum limit
+                    maxSpotsTextView.setText("No Maximum Limit");
                     return;
                 }
-
-                int maxSpots = 0;
-                if (snapshot != null && snapshot.exists()) {
-                    Integer temp = snapshot.getLong("maxSpots") != null ? snapshot.getLong("maxSpots").intValue() : null;
-                    if (temp != null) {
-                        maxSpots = temp;
-                    } else {
-                        // MaxSpots is null, indicate that there is no maximum limit
-                        maxSpotsTextView.setText("No Maximum Limit");
-                        return;
-                    }
-                }
-                maxSpotsTextView.setText("Max Spots: " + maxSpots);
             }
+            maxSpotsTextView.setText("Max Spots: " + maxSpots);
         });
     }
 

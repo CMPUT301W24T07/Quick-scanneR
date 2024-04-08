@@ -16,7 +16,6 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.WriteBatch;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +94,6 @@ public class FirebaseAnnouncementController
      * Processes announcements for a batch of users. This method handles the distribution of
      * the announcement to each user's "Announcements" collection in Firestore. It manages
      * batch processing to avoid exceeding Firestore's batch size limits.
-     *
      * The method divides the user IDs into manageable batches and attempts to write the announcement
      * to each user's document. If any batch fails, the IDs from that batch are collected for reporting.
      *
