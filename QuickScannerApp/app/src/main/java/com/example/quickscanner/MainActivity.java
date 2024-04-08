@@ -11,14 +11,12 @@ import android.util.Log;
 import android.view.Menu; // Import Menu class
 import android.view.MenuItem; // Import Menu class
 import android.widget.ListView;
-import android.widget.Toast;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.Event;
 import com.example.quickscanner.model.User;
-import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 import com.example.quickscanner.singletons.SettingsDataSingleton;
 import com.example.quickscanner.ui.my_events.MyEvents_Activity;
 import com.example.quickscanner.ui.profile.ProfileActivity;
@@ -38,9 +36,13 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.quickscanner.databinding.ActivityMainBinding;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ch.hsr.geohash.GeoHash;
 
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView eventsListView;
     private ArrayList<Event> eventsDataList;
     private FirebaseUserController fbUserController;
+    private boolean isUserAdmin=false;
 
 
 
@@ -85,7 +88,9 @@ public class MainActivity extends AppCompatActivity {
             requestHashedGeolocation();
         }
 
+        Log.d("UserCodesss",fbUserController.getCurrentUserUid());
 
+        checkIfUserAdmin();
 
         // Create bottom menu for MainActivity.
         createBottomMenu();
@@ -93,6 +98,36 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void checkIfUserAdmin() {
+        DocumentReference adminAuthRef = FirebaseFirestore.getInstance().collection("users").document(fbUserController.getCurrentUserUid());
+//        AtomicBoolean isAdmin= new AtomicBoolean(false);
+
+        adminAuthRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                boolean adminAuthCode = documentSnapshot.getBoolean("admin");
+                if (adminAuthCode==true) {
+                    //get current user reference, and make the isAdmin field true in firebase
+                    isUserAdmin=true;
+                }
+            }
+        });
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        MenuItem adminItem = menu.findItem(R.id.navigation_adminPage);
+        if (adminItem != null) {
+            // Check if the user is an admin
+            if (isUserAdmin) {
+                adminItem.setVisible(true);
+            } else {
+                adminItem.setVisible(false);
+            }
+        }
+
+        return super.onPrepareOptionsMenu(menu);
+    }
 
 
 
@@ -135,6 +170,9 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (itemId == R.id.navigation_adminPage) {
             // Handle Admin Page Click
+
+
+
             Intent intent = new Intent(MainActivity.this, AdminActivity.class);
             startActivity(intent);
             return true;
