@@ -265,7 +265,9 @@ public class AddEventActivity extends AppCompatActivity
 
                                             Log.d("testerrrr", "event has set check in code: " + event.getCheckInQrCode());
                                             Log.d("uteeee", "event is is: " + event.getEventID());
+                                            Log.d("AddEventActivity", "before updateEvent: updating event with ID: " + event.getEventID());
                                             addEventToUserOrganizedEvents(event.getEventID());
+
                                             fbEventController.updateEvent(event);
                                             finish();
 

@@ -122,8 +122,10 @@ public class OrganizedEventsFragment extends Fragment {
         String orgId = fbUserController.getCurrentUserUid();
         // Create FireStore Listener for Updates to the Events List.
         //log of uid
-        orgListener = fbEventController.setUpOrganizedEventsListener(orgId, eventsDataList, eventAdapter,noOrgTextView, myEventListView);
-
+        if (orgListener == null)
+        {
+            orgListener = fbEventController.setUpOrganizedEventsListener(orgId, eventsDataList, eventAdapter, noOrgTextView, myEventListView);
+        }
         /*      Event ListView Click       */
         binding.myEventListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
@@ -152,28 +154,12 @@ public class OrganizedEventsFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        Log.d("event list testing", "org frag onDestroyView: Removing event list listener");
         if (orgListener != null) {
             orgListener.remove();
             orgListener = null;
         }
         binding = null;
-    }
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Remove Firestore listener
-        if (orgListener != null) {
-            orgListener.remove();
-        }
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Reinitialize Firestore listener
-        String orgId = fbUserController.getCurrentUserUid();
-        if (orgListener == null) { // Check if listener was previously removed
-            orgListener = fbEventController.setUpOrganizedEventsListener(orgId, eventsDataList, eventAdapter, binding.noOrgTextview, binding.myEventListview);
-        }
     }
 
 
