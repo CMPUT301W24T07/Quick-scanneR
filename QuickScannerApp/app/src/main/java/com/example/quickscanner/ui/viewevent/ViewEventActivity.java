@@ -100,6 +100,7 @@ public class ViewEventActivity extends AppCompatActivity {
     private Event currentEvent;
     private Bitmap qrCodeBitmap;
 
+
     private Bitmap eventBitMap;
 
     @SuppressLint("SetTextI18n")
@@ -126,6 +127,7 @@ public class ViewEventActivity extends AppCompatActivity {
         contentLayout.setVisibility(View.GONE);
         binding.signUpButton.setVisibility(View.GONE);
         loadCount = 5;
+
         Log.d("LoadCount", "Decrementing loadCount, current value: " + loadCount);
 
         ActivityResultLauncher<Intent> activityResultLauncher =
@@ -165,8 +167,11 @@ public class ViewEventActivity extends AppCompatActivity {
 
                 fetchEventData();
                 swipeRefreshLayout.setRefreshing(false);
+                qrCodeBitmap = generateQRCode(event.getPromoQrCode());
+                Log.d("halpp", "event is null? " + event.getPromoQrCode());
             }
         });
+
 
         // Set click listeners
         View.OnClickListener listener = new View.OnClickListener() {
@@ -254,6 +259,7 @@ public class ViewEventActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Convert the QR code Bitmap to a Uri
                 String path = MediaStore.Images.Media.insertImage(getContentResolver(), qrCodeBitmap, "QR Code", null);
+                Log.d("beans", "path is: " + qrCodeBitmap.toString());
                 Log.d("beans", "this is wheere it fails");
                 Uri qrCodeUri = Uri.parse(path);
 
@@ -549,6 +555,14 @@ public class ViewEventActivity extends AppCompatActivity {
         binding.eventTitleText.setText(event.getName());
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
+        FloatingActionButton announcementButton = binding.announcementButton;
+
+        if (!UiD.equals(event.getOrganizerID())) {
+            // If the current user is not the organizer, hide the announcement button
+            announcementButton.setEnabled(false);
+        }
+
+
         binding.eventDescriptionText.setFocusable(false);
         binding.eventDescriptionText.setFocusableInTouchMode(false);
         binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
@@ -591,7 +605,10 @@ public class ViewEventActivity extends AppCompatActivity {
         // Check if the current user is the organizer
         if (UiD.equals(event.getOrganizerID())) {
             binding.signUpButton.setText("Attendance Information");
+
             decrementLoadCount("button attend");
+
+
         } else {
             // Check if the user is signed up for the event
             fbAttendanceController.isUserSignedUp(eventID, UiD).addOnCompleteListener(new OnCompleteListener<Boolean>() {
