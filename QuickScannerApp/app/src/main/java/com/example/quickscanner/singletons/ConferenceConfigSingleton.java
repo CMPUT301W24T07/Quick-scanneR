@@ -38,25 +38,33 @@ public class ConferenceConfigSingleton
 
     private ConferenceConfigSingleton() {
         fbEventController = new FirebaseEventController();
-        fbEventController.getConferenceConfig().addOnSuccessListener(config -> {
-            // Fill the ConferenceConfigSingleton instance with data
-            setMinHour(config.getMinHour());
-            setMinMinute(config.getMinMinute());
-            setMinYear(config.getMinYear());
-            setMinMonth(config.getMinMonth());
-            setMinDay(config.getMinDay());
-            setMaxHour(config.getMaxHour());
-            setMaxMinute(config.getMaxMinute());
-            setMaxYear(config.getMaxYear());
-            setMaxMonth(config.getMaxMonth());
-            setMaxDay(config.getMaxDay());
-            setTimeZone(config.getTimeZone());
-            if (onConfigFetchedListener != null)
-            {
-                onConfigFetchedListener.onConfigFetched();
-            }
+        fbEventController.getConferenceConfig().addOnSuccessListener(new OnSuccessListener<ConferenceConfig>() {
+            @Override
+            public void onSuccess(ConferenceConfig config) {
+                // Fill the ConferenceConfigSingleton instance with data
+                setMinHour(config.getMinHour());
+                setMinMinute(config.getMinMinute());
+                setMinYear(config.getMinYear());
+                setMinMonth(config.getMinMonth());
+                setMinDay(config.getMinDay());
+                setMaxHour(config.getMaxHour());
+                setMaxMinute(config.getMaxMinute());
+                setMaxYear(config.getMaxYear());
+                setMaxMonth(config.getMaxMonth());
+                setMaxDay(config.getMaxDay());
+                setTimeZone(config.getTimeZone());
+                if (onConfigFetchedListener != null)
+                {
+                    onConfigFetchedListener.onConfigFetched();
+                }
 
-        }).addOnFailureListener(e -> Log.e("ConferenceConfigSingleton", "Error getting ConferenceConfig", e));
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("ConferenceConfigSingleton", "Error getting ConferenceConfig", e);
+            }
+        });
     }
     public static void initInstance() {
         if (instance == null) {

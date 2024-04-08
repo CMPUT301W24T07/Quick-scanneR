@@ -272,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
             // Phone has geolocation disabled
             return false;
         }
+        // all permissions enabled. good to go!
         return true;
     }
 
@@ -316,6 +317,5 @@ public class MainActivity extends AppCompatActivity {
     protected void initSingletons(){
         SettingsDataSingleton.initInstance();
     }
-
 
 }

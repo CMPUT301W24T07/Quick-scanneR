@@ -64,8 +64,12 @@ public class BrowseEventsActivity extends AppCompatActivity {
             // Pass the ID of the selected event to the ViewEventActivity
             intent.putExtra("eventID", selectedEvent.getEventID());
 
-            // Start the ViewEventActivity
-            startActivity(intent);
+                // Pass isAdmin boolean to the ViewEventActivity
+                intent.putExtra("adminkey", true);
+
+                // Start the ViewEventActivity
+                startActivity(intent);
+            }
         });
 
         // Create FireStore Listener for Updates to the Events List.
