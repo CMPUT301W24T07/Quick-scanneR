@@ -677,7 +677,7 @@ public class FirebaseAttendanceController {
         // Initializes a set to hold unique user IDs
         HashSet<String> uniqueUserIds = new HashSet<>();
 
-        // Fetchs the documents in both collections
+        // Fetches the documents in both collections
         Task<QuerySnapshot> signUpDocumentsTask = eventSignUpsRef.get();
         Task<QuerySnapshot> checkInDocumentsTask = eventCheckInsRef.get();
 
@@ -696,7 +696,7 @@ public class FirebaseAttendanceController {
                 }
             }
 
-            // fetchs user details for all unique IDs
+            // fetches user details for all unique IDs
             List<Task<DocumentSnapshot>> userTasks = new ArrayList<>();
             for (String userId : uniqueUserIds) {
                 userTasks.add(usersRef.document(userId).get());
@@ -756,8 +756,6 @@ public class FirebaseAttendanceController {
     {
         validateId(eventId);
         return eventsRef.document(eventId).collection("signUps")
-                //TODO make people sign out so this wont break stuff
-                //.orderBy("signUpTime")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {

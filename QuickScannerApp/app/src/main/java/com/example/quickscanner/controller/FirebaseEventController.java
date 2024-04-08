@@ -88,13 +88,12 @@ public class FirebaseEventController
         // Set the eventID field of the event object
         event.setEventID(eventId);
 
-        // Now set the document with the event data, including the eventID
+        //set the document with the event data, including the eventID
         newEventRef.set(event)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d("AddEventActivity", "Event added successfully with ID: " + eventId);
-                        // Here, signal success and provide the DocumentReference
                         taskCompletionSource.setResult(newEventRef);
                     }
                 })
@@ -107,7 +106,7 @@ public class FirebaseEventController
                     }
                 });
 
-        // Return the Task that will eventually provide the DocumentReference
+        // Return the DocumentReference
         return taskCompletionSource.getTask();
     }
 
