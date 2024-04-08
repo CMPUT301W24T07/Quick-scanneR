@@ -20,6 +20,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Objects;
 
+//javadocs
+/**
+ * This Activity is responsible for browsing all profiles in the database.
+ */
 public class BrowseProfilesActivity extends AppCompatActivity {
 
     // ProfileList References
@@ -33,6 +37,11 @@ public class BrowseProfilesActivity extends AppCompatActivity {
     // FirebaseController References
     private FirebaseUserController fbUserController;
 
+    //javadocs
+    /**
+     * This method is called when the activity is created.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +88,10 @@ public class BrowseProfilesActivity extends AppCompatActivity {
                 .show());
     }
 
+    //javadocs
+    /**
+     * This method deletes the selected profiles from the database.
+     */
     private void deleteSelectedProfiles() {
         for (User user : profilesDataList) {
             if (user.isSelected()) {
@@ -93,6 +106,10 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         }
     }
 
+    //javadocs
+    /**
+     * This method updates the visibility of the delete button based on the number of selected profiles.
+     */
     public void updateDeleteButtonVisibility() {
         FloatingActionButton deleteButton = findViewById(R.id.delete_button);
         if (profileAdapter.isAnyUserSelected()) {
@@ -102,6 +119,10 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         }
     }
 
+    //javadocs
+    /**
+     * This method is called when the activity is resumed.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection

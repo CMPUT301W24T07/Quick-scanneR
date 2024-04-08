@@ -29,6 +29,12 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+//javadocs
+/**
+ * This Fragment hosts our event list for users to view.
+ * Anybody can Organize an Event through this fragment, and
+ * see more event details by clicking an event.
+ */
 public class EventFragment extends Fragment {
     /**
      * This Fragment hosts our event list for users to view.
@@ -63,6 +69,12 @@ public class EventFragment extends Fragment {
 
 
 
+    //javadocs
+    /**
+     * This Fragment hosts our event list for users to view.
+     * Anybody can Organize an Event through this fragment, and
+     * see more event details by clicking an event.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
@@ -79,6 +91,12 @@ public class EventFragment extends Fragment {
 
     }
 
+    //javadocs
+    /**
+     * This Fragment hosts our event list for users to view.
+     * Anybody can Organize an Event through this fragment, and
+     * see more event details by clicking an event.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -108,6 +126,12 @@ public class EventFragment extends Fragment {
             startActivity(intent);
         });
 
+        //javadocs
+        /**
+         * This Fragment hosts our event list for users to view.
+         * Anybody can Organize an Event through this fragment, and
+         * see more event details by clicking an event.
+         */
         /*      Event ListView Click       */
         eventListView.setOnItemClickListener((adapterView, view12, position, id) -> {
             // get the clicked event
@@ -123,6 +147,15 @@ public class EventFragment extends Fragment {
         });
     }
 
+    //javadocs
+    /**
+     * This method sets up a timer to check the time of the events in the list.
+     * If the time of the event is before the current time, the event is removed from the list.
+     * The adapter is then notified of the changes.
+     * The timer is then scheduled to run every minute.
+     * @param eventsDataList The list of events to check the time of
+     * @param eventAdapter The adapter for the list of events
+     */
     private void setupTimeListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter)
     {
         timerTask = new TimerTask()
@@ -155,6 +188,11 @@ public class EventFragment extends Fragment {
         };
     }
 
+    //javadocs
+    /**
+     * This method is called when the fragment is destroyed.
+     * It removes the event list listener registration.
+     */
 
     @Override
     public void onDestroyView() {

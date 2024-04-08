@@ -19,6 +19,10 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.Objects;
 
+//javadocs
+/**
+ * This Activity is responsible for browsing all images in the database.
+ */
 public class BrowseImagesActivity extends AppCompatActivity {
 
     // ImageList References
@@ -32,6 +36,11 @@ public class BrowseImagesActivity extends AppCompatActivity {
     // FirebaseController References
     private FirebaseImageController fbImageController;
 
+    //javadocs
+    /**
+     * This method is called when the activity is created.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +85,10 @@ public class BrowseImagesActivity extends AppCompatActivity {
                 .show());
     }
 
+    //javadocs
+    /**
+     * This method deletes the selected images from the database.
+     */
     private void deleteSelectedImages() {
         for (Image image : imagesDataList) {
             if (image.isSelected()) {
@@ -95,6 +108,11 @@ public class BrowseImagesActivity extends AppCompatActivity {
         }
     }
 
+    //javadocs
+    /**
+     * This method updates the visibility of the delete button based on the selected images.
+     */
+
     public void updateDeleteButtonVisibility() {
         FloatingActionButton deleteButton = findViewById(R.id.delete_button);
         if (imageAdapter.isAnyImageSelected()) {
@@ -104,6 +122,12 @@ public class BrowseImagesActivity extends AppCompatActivity {
         }
     }
 
+    //javadocs
+    /**
+     * This method inflates the top menu bar.
+     * @param menu The menu to inflate.
+     * @return True if the menu is inflated successfully, false otherwise.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
