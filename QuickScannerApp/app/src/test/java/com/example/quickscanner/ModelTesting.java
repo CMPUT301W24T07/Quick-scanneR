@@ -206,18 +206,17 @@ public class ModelTesting {
     @Test
     public void testSettingsDataSingleton() {
         // before our singleton is initialized, should hold nothing.
-        assertEquals(SettingsDataSingleton.getHashedGeoLocation(), null);
-        // create our singleton
         SettingsDataSingleton.initInstance();
+        assertEquals(SettingsDataSingleton.getInstance().getHashedGeoLocation(), null);
         // store geolocation data
         String geolocation = "J94HFdc9Sc";
-        SettingsDataSingleton.setHashedGeoLocation(geolocation);
-        assertEquals(SettingsDataSingleton.getHashedGeoLocation(), geolocation); // check if stored properly
+        SettingsDataSingleton.getInstance().setHashedGeoLocation(geolocation);
+        assertEquals(SettingsDataSingleton.getInstance().getHashedGeoLocation(), geolocation); // check if stored properly
         // try to init singleton again
         SettingsDataSingleton.initInstance();
         // should still maintain old data.
         // i.e. should only be able to init singletons once
-        assertEquals(SettingsDataSingleton.getHashedGeoLocation(), geolocation); // check if stored properly
+        assertEquals(SettingsDataSingleton.getInstance().getHashedGeoLocation(), geolocation); // check if stored properly
     }
 
     /**
