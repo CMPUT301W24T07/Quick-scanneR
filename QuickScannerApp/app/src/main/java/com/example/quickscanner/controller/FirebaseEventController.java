@@ -11,8 +11,12 @@ import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.ConferenceConfig;
 import com.example.quickscanner.model.Event;
+import com.example.quickscanner.ui.addevent.AddEventActivity;
 import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
@@ -72,11 +76,42 @@ public class FirebaseEventController
      * @param event the event to be added
      * @return a Task that will be once the event is added
      */
-    public Task<DocumentReference> addEvent(Event event)
-    {
+    public Task<DocumentReference> addEvent(final Event event) {
+        final TaskCompletionSource<DocumentReference> taskCompletionSource = new TaskCompletionSource<>();
 
-        return eventsRef.add(event);
+        // Create a new document with an auto-generated ID in the events collection
+        final DocumentReference newEventRef = eventsRef.document();
+
+        // Get the generated document ID
+        String eventId = newEventRef.getId();
+
+        // Set the eventID field of the event object
+        event.setEventID(eventId);
+
+        // Now set the document with the event data, including the eventID
+        newEventRef.set(event)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("AddEventActivity", "Event added successfully with ID: " + eventId);
+                        // Here, signal success and provide the DocumentReference
+                        taskCompletionSource.setResult(newEventRef);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("AddEventActivity", "Error adding event", e);
+                        // Signal failure
+                        taskCompletionSource.setException(e);
+                    }
+                });
+
+        // Return the Task that will eventually provide the DocumentReference
+        return taskCompletionSource.getTask();
     }
+
+
 
     /**
      * Updates existing event in Firestore. AND merges new Fields.
@@ -103,6 +138,7 @@ public class FirebaseEventController
      */
     public Task<Void> updateEvent(Event event)
     {
+        Log.d("AddEventActivity", "updateEvent: updating event with ID: " + event.getEventID());
         return eventsRef.document(event.getEventID()).set(event);
     }
 
@@ -156,50 +192,6 @@ public class FirebaseEventController
             }
         });
     }
-
-    public Task<List<Event>> continueGetEvents(String lastEventId)
-    {
-        validateId(lastEventId);
-        Task<DocumentSnapshot> lastEventTask = eventsRef.document(lastEventId).get();
-
-        return lastEventTask.continueWithTask(new Continuation<DocumentSnapshot, Task<List<Event>>>()
-        {
-            @Override
-            public Task<List<Event>> then(@NonNull Task<DocumentSnapshot> task) throws Exception
-            {
-                DocumentSnapshot lastEvent = task.getResult();
-                Query query = eventsRef.orderBy("time").startAfter(lastEvent).limit(30);
-                Task<QuerySnapshot> queryTask = query.get();
-
-                return queryTask.continueWith(new Continuation<QuerySnapshot, List<Event>>()
-                {
-                    @Override
-                    public List<Event> then(@NonNull Task<QuerySnapshot> task) throws Exception
-                    {
-                        if (task.isSuccessful())
-                        {
-                            QuerySnapshot querySnapshot = task.getResult();
-                            List<Event> events = new ArrayList<>();
-                            if (querySnapshot != null)
-                            {
-                                for (QueryDocumentSnapshot document : querySnapshot)
-                                {
-                                    Event event = document.toObject(Event.class);
-                                    events.add(event);
-                                }
-                            }
-                            return events;
-                        }
-                        else
-                        {
-                            throw task.getException();
-                        }
-                    }
-                });
-            }
-        });
-    }
-
     /**
      * Retrieves a specific event from Firestore.
      *
@@ -416,13 +408,20 @@ public class FirebaseEventController
                                         break;
                                     case MODIFIED:
                                         Event modifiedEvent = changes.getDocument().toObject(Event.class);
+                                        Log.d("AddEventActivity", "onEvent: modified event: " + modifiedEvent.getName() + "ID: " + modifiedEvent.getEventID());
+
                                         int modifiedPosition = eventsDataList.indexOf(modifiedEvent);
+
                                         if (modifiedPosition != -1) {
-                                            Event oldEvent = eventsDataList.get(modifiedPosition);
+                                             Event oldEvent = eventsDataList.get(modifiedPosition);
                                             // Check if the image, name, or time has changed
+                                            Log.d("AddEventActivity", "onEvent: modified event: " + modifiedEvent.getName() + "ID: " + modifiedEvent.getEventID()
+                                            + "old wevent: " + oldEvent.getName() + "ID: " + oldEvent.getEventID());
                                             if (!oldEvent.getImagePath().equals(modifiedEvent.getImagePath()) ||
                                                     !oldEvent.getName().equals(modifiedEvent.getName()) ||
-                                                    !oldEvent.getTime().equals(modifiedEvent.getTime())) {
+                                                    !oldEvent.getTime().equals(modifiedEvent.getTime())
+                                            || !oldEvent.getEventID().equals(modifiedEvent.getEventID()))
+                                            {
                                                 // Replace the old event with the new one
                                                 eventsDataList.set(modifiedPosition, modifiedEvent);
                                             }

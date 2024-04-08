@@ -1,5 +1,6 @@
 package com.example.quickscanner.ui.announcements;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -118,14 +119,15 @@ public class AnnouncementsFragment extends Fragment {
 
 
         //here we call the method to set up announcement list listener
-
-        registration = fbAnnouncementController.setupAnnouncementListListener(
-                fbUserController.getCurrentUserUid(),
-                AnnouncementsDataList,
-                announcementsAdapter,
-                emptyAnnouncementsListTextView,
-                announcementListView);
-
+        if (registration == null)
+        {
+            registration = fbAnnouncementController.setupAnnouncementListListener(
+                    fbUserController.getCurrentUserUid(),
+                    AnnouncementsDataList,
+                    announcementsAdapter,
+                    emptyAnnouncementsListTextView,
+                    announcementListView);
+        }
 
 
 
@@ -160,33 +162,13 @@ public class AnnouncementsFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        Log.d("event list testing", "announce frag onDestroyView: Removing event list listener");
         if (registration != null) {
             registration.remove();
+            Log.d("event list testing", "onDestroyView: done removing listener");
             registration = null;
         }
         binding = null;
-    }
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Detach the Firestore listener
-        if (registration != null) {
-            registration.remove();
-            registration = null;
-        }
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Reattach the Firestore listener if it was previously detached
-        if (registration == null) {
-            registration = fbAnnouncementController.setupAnnouncementListListener(
-                    fbUserController.getCurrentUserUid(),
-                    AnnouncementsDataList,
-                    announcementsAdapter,
-                    binding.emptyAnnouncementListTextView,
-                    binding.announcementListview);
-        }
     }
 
 
