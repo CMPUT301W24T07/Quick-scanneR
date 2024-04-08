@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView eventsListView;
     private ArrayList<Event> eventsDataList;
     private FirebaseUserController fbUserController;
-    private boolean isUserAdmin=true;
+    private boolean isUserAdmin=false;
 
 
 
