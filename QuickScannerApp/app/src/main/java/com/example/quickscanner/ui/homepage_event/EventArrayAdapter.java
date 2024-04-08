@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,19 +25,39 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
+//javadocs
+/**
+ * This Array Adapter customizes the presentation of the Events list
+ */
 public class EventArrayAdapter extends ArrayAdapter<Event> {
 
     private ArrayList<Event> events;
     private Context context;
     private FirebaseImageController imageController;
 
-    public EventArrayAdapter(Context context, ArrayList<Event> events) {
-        super(context, 0, events);
+
+    //javadocs
+    /**
+     * Constructor for EventArrayAdapter
+     * @param context
+     * @param events
+     */
+    public EventArrayAdapter(Context context, ArrayList<Event> events){
+        super(context,0, events);
         this.events = events;
         this.context = context;
         this.imageController = new FirebaseImageController();
     }
 
+
+    //javadocs
+    /**
+     * Responsible for creating the View for each row in the ListView.
+     * Called for each item(row) in the listview.
+     * @param position
+     * @param convertView
+     * @param parent
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {

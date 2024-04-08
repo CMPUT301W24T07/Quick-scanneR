@@ -20,6 +20,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Objects;
 
+//javadocs
+/**
+ * This Activity is responsible for browsing all profiles in the database.
+ */
 public class BrowseProfilesActivity extends AppCompatActivity {
 
     // ProfileList References
@@ -33,6 +37,11 @@ public class BrowseProfilesActivity extends AppCompatActivity {
     // FirebaseController References
     private FirebaseUserController fbUserController;
 
+    //javadocs
+    /**
+     * This method is called when the activity is created.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +57,7 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         profileListView = findViewById(R.id.BrowseProfilesListView);
 
         // Initialize the profile data list and ArrayAdapter
-        profilesDataList = new ArrayList<User>();
+        profilesDataList = new ArrayList<>();
         profileAdapter = new ProfileArrayAdapter(this, profilesDataList);
         // Set the adapter to the ListView
         profileListView.setAdapter(profileAdapter);
@@ -58,9 +67,7 @@ public class BrowseProfilesActivity extends AppCompatActivity {
             profilesDataList.clear();  // removes current data
                 profilesDataList.addAll(users); // adds new data from db
             profileAdapter.notifyDataSetChanged();
-        }).addOnFailureListener(e ->{
-            Log.e("Firestore failed to load users:", e.toString());
-        });
+        }).addOnFailureListener(e -> Log.e("Firestore failed to load users:", e.toString()));
 
         // Inside onCreate method
         profileListView.setOnItemClickListener((parent, view, position, id) -> {
@@ -73,16 +80,18 @@ public class BrowseProfilesActivity extends AppCompatActivity {
 
         // Find the delete button
         FloatingActionButton deleteButton = findViewById(R.id.delete_button);
-        deleteButton.setOnClickListener(v -> {
-            new AlertDialog.Builder(BrowseProfilesActivity.this)
-                    .setTitle("Delete Profiles")
-                    .setMessage("Are you sure you want to delete these Profile(s)?")
-                    .setPositiveButton("Yes", (dialog, which) -> deleteSelectedProfiles())
-                    .setNegativeButton("Cancel", null)
-                    .show();
-        });
+        deleteButton.setOnClickListener(v -> new AlertDialog.Builder(BrowseProfilesActivity.this)
+                .setTitle("Delete Profiles")
+                .setMessage("Are you sure you want to delete these Profile(s)?")
+                .setPositiveButton("Yes", (dialog, which) -> deleteSelectedProfiles())
+                .setNegativeButton("Cancel", null)
+                .show());
     }
 
+    //javadocs
+    /**
+     * This method deletes the selected profiles from the database.
+     */
     private void deleteSelectedProfiles() {
         for (User user : profilesDataList) {
             if (user.isSelected()) {
@@ -97,6 +106,10 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         }
     }
 
+    //javadocs
+    /**
+     * This method updates the visibility of the delete button based on the number of selected profiles.
+     */
     public void updateDeleteButtonVisibility() {
         FloatingActionButton deleteButton = findViewById(R.id.delete_button);
         if (profileAdapter.isAnyUserSelected()) {
@@ -106,15 +119,17 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         }
     }
 
+    //javadocs
+    /**
+     * This method is called when the activity is resumed.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 }

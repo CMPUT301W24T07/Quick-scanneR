@@ -21,17 +21,35 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+//javadocs
+/**
+ * This Array Adapter customizes the presentation of the SignUp list
+ */
 public class SignUpAdapter extends ArrayAdapter<User> {
     private Context mContext;
     private ArrayList<User> mAttendees;
     private FirebaseImageController fbImageController;
 
+    //javadocs
+    /**
+     * Constructor for SignUpAdapter
+     * @param context
+     * @param attendees
+     */
     public SignUpAdapter(@NonNull Context context, ArrayList<User> attendees) {
         super(context, R.layout.attendance_sign_up_content, attendees);
         this.mContext = context;
         this.mAttendees = attendees;
     }
 
+    //javadocs
+    /**
+     * Responsible for creating the View for each row in the ListView.
+     * Called for each item(row) in the listview.
+     * @param position
+     * @param convertView
+     * @param parent
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -61,21 +79,19 @@ public class SignUpAdapter extends ArrayAdapter<User> {
             name.setText(currentName);
         }
         FirebaseImageController fbImageController = new FirebaseImageController();
-        fbImageController.downloadImage(profilePicturePath).addOnSuccessListener(uri -> {
-            Picasso.get()
-                    .load(uri)
-                    .into(profilePicture, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            loadingSpinner.setVisibility(View.GONE);
-                        }
+        fbImageController.downloadImage(profilePicturePath).addOnSuccessListener(uri -> Picasso.get()
+                .load(uri)
+                .into(profilePicture, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        loadingSpinner.setVisibility(View.GONE);
+                    }
 
-                        @Override
-                        public void onError(Exception e) {
-                            loadingSpinner.setVisibility(View.GONE);
-                        }
-                    });
-        });
+                    @Override
+                    public void onError(Exception e) {
+                        loadingSpinner.setVisibility(View.GONE);
+                    }
+                }));
 
 
         return view;

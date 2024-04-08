@@ -6,8 +6,6 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -16,15 +14,14 @@ import androidx.navigation.ui.AppBarConfiguration;
 import com.example.quickscanner.R;
 import com.example.quickscanner.controller.FirebaseAttendanceController;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.ListenerRegistration;
 
 
+//javadocs
+/**
+ * This class hosts our Attendance Activity.
+ * This activity is used to display the attendance information for a specific event.
+ */
 public class AttendanceActivity extends AppCompatActivity
 {
     private TextView liveAttendanceCount;
@@ -35,6 +32,12 @@ public class AttendanceActivity extends AppCompatActivity
 
 
 
+    //javadocs
+    /**
+     * This method is called when the activity is first created.
+     * It sets up the activity layout and initializes the attendance controller.
+     * @param savedInstanceState The saved instance state of the activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -68,6 +71,13 @@ public class AttendanceActivity extends AppCompatActivity
 
 
 
+    //javadocs
+    /**
+     * This method is called when an item in the options menu is selected.
+     * It is used to handle the back button being pressed.
+     * @param item The item that was selected.
+     * @return True if the item was handled, false otherwise.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -79,6 +89,12 @@ public class AttendanceActivity extends AppCompatActivity
         return false;
     }
 
+    //javadocs
+    /**
+     * This method creates the bottom menu for the Attendance Activity.
+     * It sets up the navigation controller and the bottom navigation view.
+     * @param eventID The ID of the event that the attendance information is being displayed for.
+     */
     private void createBottomMenu(String eventID)
     {
         // Passing each menu ID as a set of Ids because each
@@ -117,6 +133,12 @@ public class AttendanceActivity extends AppCompatActivity
             }
         });
     }
+
+    //javadocs
+    /**
+     * This method is called when the activity is destroyed.
+     * It removes the live count listener registration.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();

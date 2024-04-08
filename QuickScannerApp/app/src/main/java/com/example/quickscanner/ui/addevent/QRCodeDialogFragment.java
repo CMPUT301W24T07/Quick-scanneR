@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,8 +34,6 @@ import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 
 public class QRCodeDialogFragment extends DialogFragment {
@@ -42,6 +41,12 @@ public class QRCodeDialogFragment extends DialogFragment {
     private static final String ARG_EVENT_ID = "event_id";
     private static final int REQUEST_WRITE_STORAGE = 112;
 
+    //javadocs
+    /**
+     * This method creates a new instance of the QRCodeDialogFragment with the given event ID.
+     * @param eventId The ID of the event to generate the QR code for.
+     * @return A new instance of QRCodeDialogFragment.
+     */
     public static QRCodeDialogFragment newInstance(String eventId) {
         QRCodeDialogFragment fragment = new QRCodeDialogFragment();
         Bundle args = new Bundle();
@@ -50,12 +55,26 @@ public class QRCodeDialogFragment extends DialogFragment {
         return fragment;
     }
 
+    //javadocs
+    /**
+     * This method inflates the layout for the QRCodeDialogFragment.
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment.
+     * @param container If non-null, this is the parent view that the fragment's UI should be attached to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     * @return The root View of the inflated layout.
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_qr_code_dialog, container, false);
     }
 
 
+    //javadocs
+    /**
+     * This method sets up the views and listeners for the QRCodeDialogFragment.
+     * @param view The root View of the inflated layout.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -77,19 +96,28 @@ public class QRCodeDialogFragment extends DialogFragment {
     }
 
 
+    //javadocs
+    /**
+     * This method generates a QR code image based on the given event ID and sets it to the given ImageView.
+     * @param eventId The ID of the event to generate the QR code for.
+     * @param qrCodeImageView The ImageView to set the generated QR code image to.
+     */
     private void generateQRCode(String eventId, ImageView qrCodeImageView) {
         MultiFormatWriter writer = new MultiFormatWriter();
         try {
-            String content = eventId;
-            BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, 512, 512);
+            BitMatrix bitMatrix = writer.encode(eventId, BarcodeFormat.QR_CODE, 512, 512);
             BarcodeEncoder encoder = new BarcodeEncoder();
             Bitmap bitmap = encoder.createBitmap(bitMatrix);
             qrCodeImageView.setImageBitmap(bitmap);
         } catch (WriterException e) {
-            e.printStackTrace();
+            Log.d("QRCodeDialogFragment", "Failed to generate QR code", e);
         }
     }
 
+    //javadocs
+    /**
+     * This method requests permission to write to external storage and saves the QR code image to the device's gallery.
+     */
     private void downloadQRCodeImage() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
@@ -98,6 +126,10 @@ public class QRCodeDialogFragment extends DialogFragment {
         }
     }
 
+    //javadocs
+    /**
+     * This method saves the QR code image to the device's gallery.
+     */
     private void saveImageToGallery() {
         ImageView qrCodeImageView = requireView().findViewById(R.id.qrCodeImageView);
         BitmapDrawable drawable = (BitmapDrawable) qrCodeImageView.getDrawable();
@@ -127,7 +159,6 @@ public class QRCodeDialogFragment extends DialogFragment {
                     Toast.makeText(requireContext(), "Failed to save QR Code image", Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 Toast.makeText(requireContext(), "Failed to save QR Code image", Toast.LENGTH_SHORT).show();
             }
         } else {
@@ -135,6 +166,14 @@ public class QRCodeDialogFragment extends DialogFragment {
         }
     }
 
+
+    //javadocs
+    /**
+     * This method handles the result of the permission request to write to external storage.
+     * @param requestCode The request code passed to requestPermissions.
+     * @param permissions The requested permissions.
+     * @param grantResults The grant results for the corresponding permissions.
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_WRITE_STORAGE) {

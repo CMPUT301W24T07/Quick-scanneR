@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -30,6 +29,12 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+//javadocs
+/**
+ * This Fragment hosts our event list for users to view.
+ * Anybody can Organize an Event through this fragment, and
+ * see more event details by clicking an event.
+ */
 public class EventFragment extends Fragment {
     /**
      * This Fragment hosts our event list for users to view.
@@ -64,6 +69,12 @@ public class EventFragment extends Fragment {
 
 
 
+    //javadocs
+    /**
+     * This Fragment hosts our event list for users to view.
+     * Anybody can Organize an Event through this fragment, and
+     * see more event details by clicking an event.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
@@ -80,6 +91,12 @@ public class EventFragment extends Fragment {
 
     }
 
+    //javadocs
+    /**
+     * This Fragment hosts our event list for users to view.
+     * Anybody can Organize an Event through this fragment, and
+     * see more event details by clicking an event.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -89,7 +106,7 @@ public class EventFragment extends Fragment {
         eventListView = binding.eventListview;
 
         // Initialize the event data list and ArrayAdapter
-        eventsDataList = new ArrayList<Event>();
+        eventsDataList = new ArrayList<>();
         eventAdapter = new EventArrayAdapter(getContext(), eventsDataList);
         // Set the adapter to the ListView
         eventListView.setAdapter(eventAdapter);
@@ -103,20 +120,20 @@ public class EventFragment extends Fragment {
 
         /*     Fob Button (add event) Click       */
         fobButton = view.findViewById(R.id.fob_createEvent);
-        fobButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // start new create event activity
-                Intent intent = new Intent(requireContext(), AddEventActivity.class);
-                startActivity(intent);
-            }
-
+        fobButton.setOnClickListener(view1 -> {
+            // start new create event activity
+            Intent intent = new Intent(requireContext(), AddEventActivity.class);
+            startActivity(intent);
         });
 
+        //javadocs
+        /**
+         * This Fragment hosts our event list for users to view.
+         * Anybody can Organize an Event through this fragment, and
+         * see more event details by clicking an event.
+         */
         /*      Event ListView Click       */
-        eventListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        eventListView.setOnItemClickListener((adapterView, view12, position, id) -> {
             // get the clicked event
             Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
             // move to new activity and pass the clicked event's unique ID.
@@ -127,10 +144,18 @@ public class EventFragment extends Fragment {
             intent.putExtras(bundle);
             // Start new Activity
             requireContext().startActivity(intent);
-        }
-    });
+        });
     }
 
+    //javadocs
+    /**
+     * This method sets up a timer to check the time of the events in the list.
+     * If the time of the event is before the current time, the event is removed from the list.
+     * The adapter is then notified of the changes.
+     * The timer is then scheduled to run every minute.
+     * @param eventsDataList The list of events to check the time of
+     * @param eventAdapter The adapter for the list of events
+     */
     private void setupTimeListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter)
     {
         timerTask = new TimerTask()
@@ -149,14 +174,7 @@ public class EventFragment extends Fragment {
 
                 // Notify the adapter of the changes
                 // Notify the adapter of the changes on the main thread
-                eventListView.post(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        eventAdapter.notifyDataSetChanged();
-                    }
-                });
+                eventListView.post(eventAdapter::notifyDataSetChanged);
 
                 // Start the time listener
                 timer = new Timer();
@@ -170,6 +188,11 @@ public class EventFragment extends Fragment {
         };
     }
 
+    //javadocs
+    /**
+     * This method is called when the fragment is destroyed.
+     * It removes the event list listener registration.
+     */
 
     @Override
     public void onDestroyView() {

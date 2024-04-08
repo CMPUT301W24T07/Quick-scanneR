@@ -149,6 +149,20 @@ public class FirebaseAnnouncementController
             }
         });
     }
+
+    //javadocs
+    /**
+     * Sets up a listener to fetch announcements for a specific user and populate the provided list view.
+     * This method listens for changes in the user's "Announcements" collection and updates the list view
+     * accordingly. It filters the announcements based on the user's role in each announcement.
+     *
+     * @param userid The unique identifier of the user to fetch announcements for.
+     * @param announcementDataList The list to populate with fetched announcements.
+     * @param adapter The {@link AnnouncementArrayAdapter} to update with new announcements.
+     * @param emptyAnnouncement The {@link TextView} to show when the list is empty.
+     * @param listView The {@link ListView} to populate with announcements.
+     * @return A {@link ListenerRegistration} object representing the listener setup.
+     */
     public ListenerRegistration setupAnnouncementListListener(String userid, ArrayList<Announcement> announcementDataList, AnnouncementArrayAdapter adapter, TextView emptyAnnouncement, ListView listView) {
         validateId(userid);
 
@@ -243,6 +257,15 @@ public class FirebaseAnnouncementController
                 });
     }
 
+    //javadocs
+    /**
+     * Updates the visibility of the list view and empty announcement text view based on the
+     * contents of the announcement data list.
+     *
+     * @param announcementDataList The list of announcements to check for visibility.
+     * @param listView The ListView to show or hide based on the list contents.
+     * @param emptyAnnouncement The TextView to show or hide based on the list contents.
+     */
     private void updateVisibility(ArrayList<Announcement> announcementDataList, ListView listView, TextView emptyAnnouncement) {
         if (announcementDataList.isEmpty()) {
             emptyAnnouncement.setVisibility(View.VISIBLE);

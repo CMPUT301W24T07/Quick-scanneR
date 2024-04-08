@@ -15,11 +15,16 @@ import com.example.quickscanner.model.Event;
 
 import java.util.ArrayList;
 
+//javadocs
+/**
+ * This Array Adapter customizes the presentation of the Events list
+ */
 public class MyEventArrayAdapter extends ArrayAdapter<Event> {
     /*
         This Array Adapter customizes the presentation of the Events list
     */
 
+    // Attributes
     private ArrayList<Event> events;
     private Context context;
 
@@ -31,6 +36,12 @@ public class MyEventArrayAdapter extends ArrayAdapter<Event> {
     TextView eventTime;
 
 
+    //javadocs
+    /**
+     * Constructor for MyEventArrayAdapter
+     * @param context
+     * @param events
+     */
     public MyEventArrayAdapter(Context context, ArrayList<Event> events){
         super(context,0, events);
         this.events = events;
@@ -38,6 +49,14 @@ public class MyEventArrayAdapter extends ArrayAdapter<Event> {
     }
 
 
+    //javadocs
+    /**
+     * Responsible for creating the View for each row in the ListView.
+     * Called for each item(row) in the listview.
+     * @param position
+     * @param convertView
+     * @param parent
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {

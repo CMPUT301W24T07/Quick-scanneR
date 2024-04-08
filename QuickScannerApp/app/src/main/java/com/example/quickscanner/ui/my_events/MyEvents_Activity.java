@@ -29,6 +29,11 @@ import com.google.firebase.auth.AuthResult;
 import java.util.ArrayList;
 import java.util.Objects;
 
+//javadocs
+/**
+ * Our MyEvents Activity hosts our two main menu options.
+ * Attending Events Page, and Organized Events Page..
+ */
 public class MyEvents_Activity extends AppCompatActivity {
     /**
      * Our MyEvents Activity hosts our two main menu options.
@@ -44,7 +49,12 @@ public class MyEvents_Activity extends AppCompatActivity {
     private ActivityMyEventsBinding binding;
 
 
-
+    //javadocs
+    /**
+     * This method creates the bottom menu for the My Events Activity.
+     * Usage: call once.
+     * @param no inputs/outputs
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +74,12 @@ public class MyEvents_Activity extends AppCompatActivity {
 
     }
 
+    //javadocs
+    /**
+     * This method creates the bottom menu for the My Events Activity.
+     * Usage: call once.
+     * @param no inputs/outputs
+     */
     private void createBottomMenu(){
         /*
             Creates the bottom menu of our my events Activity
@@ -81,6 +97,13 @@ public class MyEvents_Activity extends AppCompatActivity {
 
 
 
+    //javadocs
+    /**
+     * This method inflates the top menu options for the My Events Activity.
+     * Usage: call once.
+     * @param menu The menu to inflate.
+     * @return True if the menu was inflated, false otherwise.
+     */
     /*         Inflate Handle Top Menu Options        */
     // Create the Top Menu bar
     @Override
@@ -88,6 +111,14 @@ public class MyEvents_Activity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.empty_menu, menu);
         return true;
     }
+
+    //javadocs
+    /**
+     * This method handles click events for the Top Menu Bar.
+     * It handles the back button press by finishing the activity.
+     * @param item The item that was selected.
+     * @return True if the item was handled, false otherwise.
+     */
     /*    Handle click events for the Top Menu Bar    */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

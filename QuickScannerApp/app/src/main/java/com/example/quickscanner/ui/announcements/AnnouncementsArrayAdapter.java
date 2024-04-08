@@ -17,6 +17,10 @@ import java.util.ArrayList;
 import com.example.quickscanner.R;
 import com.example.quickscanner.model.*;
 
+//javadocs
+/**
+ * This Array Adapter customizes the presentation of the Announcements list
+ */
 public class AnnouncementsArrayAdapter extends ArrayAdapter<Announcement>{
     /*
     This Array Adapter customizes the presentation of the Announcements list
@@ -24,12 +28,26 @@ public class AnnouncementsArrayAdapter extends ArrayAdapter<Announcement>{
     private ArrayList<Announcement> announcements;
     private Context context;
 
+    //javadocs
+    /**
+     * Constructor for AnnouncementsArrayAdapter
+     * @param context
+     * @param announcements
+     */
     public AnnouncementsArrayAdapter(Context context, ArrayList<Announcement> announcements){
         super(context,0, announcements);
         this.announcements = announcements;
         this.context = context;
     }
 
+    //javadocs
+    /**
+     * Responsible for creating the View for each row in the ListView.
+     * Called for each item(row) in the listview.
+     * @param position
+     * @param convertView
+     * @param parent
+     */
     @SuppressLint("SetTextI18n")
     @NonNull
     @Override

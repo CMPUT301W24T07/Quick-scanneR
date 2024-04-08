@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,13 +27,19 @@ import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 
+//javadocs
+/**
+ * This Fragment hosts our Attending event list for users to view.
+ * Can see more event details by clicking an event.
+ */
 public class AttendingEventsFragment extends Fragment {
     /**
      * This Fragment hosts our Attending event list for users to view.
      * Can see more event details by clicking an event.
      */
 
-    private @NonNull FragmentMyEventsBinding binding;
+
+    private FragmentMyEventsBinding binding;
 
     // EventList References
     ListView eventListView;
@@ -53,6 +58,14 @@ public class AttendingEventsFragment extends Fragment {
     private FirebaseUserController fbUserController;
     private FirebaseEventController fbEventController;
 
+    // javadocs
+    /**
+     * This method creates the view for the AttendingEventsFragment.
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -65,6 +78,12 @@ public class AttendingEventsFragment extends Fragment {
         return binding.getRoot();
     }
 
+    // javadocs
+    /**
+     * This method is called when the view is created.
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -73,7 +92,7 @@ public class AttendingEventsFragment extends Fragment {
         eventListView = view.findViewById(R.id.my_event_listview);
 
         // Initialize the event data list and ArrayAdapter
-        eventsDataList = new ArrayList<Event>();
+        eventsDataList = new ArrayList<>();
         eventAdapter = new EventArrayAdapter(getContext(), eventsDataList);
         // Set the adapter to the ListView
         binding.myEventListview.setAdapter(eventAdapter);
@@ -86,9 +105,7 @@ public class AttendingEventsFragment extends Fragment {
 
 
         /*      Event ListView Click       */
-        binding.myEventListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        binding.myEventListview.setOnItemClickListener((adapterView, view1, position, id) -> {
             // get the clicked event
             Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
             // move to new activity and pass the clicked event's unique ID.
@@ -99,13 +116,15 @@ public class AttendingEventsFragment extends Fragment {
             intent.putExtras(bundle);
             // Start new Activity
             requireContext().startActivity(intent);
-        }
-    });
+        });
 
 
     }
 
-
+    // javadocs
+    /**
+     * This method is called when the view is destroyed.
+     */
 
     @Override
     public void onDestroyView() {

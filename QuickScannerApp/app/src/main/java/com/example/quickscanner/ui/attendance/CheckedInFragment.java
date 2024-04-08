@@ -1,12 +1,10 @@
 package com.example.quickscanner.ui.attendance;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,18 +15,15 @@ import com.example.quickscanner.controller.FirebaseAttendanceController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.databinding.FragmentAttendanceBinding;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.List;
 
+//javadocs
+/**
+ * This Fragment hosts our CheckedIn list for users to view.
+ * Can see more event details by clicking an event.
+ */
 public class CheckedInFragment extends Fragment {
 
     private ListView listView;
@@ -40,6 +35,11 @@ public class CheckedInFragment extends Fragment {
     private FragmentAttendanceBinding binding;
     private ListenerRegistration checkInListenerReg;
 
+    //javadocs
+    /**
+     * This Fragment hosts our CheckedIn list for users to view.
+     * Can see more event details by clicking an event.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -47,6 +47,11 @@ public class CheckedInFragment extends Fragment {
         return binding.getRoot();
     }
 
+    //javadocs
+    /**
+     * This Fragment hosts our CheckedIn list for users to view.
+     * Can see more event details by clicking an event.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -68,6 +73,12 @@ public class CheckedInFragment extends Fragment {
             checkInListenerReg = fbAttendanceController.setupCheckInListListener(eventId,checkInDataList,adapter,emptyCheckIn,listView);
         }
     }
+
+    //javadocs
+    /**
+     * This Fragment hosts our CheckedIn list for users to view.
+     * Can see more event details by clicking an event.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

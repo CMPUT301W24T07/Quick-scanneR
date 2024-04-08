@@ -22,6 +22,9 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 
+/**
+ * This Array Adapter customizes the presentation of the Images list
+ */
 public class ImageArrayAdapter extends ArrayAdapter<Image> {
 
     private Context mContext;
@@ -30,6 +33,12 @@ public class ImageArrayAdapter extends ArrayAdapter<Image> {
     private FirebaseUserController fbUserController;
     private FirebaseEventController fbEventController;
 
+    //javadocs
+    /**
+     * Constructor for ImageArrayAdapter
+     * @param context
+     * @param images
+     */
     public ImageArrayAdapter(Context context, ArrayList<Image> images) {
         super(context, R.layout.fragment_images_content, images);
         this.mContext = context;
@@ -38,6 +47,14 @@ public class ImageArrayAdapter extends ArrayAdapter<Image> {
         fbEventController = new FirebaseEventController();
     }
 
+    //javadocs
+    /**
+     * Responsible for creating the View for each row in the ListView.
+     * Called for each item(row) in the listview.
+     * @param position
+     * @param convertView
+     * @param parent
+     */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View listItem = convertView;
@@ -129,6 +146,11 @@ public class ImageArrayAdapter extends ArrayAdapter<Image> {
         return listItem;
     }
 
+    //javadocs
+    /**
+     * This method checks if any image is selected.
+     * @return boolean
+     */
     public boolean isAnyImageSelected() {
         for (Image image : mImages) {
             if (image.isSelected()) {

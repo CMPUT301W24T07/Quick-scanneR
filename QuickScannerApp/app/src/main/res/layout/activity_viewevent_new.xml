@@ -25,22 +25,41 @@
                 android:fillViewport="true">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/constraintLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="100dp">
 
+                    <Button
+                        android:id="@+id/set_time_button"
+                        android:layout_width="55dp"
+                        android:layout_height="50dp"
+                        android:text="Set"
+                        android:textSize="10sp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/organiserProfilePicture" />
+
+                    <Button
+                        android:id="@+id/set_location_button"
+                        android:layout_width="55dp"
+                        android:layout_height="50dp"
+                        android:text="Set"
+                        android:textSize="10sp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/set_time_button" />
+
                     <EditText
                         android:id="@+id/eventDescription_text"
-                        android:inputType="none"
-                        android:editable="false"
-                        android:textColor="@android:color/white"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:layout_marginTop="10dp"
-                        android:paddingHorizontal="5dp"
-                        android:background="@color/black"
+                        android:background="@color/material_dynamic_neutral30"
+                        android:editable="false"
                         android:gravity="left"
+                        android:inputType="none"
+                        android:paddingHorizontal="5dp"
                         android:text="@string/event_description"
+                        android:textColor="@android:color/white"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.0"
@@ -50,31 +69,33 @@
 
                     <EditText
                         android:id="@+id/location_textview"
-                        android:inputType="none"
-                        android:editable="false"
-                        android:textColor="@android:color/white"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginStart="5dp"
                         android:background="@android:color/transparent"
+                        android:editable="false"
+                        android:inputType="none"
                         android:text="Location"
+                        android:textColor="@android:color/white"
                         android:textSize="20sp"
-                        app:layout_constraintStart_toStartOf="@+id/organiserProfilePicture"
-                        app:layout_constraintTop_toBottomOf="@+id/eventTime_text" />
+                        app:layout_constraintBottom_toBottomOf="@+id/set_location_button"
+                        app:layout_constraintStart_toEndOf="@+id/set_location_button"
+                        app:layout_constraintTop_toBottomOf="@+id/set_time_button" />
 
                     <EditText
                         android:id="@+id/eventTime_text"
-                        android:inputType="none"
-                        android:editable="false"
-                        android:textColor="@android:color/white"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginStart="5dp"
                         android:background="@android:color/transparent"
+                        android:editable="false"
+                        android:inputType="none"
                         android:text="Event Time"
+                        android:textColor="@android:color/white"
                         android:textSize="20sp"
-                        app:layout_constraintStart_toStartOf="@+id/organiserProfilePicture"
-                        app:layout_constraintTop_toBottomOf="@+id/organiserProfilePicture" />
+                        app:layout_constraintBottom_toBottomOf="@+id/set_time_button"
+                        app:layout_constraintStart_toEndOf="@+id/set_time_button"
+                        app:layout_constraintTop_toTopOf="@+id/set_time_button" />
 
                     <Switch
                         android:id="@+id/toggle_geolocation"

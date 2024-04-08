@@ -7,9 +7,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -21,8 +19,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.quickscanner.R;
-import com.example.quickscanner.databinding.ActivityAdminBinding;
-import com.example.quickscanner.databinding.FragmentScanBinding;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.BarcodeFormat;
@@ -32,10 +28,20 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.util.Objects;
 
+//javadocs
+/**
+ * This activity is the Admin Activity that allows the admin to browse events, profiles, and images.
+ * The admin can also generate a QR code that encodes the admin auth code.
+ */
 public class AdminActivity extends AppCompatActivity {
 
-    private FragmentScanBinding binding;
 
+    //javadocs
+    /**
+     * This method creates the Admin Activity and sets up the buttons for browsing events, profiles, and images.
+     * The method also sets up the button for generating a QR code that encodes the admin auth code.
+     * @param savedInstanceState The saved instance state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,16 +72,16 @@ public class AdminActivity extends AppCompatActivity {
         });
 
         //show a dialog with QR image encoding the admin auth code
-        adminQRButton.setOnClickListener(v -> {
-
-            launchAdminQRDialog();
-
-        });
+        adminQRButton.setOnClickListener(v -> launchAdminQRDialog());
 
 
 
     }
 
+    //javadocs
+    /**
+     * This method launches a dialog that displays a QR code image encoding the admin auth code.
+     */
     private void launchAdminQRDialog() {
 
         //get admin auth code from firebase
@@ -90,6 +96,11 @@ public class AdminActivity extends AppCompatActivity {
 
 
     }
+        //javadocs
+        /**
+         * This method generates a QR code image based on the given code and displays it in a dialog.
+         * @param code The code to generate the QR code for.
+         */
         public void generateQRCode(String code) {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
             try {
@@ -126,11 +137,17 @@ public class AdminActivity extends AppCompatActivity {
                 dialog.show();
             }
         catch (WriterException e) {
-            e.printStackTrace();
+            Log.d("QRCodeDialogFragment", "Failed to generate QR code", e);
         }
 
     }
 
+    //javadocs
+    /**
+     * This method handles the top bar menu clicks.
+     * @param item The menu item that was clicked.
+     * @return True if the menu item was handled, false otherwise.
+     */
     // Handles The Top Bar menu clicks
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
