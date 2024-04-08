@@ -552,6 +552,10 @@ public class ViewEventActivity extends AppCompatActivity {
         binding.eventDescriptionText.setFocusable(false);
         binding.eventDescriptionText.setFocusableInTouchMode(false);
         binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
+        if (!event.getOrganizerID().equals(fbUserController.getCurrentUserUid())) {
+            toggleGeolocation.setVisibility(View.GONE);
+            binding.textView5.setVisibility(View.GONE);
+        }
         // disabling the set buttons for location and time
         fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
             public void onSuccess(User user) {
