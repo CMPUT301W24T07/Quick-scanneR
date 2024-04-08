@@ -3,6 +3,7 @@ package com.example.quickscanner.ui.viewevent;
 import static android.content.ContentValues.TAG;
 import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_NULL;
+import static android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -717,7 +718,7 @@ public class ViewEventActivity extends AppCompatActivity {
 
             binding.locationTextview.setInputType(TYPE_CLASS_TEXT);
             binding.eventTitleText.setInputType(TYPE_CLASS_TEXT);
-            binding.eventDescriptionText.setInputType(TYPE_CLASS_TEXT);
+            binding.eventDescriptionText.setInputType(TYPE_TEXT_FLAG_MULTI_LINE);
             editMode = true;
         }
         else if (itemId == R.id.navigation_QR_check_in)
