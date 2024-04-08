@@ -1,7 +1,9 @@
 package com.example.quickscanner.model;
 
-public class ConferenceConfig
-{
+/**
+ * Represents the configuration for a conference.
+ */
+public class ConferenceConfig {
 
     private int minHour;
     private int minMinute;
@@ -14,113 +16,180 @@ public class ConferenceConfig
     private int maxMonth;
     private int maxDay;
     private String timeZone;
-    public int getMinHour()
-    {
+
+    /**
+     * Gets the minimum hour of the conference.
+     * @return The minimum hour of the conference.
+     */
+    public int getMinHour() {
         return minHour;
     }
 
-    public void setMinHour(int minHour)
-    {
+    /**
+     * Sets the minimum hour of the conference.
+     * @param minHour The minimum hour to set.
+     */
+    public void setMinHour(int minHour) {
         this.minHour = minHour;
     }
 
-    public int getMinMinute()
-    {
+    /**
+     * Gets the minimum minute of the conference.
+     * @return The minimum minute of the conference.
+     */
+    public int getMinMinute() {
         return minMinute;
     }
 
-    public void setMinMinute(int minMinute)
-    {
+    /**
+     * Sets the minimum minute of the conference.
+     * @param minMinute The minimum minute to set.
+     */
+    public void setMinMinute(int minMinute) {
         this.minMinute = minMinute;
     }
 
-    public int getMinYear()
-    {
+    /**
+     * Gets the minimum year of the conference.
+     * @return The minimum year of the conference.
+     */
+    public int getMinYear() {
         return minYear;
     }
 
-    public void setMinYear(int minYear)
-    {
+    /**
+     * Sets the minimum year of the conference.
+     * @param minYear The minimum year to set.
+     */
+    public void setMinYear(int minYear) {
         this.minYear = minYear;
     }
 
-    public int getMinMonth()
-    {
+    /**
+     * Gets the minimum month of the conference.
+     * @return The minimum month of the conference.
+     */
+    public int getMinMonth() {
         return minMonth;
     }
 
-    public void setMinMonth(int minMonth)
-    {
+    /**
+     * Sets the minimum month of the conference.
+     * @param minMonth The minimum month to set.
+     */
+    public void setMinMonth(int minMonth) {
         this.minMonth = minMonth;
     }
 
-    public int getMinDay()
-    {
+    /**
+     * Gets the minimum day of the conference.
+     * @return The minimum day of the conference.
+     */
+    public int getMinDay() {
         return minDay;
     }
 
-    public void setMinDay(int minDay)
-    {
+    /**
+     * Sets the minimum day of the conference.
+     * @param minDay The minimum day to set.
+     */
+    public void setMinDay(int minDay) {
         this.minDay = minDay;
     }
 
-    public int getMaxHour()
-    {
+    /**
+     * Gets the maximum hour of the conference.
+     * @return The maximum hour of the conference.
+     */
+    public int getMaxHour() {
         return maxHour;
     }
 
-    public void setMaxHour(int maxHour)
-    {
+    /**
+     * Sets the maximum hour of the conference.
+     * @param maxHour The maximum hour to set.
+     */
+    public void setMaxHour(int maxHour) {
         this.maxHour = maxHour;
     }
 
-    public int getMaxMinute()
-    {
+    /**
+     * Gets the maximum minute of the conference.
+     * @return The maximum minute of the conference.
+     */
+    public int getMaxMinute() {
         return maxMinute;
     }
 
-    public void setMaxMinute(int maxMinute)
-    {
+    /**
+     * Sets the maximum minute of the conference.
+     * @param maxMinute The maximum minute to set.
+     */
+    public void setMaxMinute(int maxMinute) {
         this.maxMinute = maxMinute;
     }
 
-    public int getMaxYear()
-    {
+    /**
+     * Gets the maximum year of the conference.
+     * @return The maximum year of the conference.
+     */
+    public int getMaxYear() {
         return maxYear;
     }
 
-    public void setMaxYear(int maxYear)
-    {
+    /**
+     * Sets the maximum year of the conference.
+     * @param maxYear The maximum year to set.
+     */
+    public void setMaxYear(int maxYear) {
         this.maxYear = maxYear;
     }
 
-    public int getMaxMonth()
-    {
+    /**
+     * Gets the maximum month of the conference.
+     * @return The maximum month of the conference.
+     */
+    public int getMaxMonth() {
         return maxMonth;
     }
 
-    public void setMaxMonth(int maxMonth)
-    {
+    /**
+     * Sets the maximum month of the conference.
+     * @param maxMonth The maximum month to set.
+     */
+    public void setMaxMonth(int maxMonth) {
         this.maxMonth = maxMonth;
     }
 
-    public int getMaxDay()
-    {
+    /**
+     * Gets the maximum day of the conference.
+     * @return The maximum day of the conference.
+     */
+    public int getMaxDay() {
         return maxDay;
     }
 
-    public void setMaxDay(int maxDay)
-    {
+    /**
+     * Sets the maximum day of the conference.
+     * @param maxDay The maximum day to set.
+     */
+    public void setMaxDay(int maxDay) {
         this.maxDay = maxDay;
     }
 
-    public String getTimeZone()
-    {
+    /**
+     * Gets the time zone of the conference.
+     * @return The time zone of the conference.
+     */
+    public String getTimeZone() {
         return timeZone;
     }
 
-    public void setTimeZone(String timeZone)
-    {
+    /**
+     * Sets the time zone of the conference.
+     * @param timeZone The time zone to set.
+     */
+    public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
     }
 }
