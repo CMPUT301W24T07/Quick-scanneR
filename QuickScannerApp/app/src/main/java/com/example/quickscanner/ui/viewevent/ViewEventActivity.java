@@ -3,10 +3,15 @@ package com.example.quickscanner.ui.viewevent;
 import static android.content.ContentValues.TAG;
 import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_NULL;
+import static android.text.InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE;
+import static android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+
+import static com.google.android.material.internal.ViewUtils.hideKeyboard;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,6 +25,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -436,8 +442,13 @@ public class ViewEventActivity extends AppCompatActivity {
 
                             binding.locationTextview.setInputType(TYPE_NULL);
                             binding.eventTitleText.setInputType(TYPE_NULL);
-                            binding.eventDescriptionText.setInputType(TYPE_NULL);
+                            //binding.eventDescriptionText.setInputType(TYPE_NULL);
+                            binding.eventDescriptionText.setFocusable(true);
+                            binding.eventDescriptionText.setFocusableInTouchMode(true);
                             editMode = false;
+
+                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
 
                             if (eventBitMap != null) {
                                 event.setImagePath(event.getEventID() + "primary");
@@ -531,9 +542,15 @@ public class ViewEventActivity extends AppCompatActivity {
         editMode = false;
         //use event object to update all the views
         setNonEditConstraint();
+        binding.constraintLayout.setOnClickListener(v -> {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        });
         binding.eventTitleText.setText(event.getName());
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
+        binding.eventDescriptionText.setFocusable(false);
+        binding.eventDescriptionText.setFocusableInTouchMode(false);
         binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
         // disabling the set buttons for location and time
         fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
@@ -717,7 +734,10 @@ public class ViewEventActivity extends AppCompatActivity {
 
             binding.locationTextview.setInputType(TYPE_CLASS_TEXT);
             binding.eventTitleText.setInputType(TYPE_CLASS_TEXT);
-            binding.eventDescriptionText.setInputType(TYPE_CLASS_TEXT);
+            binding.eventDescriptionText.setInputType(TYPE_TEXT_FLAG_MULTI_LINE);
+            binding.eventDescriptionText.setFocusable(true);
+            binding.eventDescriptionText.setFocusableInTouchMode(true);
+            binding.eventDescriptionText.setSingleLine(false);
             editMode = true;
         }
         else if (itemId == R.id.navigation_QR_check_in)
