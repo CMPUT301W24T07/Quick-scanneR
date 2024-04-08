@@ -158,6 +158,23 @@ public class OrganizedEventsFragment extends Fragment {
         }
         binding = null;
     }
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Remove Firestore listener
+        if (orgListener != null) {
+            orgListener.remove();
+        }
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reinitialize Firestore listener
+        String orgId = fbUserController.getCurrentUserUid();
+        if (orgListener == null) { // Check if listener was previously removed
+            orgListener = fbEventController.setUpOrganizedEventsListener(orgId, eventsDataList, eventAdapter, binding.noOrgTextview, binding.myEventListview);
+        }
+    }
 
 
 }

@@ -166,6 +166,28 @@ public class AnnouncementsFragment extends Fragment {
         }
         binding = null;
     }
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Detach the Firestore listener
+        if (registration != null) {
+            registration.remove();
+            registration = null;
+        }
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reattach the Firestore listener if it was previously detached
+        if (registration == null) {
+            registration = fbAnnouncementController.setupAnnouncementListListener(
+                    fbUserController.getCurrentUserUid(),
+                    AnnouncementsDataList,
+                    announcementsAdapter,
+                    binding.emptyAnnouncementListTextView,
+                    binding.announcementListview);
+        }
+    }
 
 
 }

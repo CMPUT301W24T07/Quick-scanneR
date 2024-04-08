@@ -6,10 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,7 +43,6 @@ public class EventFragment extends Fragment {
     // EventList References
     ListView eventListView;
 
-    LinearLayout eventLinearLayout;
     ArrayList<Event> eventsDataList;
     ArrayAdapter<Event> eventAdapter;
     private Timer timer;
@@ -56,12 +52,6 @@ public class EventFragment extends Fragment {
 
     // Button References
     FloatingActionButton fobButton;
-
-    // DropDown click References
-    private LinearLayout fullRowLayout;  // the entire row including drop down
-    private LinearLayout dropDownLayout; // the layout you see when you click drop down
-    private RelativeLayout itemClicked;
-    private ImageView expandableArrow;
 
     // Firestore References
     private FirebaseEventController fbEventController;
@@ -117,7 +107,6 @@ public class EventFragment extends Fragment {
         setupTimeListener(eventsDataList, eventAdapter);
 
 
-
         /*     Fob Button (add event) Click       */
         fobButton = view.findViewById(R.id.fob_createEvent);
         fobButton.setOnClickListener(view1 -> {
@@ -126,12 +115,6 @@ public class EventFragment extends Fragment {
             startActivity(intent);
         });
 
-        //javadocs
-        /**
-         * This Fragment hosts our event list for users to view.
-         * Anybody can Organize an Event through this fragment, and
-         * see more event details by clicking an event.
-         */
         /*      Event ListView Click       */
         eventListView.setOnItemClickListener((adapterView, view12, position, id) -> {
             // get the clicked event
@@ -156,36 +139,34 @@ public class EventFragment extends Fragment {
      * @param eventsDataList The list of events to check the time of
      * @param eventAdapter The adapter for the list of events
      */
-    private void setupTimeListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter)
-    {
-        timerTask = new TimerTask()
-        {
+    private void setupTimeListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter) {
+        if (timer != null) {
+            timer.cancel();
+        }
+        timer = new Timer();
+
+        timerTask = new TimerTask() {
             @Override
-            public void run()
-            {
-                // Check the top event in the list
-                while (!eventsDataList.isEmpty() && eventsDataList.get(0).getTime().compareTo(Timestamp.now()) <= 0)
-                {
-                    // If the event's time is before the current time, remove it from the list
-                    if (!eventsDataList.isEmpty()) {
+            public void run() {
+                requireActivity().runOnUiThread(() -> {
+                    boolean isListUpdated = false;
+                    Timestamp now = Timestamp.now();
+                    while (!eventsDataList.isEmpty() && eventsDataList.get(0).getTime().compareTo(now) <= 0) {
                         eventsDataList.remove(0);
+                        isListUpdated = true;
                     }
-                }
-
-                // Notify the adapter of the changes
-                // Notify the adapter of the changes on the main thread
-                eventListView.post(eventAdapter::notifyDataSetChanged);
-
-                // Start the time listener
-                timer = new Timer();
-                // Get the number of milliseconds until the next minute
-                long delay = 60000 - (System.currentTimeMillis() % 60000);
-                // Add the current second to the delay
-                delay += System.currentTimeMillis() % 1000;
-                // Schedule the task to run at the same second of the next minute, and then every minute after that
-                timer.schedule(timerTask, delay, 60000);
+                    if (isListUpdated) {
+                        eventAdapter.notifyDataSetChanged();
+                    }
+                });
             }
         };
+
+        // Schedules the task to run starting at the next minute and then every minute
+        long period = 60000; // 60 seconds
+        long delay = period - (System.currentTimeMillis() % period); // Time until the start of the next minute
+        //fix it to run every minute
+        timer.scheduleAtFixedRate(timerTask, delay, period);
     }
 
     //javadocs
@@ -211,6 +192,31 @@ public class EventFragment extends Fragment {
 
         binding = null;
     }
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Assuming you have a method to pause listening to Firestore updates
+        if (eventListListenerReg != null) {
+            eventListListenerReg.remove();
+            eventListListenerReg = null;
+        }
+        // Cancel the timer to stop checking for past events
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Re-initialize Firestore listener and timer
+        if (eventListListenerReg == null) {
+            eventListListenerReg = fbEventController.setupEventListListener(eventsDataList, eventAdapter);
+        }
+        setupTimeListener(eventsDataList, eventAdapter);
+    }
+
 
 
 }

@@ -1,6 +1,7 @@
 package com.example.quickscanner.ui.attendance;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,7 @@ public class CheckInAdapter extends ArrayAdapter<User> {
     private Context mContext;
     private ArrayList<User> mAttendees;
     private FirebaseAttendanceController fbAttendanceController;
+    private String eventID;
 
     //javadocs
     /**
@@ -37,10 +39,11 @@ public class CheckInAdapter extends ArrayAdapter<User> {
      * @param context
      * @param attendees
      */
-    public CheckInAdapter(@NonNull Context context, ArrayList<User> attendees) {
+    public CheckInAdapter(@NonNull Context context, ArrayList<User> attendees, String eventID) {
         super(context, R.layout.attendance_sign_up_content, attendees);
         this.mContext = context;
         this.mAttendees = attendees;
+        this.eventID = eventID;
     }
 
     //javadocs
@@ -71,11 +74,12 @@ public class CheckInAdapter extends ArrayAdapter<User> {
         User curAttendees = mAttendees.get(position);
         String currentName = curAttendees.getUserProfile().getName();
         String profilePicturePath = curAttendees.getUserProfile().getImageUrl();
-        fbAttendanceController.getTimesCheckedIn(curAttendees.getUid()).addOnCompleteListener(task -> {
+        fbAttendanceController.getTimesCheckedIn(curAttendees.getUid(),eventID).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
+                Log.d("Times checked in", "times checked in: " + task.getResult());
                 String timesCheckedIn = task.getResult();
                 TextView timesCheckedInTextView = binding.timesCheckedIn;
-                timesCheckedInTextView.setText(String.valueOf(timesCheckedIn));
+                timesCheckedInTextView.setText("Times Checked In: " + timesCheckedIn);
             }
         });
         TextView name = binding.attendeeName;

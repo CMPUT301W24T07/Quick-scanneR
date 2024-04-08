@@ -460,25 +460,38 @@ public class FirebaseAttendanceController {
 
 
     //gets the times checked in for a user
-    public Task<String> getTimesCheckedIn(String userId) {
-        validateId(userId);
-        DocumentReference userRef = usersRef.document(userId);
-        return userRef.collection("Attendance").document("checkedInEvents").get().continueWith(task -> {
-            DocumentSnapshot document = task.getResult();
-            if (document.exists()) {
-                Object timesCheckedIn = document.get("timesCheckedIn");
-                if (timesCheckedIn != null) {
-                    return timesCheckedIn.toString();
+    public Task<String> getTimesCheckedIn(String userId, String eventId) {
+        Log.d("CheckInDebug", "eventId: " + eventId + ", userId: " + userId);
+        // Reference to the specific event's "checkIns" collection
+        DocumentReference checkInsRef = db.collection("Events").document(eventId).collection("checkIns").document(userId);
+
+
+        // Assuming the document ID in "checkIns" is the same as the userId
+        return checkInsRef.get().continueWith(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document != null && document.exists()) {
+                    // Successfully retrieved the document, now get the "timesCheckedIn" field
+                    Number timesCheckedIn = document.getLong("timesCheckedIn");
+                    if (timesCheckedIn != null) {
+                        return String.valueOf(timesCheckedIn);
+                    } else {
+                        // The "timesCheckedIn" field is null for some reason
+                        Log.e("FirebaseAttendanceController", "getTimesCheckedIn: 'timesCheckedIn' is null but document exists");
+                        return " ";
+                    }
+                } else {
+                    // The document does not exist
+                    Log.e("FirebaseAttendanceController", "No check-in record found for user in this event");
+                    return "0"; // Indicating no check-ins
                 }
-                //doc is null for some reason
-                Log.e("FirebaseAttendanceController", "getTimesCheckedIn has livecount as null but not empty" );
-                return " ";
             } else {
-                // Document does not exist, return "0"
-                return "0";
+                Log.e("FirebaseAttendanceController", "Failed to fetch check-in data", task.getException());
+                return " ";
             }
         });
     }
+
     /**
      * Fetches the events a user has signed up for.
      * This method performs the following operations:
@@ -912,15 +925,14 @@ public class FirebaseAttendanceController {
                             Log.w("CheckInFragment", "Listen failed.", e);
                             return;
                         }
-
-                        long liveCount = 0L;
+                        int liveCount = 0;
                         if (snapshot != null && snapshot.exists()) {
-                            Long temp = snapshot.getLong("liveCount");
+                            Integer temp = snapshot.getLong("attendanceCount") != null ? snapshot.getLong("attendanceCount").intValue() : null;
                             if (temp != null) {
                                 liveCount = temp;
                             }
                         }
-                        timesCheckedInTextView.setText(String.format("Live Attendance Count: %d", liveCount));
+                        timesCheckedInTextView.setText("Live Attendance Count: " + liveCount);
                     }
                 });
     }
