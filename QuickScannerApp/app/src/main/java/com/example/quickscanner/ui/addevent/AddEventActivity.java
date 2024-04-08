@@ -210,7 +210,7 @@ public class AddEventActivity extends AppCompatActivity
                 newEvent.setGeoLocation(geolocation);
 
                 // Add the event to the database
-                addEventToFirestore(newEvent);
+                addEventToFirestore(newEvent,eventDataList,eventAdapter);
 
             }
         });
@@ -224,7 +224,7 @@ public class AddEventActivity extends AppCompatActivity
      * This method adds an event to the Firestore database.
      * @param event The event to be added to the database.
      */
-    private void addEventToFirestore(Event event)
+    private void addEventToFirestore(Event event, List<Event> eventsDataList, ArrayAdapter<Event> eventAdapter)
     {
         String maxAttendeesString = maxAttendeeEditText.getText().toString();
         if (!maxAttendeesString.isEmpty()) {
@@ -239,7 +239,7 @@ public class AddEventActivity extends AppCompatActivity
                             documentReference.getId());
                     // additional actions if needed
                     event.setEventID(documentReference.getId());
-
+                    eventsDataList.add(event);
                     if (eventImageMap != null)
                     {
                         event.setImagePath(event.getEventID() + "primary");

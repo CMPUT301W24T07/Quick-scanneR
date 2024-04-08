@@ -92,4 +92,27 @@ public class SignedUpFragment extends Fragment {
             signUpListenerReg = null;
         }
     }
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Detach the Firestore listener
+        if (signUpListenerReg != null) {
+            signUpListenerReg.remove();
+            signUpListenerReg = null;
+        }
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reattach the Firestore listener if it was previously detached
+        if (signUpListenerReg == null) { // Check to ensure the listener is not already attached
+            Bundle bundle = this.getArguments();
+            if (bundle != null) {
+                String eventId = bundle.getString("eventID", "");
+                if (!eventId.isEmpty()) {
+                    signUpListenerReg = fbAttendanceController.setupSignUpListListener(eventId, signUpDataList, adapter, emptySignUp, listView);
+                }
+            }
+        }
+    }
 }

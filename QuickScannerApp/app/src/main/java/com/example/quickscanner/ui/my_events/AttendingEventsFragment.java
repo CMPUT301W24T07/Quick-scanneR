@@ -135,6 +135,25 @@ public class AttendingEventsFragment extends Fragment {
         }
         binding = null;
     }
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Detach the Firestore listener
+        if (attendListener != null) {
+            attendListener.remove();
+            attendListener = null;
+        }
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reattach the Firestore listener if it was detached
+        if (attendListener == null) { // Check to ensure we don't attach multiple listeners
+            String attendingId = fbUserController.getCurrentUserUid();
+            attendListener = fbEventController.setupAttendListListener(attendingId, eventsDataList,
+                    eventAdapter, binding.noAttendTextview, binding.myEventListview);
+        }
+    }
 
 
 }

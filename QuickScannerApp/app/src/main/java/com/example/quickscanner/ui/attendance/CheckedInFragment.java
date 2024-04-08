@@ -55,23 +55,26 @@ public class CheckedInFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        listView = binding.userListview;
-        emptyCheckIn = binding.emptyCheckIn;
-        emptyCheckIn.setVisibility(View.GONE);
-        listView.setVisibility(View.GONE);
-        checkInDataList = new ArrayList<>();
-        adapter = new CheckInAdapter(getContext(), checkInDataList);
-        listView.setAdapter(adapter);
-
-
+        Bundle bundle = this.getArguments();
         fbAttendanceController = new FirebaseAttendanceController();
         fbUserController = new FirebaseUserController();
-
-        Bundle bundle = this.getArguments();
         if (bundle != null) {
             String eventId = bundle.getString("eventID", "");
+            listView = binding.userListview;
+            emptyCheckIn = binding.emptyCheckIn;
+            emptyCheckIn.setVisibility(View.GONE);
+            listView.setVisibility(View.GONE);
+            checkInDataList = new ArrayList<>();
+            adapter = new CheckInAdapter(getContext(), checkInDataList,eventId);
+            listView.setAdapter(adapter);
             checkInListenerReg = fbAttendanceController.setupCheckInListListener(eventId,checkInDataList,adapter,emptyCheckIn,listView);
         }
+
+
+
+
+
+
     }
 
     //javadocs
@@ -85,6 +88,34 @@ public class CheckedInFragment extends Fragment {
         if (checkInListenerReg != null) {
             checkInListenerReg.remove();
             checkInListenerReg = null;
+        }
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Detach the Firestore listener
+        if (checkInListenerReg != null) {
+            checkInListenerReg.remove();
+            checkInListenerReg = null;
+        }
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reattach the Firestore listener if it was previously detached
+        if (checkInListenerReg == null) { // Check to ensure we don't attach it multiple times
+            Bundle bundle = this.getArguments();
+            if (bundle != null) {
+                String eventId = bundle.getString("eventID", "");
+                if (!eventId.isEmpty()) {
+                    checkInListenerReg = fbAttendanceController.setupCheckInListListener(
+                            eventId,
+                            checkInDataList,
+                            adapter,
+                            emptyCheckIn,
+                            listView);
+                }
+            }
         }
     }
 }
