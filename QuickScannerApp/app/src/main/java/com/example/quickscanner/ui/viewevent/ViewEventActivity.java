@@ -5,6 +5,7 @@ import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_NULL;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -29,6 +30,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.RelativeLayout;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -63,6 +66,8 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Objects;
 
 public class ViewEventActivity extends AppCompatActivity {
@@ -89,6 +94,8 @@ public class ViewEventActivity extends AppCompatActivity {
     private Event currentEvent;
     private Bitmap qrCodeBitmap;
 
+    private Bitmap eventBitMap;
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +111,7 @@ public class ViewEventActivity extends AppCompatActivity {
         fbQRCodeController = new FirebaseQrCodeController();
         fbAnnouncementController = new FirebaseAnnouncementController();
         fbUserController = new FirebaseUserController();
+        Log.d(TAG, "onCreate: " + fbUserController.getCurrentUserUid());
         fbAttendanceController = new FirebaseAttendanceController();
         toggleGeolocation = findViewById(R.id.toggle_geolocation); // geolocation switch
         loading = findViewById(R.id.loading);
@@ -113,6 +121,29 @@ public class ViewEventActivity extends AppCompatActivity {
         binding.signUpButton.setVisibility(View.GONE);
         loadCount = 5;
         Log.d("LoadCount", "Decrementing loadCount, current value: " + loadCount);
+
+        ActivityResultLauncher<Intent> activityResultLauncher =
+                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        Uri uri = data.getData();
+                        try {
+                            eventBitMap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                            binding.eventImageImage.setImageBitmap(eventBitMap);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+
+        binding.eventImageImage.setOnClickListener(v -> {
+            Log.d(TAG, "onCreate: EditMode " + editMode);
+            if (editMode) {
+                Intent galleryIntent = new Intent(Intent.ACTION_PICK);
+                galleryIntent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                activityResultLauncher.launch(galleryIntent);
+            }
+        });
 
 
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
@@ -409,6 +440,13 @@ public class ViewEventActivity extends AppCompatActivity {
                             binding.eventDescriptionText.setInputType(TYPE_NULL);
                             editMode = false;
 
+                            if (eventBitMap != null) {
+                                event.setImagePath(event.getEventID() + "primary");
+                                ByteArrayOutputStream boas = new ByteArrayOutputStream();
+                                eventBitMap.compress(Bitmap.CompressFormat.JPEG, 100, boas);
+                                byte[] imageData = boas.toByteArray();
+                                fbImageController.uploadImage(event.getEventID() + "primary", "event", imageData);
+                            }
                             fbEventController.updateEvent(event);
                         }
                     }
@@ -458,10 +496,10 @@ public class ViewEventActivity extends AppCompatActivity {
     }
 
     private void setEditConstraint() {
-        Button timeButton = binding.setTimeButton;
+        /*Button timeButton = binding.setTimeButton;
         Button locationButton = binding.setLocationButton;
-        timeButton.setVisibility(View.VISIBLE);
-        locationButton.setVisibility(View.VISIBLE);
+        //timeButton.setVisibility(View.VISIBLE);
+        //locationButton.setVisibility(View.VISIBLE);
 
         EditText timeText = binding.eventTimeText;
         EditText locationText = binding.locationTextview;
@@ -483,11 +521,11 @@ public class ViewEventActivity extends AppCompatActivity {
         timeParams.topToBottom = ConstraintLayout.LayoutParams.UNSET;
 
 
-        descriptionParams.topMargin = 30;
+        //descriptionParams.topMargin = 30;
 
-        timeText.setLayoutParams(timeParams);
-        locationText.setLayoutParams(locationParams);
-        descriptionText.setLayoutParams(descriptionParams);
+        //timeText.setLayoutParams(timeParams);
+        //locationText.setLayoutParams(locationParams);
+        //descriptionText.setLayoutParams(descriptionParams);*/
     }
 
     private void setEventDataToUI(Event event, String UiD) {
@@ -579,6 +617,7 @@ public class ViewEventActivity extends AppCompatActivity {
             decrementLoadCount("event image again?");
 
         });
+
 
 
         binding.eventTimeText.setText(event.getTimeAsString());
@@ -679,6 +718,7 @@ public class ViewEventActivity extends AppCompatActivity {
             binding.locationTextview.setInputType(TYPE_CLASS_TEXT);
             binding.eventTitleText.setInputType(TYPE_CLASS_TEXT);
             binding.eventDescriptionText.setInputType(TYPE_CLASS_TEXT);
+            editMode = true;
         }
         else if (itemId == R.id.navigation_QR_check_in)
         {

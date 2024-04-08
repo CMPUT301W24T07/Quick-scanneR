@@ -182,9 +182,6 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (itemId == R.id.navigation_adminPage) {
             // Handle Admin Page Click
-
-
-
             Intent intent = new Intent(MainActivity.this, AdminActivity.class);
             startActivity(intent);
             return true;
