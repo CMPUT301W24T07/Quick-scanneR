@@ -7,9 +7,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -21,8 +19,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.quickscanner.R;
-import com.example.quickscanner.databinding.ActivityAdminBinding;
-import com.example.quickscanner.databinding.FragmentScanBinding;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.BarcodeFormat;
@@ -34,7 +30,6 @@ import java.util.Objects;
 
 public class AdminActivity extends AppCompatActivity {
 
-    private FragmentScanBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,11 +61,7 @@ public class AdminActivity extends AppCompatActivity {
         });
 
         //show a dialog with QR image encoding the admin auth code
-        adminQRButton.setOnClickListener(v -> {
-
-            launchAdminQRDialog();
-
-        });
+        adminQRButton.setOnClickListener(v -> launchAdminQRDialog());
 
 
 
@@ -126,7 +117,7 @@ public class AdminActivity extends AppCompatActivity {
                 dialog.show();
             }
         catch (WriterException e) {
-            e.printStackTrace();
+            Log.d("QRCodeDialogFragment", "Failed to generate QR code", e);
         }
 
     }

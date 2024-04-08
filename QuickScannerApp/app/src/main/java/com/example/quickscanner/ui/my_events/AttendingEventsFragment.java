@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,7 +33,7 @@ public class AttendingEventsFragment extends Fragment {
      * Can see more event details by clicking an event.
      */
 
-    private @NonNull FragmentMyEventsBinding binding;
+    private FragmentMyEventsBinding binding;
 
     // EventList References
     ListView eventListView;
@@ -73,7 +72,7 @@ public class AttendingEventsFragment extends Fragment {
         eventListView = view.findViewById(R.id.my_event_listview);
 
         // Initialize the event data list and ArrayAdapter
-        eventsDataList = new ArrayList<Event>();
+        eventsDataList = new ArrayList<>();
         eventAdapter = new EventArrayAdapter(getContext(), eventsDataList);
         // Set the adapter to the ListView
         binding.myEventListview.setAdapter(eventAdapter);
@@ -86,9 +85,7 @@ public class AttendingEventsFragment extends Fragment {
 
 
         /*      Event ListView Click       */
-        binding.myEventListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        binding.myEventListview.setOnItemClickListener((adapterView, view1, position, id) -> {
             // get the clicked event
             Event clickedEvent = (Event) adapterView.getItemAtPosition(position);
             // move to new activity and pass the clicked event's unique ID.
@@ -99,8 +96,7 @@ public class AttendingEventsFragment extends Fragment {
             intent.putExtras(bundle);
             // Start new Activity
             requireContext().startActivity(intent);
-        }
-    });
+        });
 
 
     }

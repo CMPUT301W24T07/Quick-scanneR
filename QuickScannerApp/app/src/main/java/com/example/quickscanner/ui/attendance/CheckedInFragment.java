@@ -1,12 +1,10 @@
 package com.example.quickscanner.ui.attendance;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,17 +15,9 @@ import com.example.quickscanner.controller.FirebaseAttendanceController;
 import com.example.quickscanner.controller.FirebaseUserController;
 import com.example.quickscanner.model.User;
 import com.example.quickscanner.databinding.FragmentAttendanceBinding;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class CheckedInFragment extends Fragment {
 
