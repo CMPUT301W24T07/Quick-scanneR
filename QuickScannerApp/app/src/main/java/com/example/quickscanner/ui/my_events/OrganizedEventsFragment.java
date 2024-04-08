@@ -48,12 +48,18 @@ import com.google.firebase.storage.StorageReference;
 import java.util.ArrayList;
 import java.util.List;
 
+//javadocs
+/**
+ * This Fragment hosts our Organized event list for users to view.
+ * Can see more event details by clicking an event.
+ */
 public class OrganizedEventsFragment extends Fragment {
     /**
      * This Fragment hosts our Organized event list for users to view.
      * Can see more event details by clicking an event.
      */
 
+    // Binding
     private @NonNull FragmentMyEventsBinding binding;
 
     // EventList References
@@ -76,6 +82,11 @@ public class OrganizedEventsFragment extends Fragment {
     private FirebaseEventController fbEventController;
     private ListenerRegistration orgListener;
 
+    //javadocs
+    /**
+     * This Fragment hosts our Organized event list for users to view.
+     * Can see more event details by clicking an event.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentMyEventsBinding.inflate(inflater, container, false);
@@ -89,6 +100,12 @@ public class OrganizedEventsFragment extends Fragment {
 
     }
 
+    //javadocs
+    /**
+     * This method is called when the view is created.
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -128,7 +145,10 @@ public class OrganizedEventsFragment extends Fragment {
     }
 
 
-
+    //javadocs
+    /**
+     * This method is called when the view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

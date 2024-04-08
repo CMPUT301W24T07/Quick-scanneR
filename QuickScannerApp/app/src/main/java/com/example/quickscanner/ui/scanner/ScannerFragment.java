@@ -54,6 +54,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
     if user scans admin code, make them an admin
 * */
 
+//javadocs
+/**
+ * This Fragment hosts our QR Scanner for users to scan QR codes.
+ * Can check in to events, sign up for events, or unlock admin privileges.
+ */
 public class ScannerFragment extends Fragment {
 
     private static final int REQUEST_CODE_GALLERY = 10;
@@ -76,6 +81,14 @@ public class ScannerFragment extends Fragment {
     private FirebaseEventController fbEventController;
     private FirebaseAnnouncementController fbAnnouncementController;
 
+    //javadocs
+    /**
+     * This method creates the view for the ScannerFragment.
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState This fragment's previously saved state, if it is being reconstructed from a previous saved state
+     * @return The view for the ScannerFragment
+     */
     @SuppressLint("MissingInflatedId")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -99,6 +112,12 @@ public class ScannerFragment extends Fragment {
         return view;
     }
 
+    //javadocs
+    /**
+     * This method is called when the view is created.
+     * @param view The view returned by onCreateView
+     * @param savedInstanceState This fragment's previously saved state, if it is being reconstructed from a previous saved state
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -198,6 +217,16 @@ public class ScannerFragment extends Fragment {
 
     }
 
+    //javadocs
+/**
+     * This method attempts to check in a user to an event.
+     * If the user is the organizer of the event, a message is displayed and the method returns.
+     * If the check-in is successful, a message is displayed and the user is taken to the event details page.
+     * If the check-in fails, a message is displayed.
+     * @param attendee The ID of the user to check in
+     * @param event The event to check in to
+     * @return null
+     */
     private Void tryCheckIn(String attendee, Event event) {
         if (Objects.equals(attendee, event.getOrganizerID())) {
             Log.e("testerrr", "You are the organizer of this event");
@@ -223,6 +252,12 @@ public class ScannerFragment extends Fragment {
         return null;
     }
 
+    //javadocs
+    /**
+     * This method checks if the event has reached a milestone in attendance.
+     * If the event has reached a milestone, a message is displayed and an announcement is added to the event.
+     * @param event The event to check for milestones
+     */
     private void checkMilestones(Event event) {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -281,6 +316,12 @@ public class ScannerFragment extends Fragment {
 //        Log.d("miless", "Current attendance: " + currentAttendance);
     }
 
+    //javadocs
+    /**
+     * This method launches the event details activity.
+     * @param context The context of the current state of the application
+     * @param eventId The ID of the event to view
+     */
     private void launchEventDetails(Context context, String eventId) {
         // Create an Intent to start the event details activity
         Intent intent = new Intent(context, ViewEventActivity.class);
@@ -293,11 +334,24 @@ public class ScannerFragment extends Fragment {
 
     }
 
+    //javadocs
+    /**
+     * This method opens the gallery to select an image.
+     */
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, REQUEST_CODE_GALLERY);
     }
 
+    //javadocs
+    /**
+     * This method is called when the user responds to a permission request.
+     * If the permission is granted, the gallery is opened.
+     * If the permission is denied, a message is displayed.
+     * @param requestCode The request code passed to requestPermissions
+     * @param permissions The requested permissions
+     * @param grantResults The grant results for the corresponding permissions
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -309,6 +363,11 @@ public class ScannerFragment extends Fragment {
         }
     }
 
+
+    //javadocs
+    /**
+     * This method is called when the fragment is destroyed.
+     */
     // Scan image from the gallery when click the select from gallery button
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

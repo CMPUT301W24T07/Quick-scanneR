@@ -65,7 +65,7 @@ import ch.hsr.geohash.GeoHash;
 
 
 public class MapActivity extends AppCompatActivity {
-    /* Uses Open Street Maps to display user's
+    /** Uses Open Street Maps to display user's
      *  check-in geolocation
      *  Credits: https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library-(Java)
      *           https://developer.android.com/training/permissions/requesting
@@ -84,6 +84,12 @@ public class MapActivity extends AppCompatActivity {
 
 
 
+    // javadocs
+    /**
+     * This method creates the Map Activity.
+     * Usage: call once.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,6 +153,11 @@ public class MapActivity extends AppCompatActivity {
 
 
 
+    // javadocs
+    /**
+     * This method requests the user's location.
+     * Usage: call once.
+     */
     public void displayUserGeolocation() {
         // check permissions
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -163,6 +174,12 @@ public class MapActivity extends AppCompatActivity {
         }
     }
 
+    // javadocs
+    /**
+     * This method displays the event's geolocation.
+     * Usage: call once.
+     * @param hash
+     */
     public void displayEventGeolocation(String hash) {
         // start at Event Location
         GeoHash geoHash;
@@ -188,7 +205,7 @@ public class MapActivity extends AppCompatActivity {
         map.getController().setCenter(eventLocation); // center map at event location
     }
 
-    /* Turns a coordinate string (hash) into latitude/longitude and places
+    /** Turns a coordinate string (hash) into latitude/longitude and places
      * a corresponding marker on the map
      * @param hash: represents the latitude and longitude of a coordinate in String format.
      */
@@ -206,14 +223,14 @@ public class MapActivity extends AppCompatActivity {
         map.getOverlays().add(startMarker);
     }
 
-    /* Turns a latitude and longitude into a geo String
+    /** Turns a latitude and longitude into a geo String
      */
     public static String hashCoordinates(double latitude, double longitude) {
         GeoHash geoHash = GeoHash.withCharacterPrecision(latitude, longitude, 12); // int is precision
         return geoHash.toBase32();
     }
 
-    /*        Display default point at CCIS
+    /**        Display default point at CCIS
      */
     public void displayDefault() {
         GeoPoint point = new GeoPoint(53.5282, -113.5257);
@@ -222,12 +239,22 @@ public class MapActivity extends AppCompatActivity {
 
 
 
+    // javadocs
+    /**
+     * This method requests the user's location.
+     * Usage: call once.
+     */
     @Override
     public void onResume() {
         super.onResume();
         map.onResume();
     }
 
+    // javadocs
+    /**
+     * This method pauses the map.
+     * Usage: call once.
+     */
     @Override
     public void onPause() {
         super.onPause();
@@ -236,7 +263,7 @@ public class MapActivity extends AppCompatActivity {
 
 
 
-    /*         Inflate Handle Top Menu Options        */
+    /**         Inflate Handle Top Menu Options        */
     // Create the Top Menu bar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -49,6 +49,12 @@ public class SettingsActivity extends AppCompatActivity {
     // UI reference
     private Switch toggleGeolocation;
 
+    //javadocs
+    /**
+     * This method creates the Settings Activity.
+     * Usage: call once.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,6 +123,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
+    //javadocs
+    /**
+     * This method handles the Options Bar clicks.
+     * @param item
+     * @return
+     */
 
     // Handles The Options Bar clicks
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -129,6 +141,10 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
+    //javadocs
+    /**
+     * This method shows a dialog box to explain why we need permissions.
+     */
     /*
     * Credits: Android studio Wiki
     * Explains why we need user location permissions, and explains how to grant them.
@@ -152,6 +168,10 @@ public class SettingsActivity extends AppCompatActivity {
     /*
     * Opens app settings
      */
+    // javadocs
+    /**
+     * This method opens the app settings.
+     */
     private void openAppSettings() {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         Uri uri = Uri.fromParts("package", getPackageName(), null);
@@ -159,9 +179,16 @@ public class SettingsActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    /*
+    /**
      *   This function handles results from "requestPermissionsIfNecessary"
      *   We open a custom dialog box to explain why we need permissions
+     */
+    // javadocs
+    /**
+     * This method handles the results from the permission request.
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -172,7 +199,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
-    /*
+    // javadocs
+    /**
+     * This method requests permissions if necessary.
+     * @param permissions
+     */
+    /**
      *   This function uses ActivityCompat to request permissions from the user
      */
     private void requestPermissionsIfNecessary(ArrayList<String> permissions) {
@@ -191,10 +223,14 @@ public class SettingsActivity extends AppCompatActivity {
      *            Geolocation Functions          *
      *                                           */
 
-    /*
+    /**
      *   This functions returns a hashed (String) version of geolocation
      *   If User or Phone has geolocation disabled, returns NULL.
      *   Otherwise, returns a hashed String
+     */
+    // javadocs
+    /**
+     * This method requests the hashed geolocation.
      */
     private void requestHashedGeolocation() {
         // get current user
@@ -223,12 +259,15 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    /*
+
+    /**
      *   Checks if a User and Device have Geolocation Tracking enabled
      *   This is used in conjunction with "getDeviceGeolocation"
      *   Returns true if enabled on both
      *   Returns false if not enabled on at least one
      */
+    // javadocs
+
     private Boolean validGeolocationPermissions(User user) {
         if (!user.getIsGeolocationEnabled()) {
             // User has geolocation disabled
@@ -246,6 +285,8 @@ public class SettingsActivity extends AppCompatActivity {
      *   Use this in conjunction with "validGeolocationPermissions"
      *   to ensure the device and user has geolocation enabled.
      */
+    // javadocs
+
     @SuppressLint("MissingPermission") // we use our own permission checker
     private String getDeviceGeolocation(User user){
         // check if permissions are valid
