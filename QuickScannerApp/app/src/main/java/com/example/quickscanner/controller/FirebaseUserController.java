@@ -1,11 +1,11 @@
 package com.example.quickscanner.controller;
 
-
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.example.quickscanner.model.User;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthResult;
@@ -15,6 +15,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -130,19 +131,22 @@ public class FirebaseUserController
 
         Task<QuerySnapshot> task = query.get();
 
-        return task.continueWith(task1 -> {
-            if (task1.isSuccessful()) {
-                QuerySnapshot querySnapshot = task1.getResult();
-                List<User> users = new ArrayList<>();
-                if (querySnapshot != null) {
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        User user = document.toObject(User.class);
-                        users.add(user);
+        return task.continueWith(new Continuation<QuerySnapshot, List<User>>() {
+            @Override
+            public List<User> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                if (task.isSuccessful()) {
+                    QuerySnapshot querySnapshot = task.getResult();
+                    List<User> users = new ArrayList<>();
+                    if (querySnapshot != null) {
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            User user = document.toObject(User.class);
+                            users.add(user);
+                        }
                     }
+                    return users;
+                } else {
+                    throw task.getException();
                 }
-                return users;
-            } else {
-                throw task1.getException();
             }
         });
     }
@@ -150,31 +154,37 @@ public class FirebaseUserController
         validateId(lastUserId);
         DocumentReference lastUserRef = usersRef.document(lastUserId);
         Task<DocumentSnapshot> lastUserTask = lastUserRef.get();
-        return lastUserTask.continueWithTask(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot lastUserSnapshot = task.getResult();
+        return lastUserTask.continueWithTask(new Continuation<DocumentSnapshot, Task<List<User>>>() {
+            @Override
+            public Task<List<User>> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot lastUserSnapshot = task.getResult();
 
-                Query query = usersRef.orderBy("name").startAfter(lastUserSnapshot).limit(30);
+                    Query query = usersRef.orderBy("name").startAfter(lastUserSnapshot).limit(30);
 
-                Task<QuerySnapshot> nextUsersTask = query.get();
+                    Task<QuerySnapshot> nextUsersTask = query.get();
 
-                return nextUsersTask.continueWith(task1 -> {
-                    if (task1.isSuccessful()) {
-                        QuerySnapshot querySnapshot = task1.getResult();
-                        List<User> users = new ArrayList<>();
-                        if (querySnapshot != null) {
-                            for (QueryDocumentSnapshot document : querySnapshot) {
-                                User user = document.toObject(User.class);
-                                users.add(user);
+                    return nextUsersTask.continueWith(new Continuation<QuerySnapshot, List<User>>() {
+                        @Override
+                        public List<User> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                            if (task.isSuccessful()) {
+                                QuerySnapshot querySnapshot = task.getResult();
+                                List<User> users = new ArrayList<>();
+                                if (querySnapshot != null) {
+                                    for (QueryDocumentSnapshot document : querySnapshot) {
+                                        User user = document.toObject(User.class);
+                                        users.add(user);
+                                    }
+                                }
+                                return users;
+                            } else {
+                                throw task.getException();
                             }
                         }
-                        return users;
-                    } else {
-                        throw task1.getException();
-                    }
-                });
-            } else {
-                return Tasks.forException(task.getException());
+                    });
+                } else {
+                    return Tasks.forException(task.getException());
+                }
             }
         });
     }
@@ -189,17 +199,20 @@ public class FirebaseUserController
     {
         validateId(userId);
         Task<DocumentSnapshot> task = usersRef.document(userId).get();
-        return task.continueWithTask(task1 -> {
-            if (task1.isSuccessful()) {
-                DocumentSnapshot document = task1.getResult();
-                if (document.exists()) {
-                    User user = document.toObject(User.class);
-                    return Tasks.forResult(user);
+        return task.continueWithTask(new Continuation<DocumentSnapshot, Task<User>>() {
+            @Override
+            public Task<User> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        User user = document.toObject(User.class);
+                        return Tasks.forResult(user);
+                    } else {
+                        return Tasks.forException(new Exception("No such User"));
+                    }
                 } else {
-                    return Tasks.forException(new Exception("No such User"));
+                    return Tasks.forException(task.getException());
                 }
-            } else {
-                return Tasks.forException(task1.getException());
             }
         });
     }
