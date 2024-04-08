@@ -132,6 +132,7 @@ public class ScannerFragment extends Fragment {
                 AtomicBoolean isUserAdmin = new AtomicBoolean(false);
                 String usedId = fbUserController.getCurrentUserUid();
                 DocumentReference adminAuthRef = FirebaseFirestore.getInstance().collection("config").document("Admin Auth Code");
+
                 adminAuthRef.get().addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String adminAuthCode = documentSnapshot.getString("Code");
@@ -143,6 +144,7 @@ public class ScannerFragment extends Fragment {
                                 Log.d("testerrr", "User is now an admin");
                                 isUserAdmin.set(true);
 
+
                                 if (getActivity() != null) {
                                     getActivity().runOnUiThread(() -> getActivity().invalidateOptionsMenu()); // Invalidate the options menu
                                 }
@@ -153,7 +155,6 @@ public class ScannerFragment extends Fragment {
                     }
                 });
 
-                //check if it is admin code, if it is, then make the user an admin
 
                 //continue only if user is not an admin
                 if (!isUserAdmin.get()) {
@@ -185,7 +186,8 @@ public class ScannerFragment extends Fragment {
                                 });
                             }
 
-                        } else {
+                        }
+                        else {
                             // If there was an error getting check-in event, show error message
                             Toast.makeText(getContext(), "Error getting check-in event", Toast.LENGTH_LONG).show();
                         }
@@ -338,7 +340,9 @@ public class ScannerFragment extends Fragment {
                                             launchEventDetails(getContext(), promoEvent.getEventID());
                                         } else {
                                             // If it's neither a check-in nor a promo code, show error message
-                                            Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_LONG).show();
+
+//                                            Toast.makeText(getContext(), "Invalid QR code", Toast.LENGTH_LONG).show();
+                                            Log.d("testerrr", "Invalid QR code");
                                         }
                                     } else {
                                         // If there was an error getting promo event, show error message
