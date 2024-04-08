@@ -30,6 +30,7 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -393,75 +394,60 @@ public class FirebaseEventController
      * @param eventsDataList The list of events to update. This list should be modifiable.
      * @param eventAdapter The ArrayAdapter to notify of changes. This adapter should be connected to the UI.
      */
+
     public ListenerRegistration setupEventListListener(final ArrayList<Event> eventsDataList, final ArrayAdapter<Event> eventAdapter) {
-         return eventsRef.addSnapshotListener(new com.google.firebase.firestore.EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots,
-                                @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("event fragment listener", "Listen failed.", e);
-                    return;
-                }
-                if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
-                    for (DocumentChange changes : queryDocumentSnapshots.getDocumentChanges()) {
-                        switch (changes.getType()) {
-                            case ADDED:
-                                Event newEvent = changes.getDocument().toObject(Event.class);
-                                eventsDataList.add(newEvent);
-                                break;
-                            case MODIFIED:
-                                Event modifiedEvent = changes.getDocument().toObject(Event.class);
-                                int modifiedPosition = eventsDataList.indexOf(modifiedEvent);
-                                if (modifiedPosition != -1)
-                                {
-                                    Event oldEvent = eventsDataList.get(modifiedPosition);
-                                    // Check if the image, name, or time has changed
-                                    if (!oldEvent.getImagePath().equals(modifiedEvent.getImagePath()) ||
-                                            !oldEvent.getName().equals(modifiedEvent.getName()) ||
-                                            !oldEvent.getTime().equals(modifiedEvent.getTime()))
-                                    {
-                                        // Replace the old event with the new one
-                                        eventsDataList.set(modifiedPosition, modifiedEvent);
-                                    }
+        Date currentTime = new Date(); // Get the current time
+
+        return eventsRef.whereGreaterThan("time", currentTime)
+                .addSnapshotListener(new com.google.firebase.firestore.EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w("event fragment listener", "Listen failed.", e);
+                            return;
+                        }
+                        if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                            for (DocumentChange changes : queryDocumentSnapshots.getDocumentChanges()) {
+                                switch (changes.getType()) {
+                                    case ADDED:
+                                        Event newEvent = changes.getDocument().toObject(Event.class);
+                                        eventsDataList.add(newEvent);
+                                        break;
+                                    case MODIFIED:
+                                        Event modifiedEvent = changes.getDocument().toObject(Event.class);
+                                        int modifiedPosition = eventsDataList.indexOf(modifiedEvent);
+                                        if (modifiedPosition != -1) {
+                                            Event oldEvent = eventsDataList.get(modifiedPosition);
+                                            // Check if the image, name, or time has changed
+                                            if (!oldEvent.getImagePath().equals(modifiedEvent.getImagePath()) ||
+                                                    !oldEvent.getName().equals(modifiedEvent.getName()) ||
+                                                    !oldEvent.getTime().equals(modifiedEvent.getTime())) {
+                                                // Replace the old event with the new one
+                                                eventsDataList.set(modifiedPosition, modifiedEvent);
+                                            }
+                                        }
+                                        break;
+                                    case REMOVED:
+                                        Event removedEvent = changes.getDocument().toObject(Event.class);
+                                        eventsDataList.remove(removedEvent);
+                                        break;
                                 }
-                                break;
-                            case REMOVED:
-                                Event removedEvent = changes.getDocument().toObject(Event.class);
-                                eventsDataList.remove(removedEvent);
-                                break;
+                            }
+                            // Sort the eventsDataList in ascending order based on the timestamp
+                            eventsDataList.sort(new Comparator<Event>() {
+                                @Override
+                                public int compare(Event e1, Event e2) {
+                                    return e1.getTime().compareTo(e2.getTime());
+                                }
+                            });
+                            // Notify the adapter of dataset changes
+                            eventAdapter.notifyDataSetChanged();
+                        } else {
+                            Log.d("eventfragment listener", "Current data: null");
                         }
                     }
-                    // Sorts the eventsDataList in descending order based on the timestamp
-                    eventsDataList.sort(new Comparator<Event>() {
-                        final Timestamp currentTime = Timestamp.now();
-                        @Override
-                        public int compare(Event e1, Event e2) {
-                            // Compares the difference between the event's time and the current time
-                            // to sort the events by putting closest to current time on top
-                            long diff1 = Math.abs(e1.getTime().toDate().getTime() -
-                                    currentTime.toDate().getTime());
-                            long diff2 = Math.abs(e2.getTime().toDate().getTime() -
-                                    currentTime.toDate().getTime());
-                            return Long.compare(diff1, diff2);
-                        }
-                    });
-                    // Checks each event in the list to see if time has passed one
-                    for (int i = 0; i < eventsDataList.size(); i++) {
-                        Event event = eventsDataList.get(i);
-                        // If the event's time is before the current time, its removed from list
-                        if (event == null)
-                            continue;
-                        if (event.getTime().compareTo(Timestamp.now()) <= 0) {
-                            eventsDataList.remove(i);
-                            i--; // Decrement the counter since something was removed
-                        }
-                    }
-                    eventAdapter.notifyDataSetChanged();
-                } else {
-                    Log.d("eventfragment listener", "Current data: null");
-                }
-            }
-        });
+                });
     }
     /**
      * Retrieves the conference configuration from Firestore.
