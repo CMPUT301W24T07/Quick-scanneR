@@ -11,9 +11,9 @@ import java.util.Objects;
 public class User {
     private Profile userProfile;
     private Boolean isAdmin;
-    private ArrayList<String> organizedEvents = new ArrayList<String>();
-    private ArrayList<String> signedUpEvents = new ArrayList<String>();
-    private ArrayList<String> checkedInEvents = new ArrayList<String>();
+    private ArrayList<String> organizedEvents;
+    private ArrayList<String> signedUpEvents;
+    private ArrayList<String> checkedInEvents;
     private String Uid;
     private boolean isGeolocationEnabled;
 
@@ -30,9 +30,9 @@ public class User {
     public User(String name, String email, String website, String imageUrl) {
         userProfile = new Profile(name, email, website, imageUrl);
         isAdmin = false;
-        organizedEvents = new ArrayList<String>();
-        signedUpEvents = new ArrayList<String>();
-        checkedInEvents = new ArrayList<String>();
+        organizedEvents = new ArrayList<>();
+        signedUpEvents = new ArrayList<>();
+        checkedInEvents = new ArrayList<>();
     }
 
     /**
@@ -41,9 +41,9 @@ public class User {
     public User() {
         userProfile = new Profile();
         isAdmin = false;
-        organizedEvents = new ArrayList<String>();
-        signedUpEvents = new ArrayList<String>();
-        checkedInEvents = new ArrayList<String>();
+        organizedEvents = new ArrayList<>();
+        signedUpEvents = new ArrayList<>();
+        checkedInEvents = new ArrayList<>();
     }
 
     /**
