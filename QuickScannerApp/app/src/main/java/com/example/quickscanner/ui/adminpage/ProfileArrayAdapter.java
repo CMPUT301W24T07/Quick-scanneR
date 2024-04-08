@@ -61,7 +61,12 @@ public class ProfileArrayAdapter extends ArrayAdapter<User> {
         });
         checkBox.setFocusable(false);  // Prevents the checkbox from being selected when the list item is clicked
         TextView name = listItem.findViewById(R.id.profile_name);
-        name.setText(currentUser.getUserProfile().getName());
+
+        String username = currentUser.getUserProfile().getName();
+        if(username == null || username.isEmpty()) {
+            username = "Anonymous user : " + currentUser.getUid();
+        }
+        name.setText(username);
 
         return listItem;
     }

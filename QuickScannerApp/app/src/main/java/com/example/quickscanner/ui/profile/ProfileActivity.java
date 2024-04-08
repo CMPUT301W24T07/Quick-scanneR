@@ -37,6 +37,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
+//javadocs
+/**
+ * This class is the Profile Activity.
+ * It allows the user to view and edit their profile.
+ */
 public class ProfileActivity extends AppCompatActivity {
 
     Button editButton;
@@ -53,6 +58,12 @@ public class ProfileActivity extends AppCompatActivity {
     FirebaseUserController fbUserController;
     FirebaseImageController fbImageController;
 
+    //javadocs
+    /**
+     * This method creates the Profile Activity.
+     * Usage: call once.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -190,6 +201,13 @@ public class ProfileActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
 
+    //javadocs
+    /**
+     * This method is called when the user clicks the back button.
+     * Usage: call when the user clicks the back button.
+     * @param item
+     * @return
+     */
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
