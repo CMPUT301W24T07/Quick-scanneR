@@ -16,17 +16,35 @@ import com.example.quickscanner.model.User;
 
 import java.util.ArrayList;
 
+//javadocs
+/**
+ * This Array Adapter customizes the presentation of the Profiles list
+ */
 public class ProfileArrayAdapter extends ArrayAdapter<User> {
 
     private Context mContext;
     private ArrayList<User> mProfiles;
 
+    //javadocs
+    /**
+     * Constructor for ProfileArrayAdapter
+     * @param context
+     * @param profiles
+     */
     public ProfileArrayAdapter(@NonNull Context context, ArrayList<User> profiles) {
         super(context, R.layout.fragment_profiles_content, profiles);
         this.mContext = context;
         this.mProfiles = profiles;
     }
 
+    //detailed javadocs
+    /**
+     * Responsible for creating the View for each row in the ListView.
+     * Called for each item(row) in the listview.
+     * @param position
+     * @param convertView
+     * @param parent
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -48,6 +66,11 @@ public class ProfileArrayAdapter extends ArrayAdapter<User> {
         return listItem;
     }
 
+    //javadocs
+    /**
+     * Checks if any user is selected
+     * @return boolean
+     */
     public boolean isAnyUserSelected() {
         for (User user : mProfiles) {
             if (user.isSelected()) {

@@ -29,6 +29,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+//javadocs
+/**
+ * This Fragment hosts our CheckedIn list for users to view.
+ * Can see more event details by clicking an event.
+ */
 public class CheckedInFragment extends Fragment {
 
     private ListView listView;
@@ -40,6 +45,11 @@ public class CheckedInFragment extends Fragment {
     private FragmentAttendanceBinding binding;
     private ListenerRegistration checkInListenerReg;
 
+    //javadocs
+    /**
+     * This Fragment hosts our CheckedIn list for users to view.
+     * Can see more event details by clicking an event.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -47,6 +57,11 @@ public class CheckedInFragment extends Fragment {
         return binding.getRoot();
     }
 
+    //javadocs
+    /**
+     * This Fragment hosts our CheckedIn list for users to view.
+     * Can see more event details by clicking an event.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -68,6 +83,12 @@ public class CheckedInFragment extends Fragment {
             checkInListenerReg = fbAttendanceController.setupCheckInListListener(eventId,checkInDataList,adapter,emptyCheckIn,listView);
         }
     }
+
+    //javadocs
+    /**
+     * This Fragment hosts our CheckedIn list for users to view.
+     * Can see more event details by clicking an event.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

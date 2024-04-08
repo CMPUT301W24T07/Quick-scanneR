@@ -20,6 +20,10 @@ import com.example.quickscanner.controller.FirebaseImageController;
 import com.example.quickscanner.model.*;
 import com.squareup.picasso.Picasso;
 
+//javadocs
+/**
+ * This Array Adapter customizes the presentation of the Events list
+ */
 public class EventArrayAdapter extends ArrayAdapter<Event> {
     /*
         This Array Adapter customizes the presentation of the Events list
@@ -39,6 +43,12 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
     //ProgressBar imageLoading;
 
 
+    //javadocs
+    /**
+     * Constructor for EventArrayAdapter
+     * @param context
+     * @param events
+     */
     public EventArrayAdapter(Context context, ArrayList<Event> events){
         super(context,0, events);
         this.events = events;
@@ -47,6 +57,14 @@ public class EventArrayAdapter extends ArrayAdapter<Event> {
     }
 
 
+    //javadocs
+    /**
+     * Responsible for creating the View for each row in the ListView.
+     * Called for each item(row) in the listview.
+     * @param position
+     * @param convertView
+     * @param parent
+     */
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {

@@ -46,6 +46,12 @@ import com.google.firebase.firestore.EventListener;
 
 import java.util.ArrayList;
 
+//javadocs
+/**
+ * This Fragment hosts our Announcement list for users to view.
+ * Announcements are expandable by clicking on the dropdown menu to read
+ * more.
+ */
 public class AnnouncementsFragment extends Fragment {
     /**
      * This Fragment hosts our Announcement list for users to view.
@@ -73,6 +79,15 @@ public class AnnouncementsFragment extends Fragment {
     private ListenerRegistration registration;
 
 
+    //javadocs
+    /**
+     * Responsible for creating the View for each row in the ListView.
+     * Called for each item(row) in the listview.
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return root
+     */
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
@@ -92,6 +107,13 @@ public class AnnouncementsFragment extends Fragment {
 
     }
 
+    //javadocs
+    /**
+     * Responsible for creating the View for each row in the ListView.
+     * Called for each item(row) in the listview.
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -148,6 +170,10 @@ public class AnnouncementsFragment extends Fragment {
         });
     }
 
+    //javadocs
+    /**
+     * Responsible for destroying the view.
+     */
 
     @Override
     public void onDestroyView() {

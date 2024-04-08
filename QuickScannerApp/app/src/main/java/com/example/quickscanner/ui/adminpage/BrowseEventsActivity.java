@@ -24,6 +24,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Objects;
 
+//javadocs
+/**
+ * This Activity is responsible for browsing all events in the database.
+ */
 public class BrowseEventsActivity extends AppCompatActivity {
 
     // EventList References
@@ -35,6 +39,11 @@ public class BrowseEventsActivity extends AppCompatActivity {
     private FirebaseEventController fbEventController;
     FloatingActionButton deleteButton;
 
+    //javadocs
+    /**
+     * This method is called when the activity is created.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -102,6 +111,10 @@ public class BrowseEventsActivity extends AppCompatActivity {
         });
     }
 
+    //javadocs
+    /**
+     * This method deletes the selected events from the database.
+     */
     private void deleteSelectedEvents() {
         for (Event event : eventsDataList) {
             if (event.isSelected()) {
@@ -116,6 +129,11 @@ public class BrowseEventsActivity extends AppCompatActivity {
         }
     }
 
+    //javadocs
+    /**
+     * This method updates the visibility of the delete button based on the selected events.
+     */
+
     public void updateDeleteButtonVisibility() {
         if (((AdminEventArrayAdapter) eventAdapter).isAnyEventSelected()) {
             deleteButton.setVisibility(View.VISIBLE);
@@ -126,6 +144,12 @@ public class BrowseEventsActivity extends AppCompatActivity {
 
 
 
+    //javadocs
+    /**
+     * This method is called when an item in the options menu is selected.
+     * @param item The selected item.
+     * @return boolean
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection

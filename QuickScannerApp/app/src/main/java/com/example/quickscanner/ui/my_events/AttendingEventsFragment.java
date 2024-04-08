@@ -28,11 +28,17 @@ import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 
+//javadocs
+/**
+ * This Fragment hosts our Attending event list for users to view.
+ * Can see more event details by clicking an event.
+ */
 public class AttendingEventsFragment extends Fragment {
     /**
      * This Fragment hosts our Attending event list for users to view.
      * Can see more event details by clicking an event.
      */
+
 
     private @NonNull FragmentMyEventsBinding binding;
 
@@ -53,6 +59,14 @@ public class AttendingEventsFragment extends Fragment {
     private FirebaseUserController fbUserController;
     private FirebaseEventController fbEventController;
 
+    // javadocs
+    /**
+     * This method creates the view for the AttendingEventsFragment.
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -65,6 +79,12 @@ public class AttendingEventsFragment extends Fragment {
         return binding.getRoot();
     }
 
+    // javadocs
+    /**
+     * This method is called when the view is created.
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -105,7 +125,10 @@ public class AttendingEventsFragment extends Fragment {
 
     }
 
-
+    // javadocs
+    /**
+     * This method is called when the view is destroyed.
+     */
 
     @Override
     public void onDestroyView() {
