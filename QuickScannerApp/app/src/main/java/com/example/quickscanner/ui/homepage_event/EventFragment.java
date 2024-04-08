@@ -2,6 +2,7 @@ package com.example.quickscanner.ui.homepage_event;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -103,8 +104,12 @@ public class EventFragment extends Fragment {
 
 
         // Create Firestore Listener for real-time updates to the Events List.
+        if (eventListListenerReg == null)
+            {
+                Log.d("event list testing", "onViewCreated: Setting up event list listener");
         eventListListenerReg = fbEventController.setupEventListListener(eventsDataList, eventAdapter);
         setupTimeListener(eventsDataList, eventAdapter);
+        }
 
 
         /*     Fob Button (add event) Click       */
@@ -123,6 +128,7 @@ public class EventFragment extends Fragment {
             Intent intent = new Intent(getContext(), ViewEventActivity.class);
             Bundle bundle = new Bundle(1);
             // Pass the Event Identifier to the New Activity
+            Log.d("AddEventActivity", "onViewCreated: Clicked Event ID: " + clickedEvent.getEventID());
             bundle.putString("eventID", clickedEvent.getEventID());
             intent.putExtras(bundle);
             // Start new Activity
@@ -178,6 +184,7 @@ public class EventFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        Log.d("event list testing", "event frag onDestroyView: Removing event list listener");
         // Stop the time listener when the view is destroyed
         if (timer != null)
         {
@@ -186,35 +193,13 @@ public class EventFragment extends Fragment {
         }
         if (eventListListenerReg != null)
         {
+            Log.d("event list testing", "onDestroyView: start actual removal");
             eventListListenerReg.remove();
+            Log.d("event list testing", "onDestroyView: done removing listener");
             eventListListenerReg = null;
         }
 
         binding = null;
-    }
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Assuming you have a method to pause listening to Firestore updates
-        if (eventListListenerReg != null) {
-            eventListListenerReg.remove();
-            eventListListenerReg = null;
-        }
-        // Cancel the timer to stop checking for past events
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Re-initialize Firestore listener and timer
-        if (eventListListenerReg == null) {
-            eventListListenerReg = fbEventController.setupEventListListener(eventsDataList, eventAdapter);
-        }
-        setupTimeListener(eventsDataList, eventAdapter);
     }
 
 
