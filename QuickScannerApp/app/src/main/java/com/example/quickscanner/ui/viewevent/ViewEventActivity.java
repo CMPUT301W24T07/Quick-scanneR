@@ -686,6 +686,7 @@ public class ViewEventActivity extends AppCompatActivity {
                         menu.findItem(R.id.navigation_QR_check_in).setVisible(true);
                         menu.findItem(R.id.navigation_edit).setVisible(true);
                         menu.findItem(R.id.map).setVisible(true);
+                        menu.findItem(R.id.navigation_delete).setVisible(true);
                     }
 
                 }
