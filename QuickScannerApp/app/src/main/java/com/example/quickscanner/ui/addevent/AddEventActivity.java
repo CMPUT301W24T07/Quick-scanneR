@@ -46,6 +46,14 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
 
+//javadocs for this class
+/**
+ * This class is responsible for adding an event to the database.
+ * It allows the user to input the event name, description, location, geolocation, time, and maximum attendees.
+ * The user can also upload an image for the event.
+ * The user can also generate a QR code for the event.
+ * The user can also view the event details.
+ */
 
 public class AddEventActivity extends AppCompatActivity
 {
@@ -82,8 +90,15 @@ public class AddEventActivity extends AppCompatActivity
 
     private Bitmap eventImageMap;
 
+
+
     // Used to get an event location string back from the Map Activity Fragment.
     // Credit: https://developer.android.com/training/basics/intents/result
+    //javadocs
+    /**
+     * This is an ActivityResultLauncher that is used to get the location string from the Map Activity Fragment.
+     * It is used to get the geolocation of the event.
+     */
     ActivityResultLauncher<Intent> mapGetLocation = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result ->
@@ -102,6 +117,10 @@ public class AddEventActivity extends AppCompatActivity
             });
 
 
+    /**
+     * This method is called when the activity is first created.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -226,7 +245,14 @@ public class AddEventActivity extends AppCompatActivity
         });
     }
 
+
+
     // Add event to Firestore
+    //javadocs
+    /**
+     * This method adds an event to the Firestore database.
+     * @param event The event to be added to the database.
+     */
     private void addEventToFirestore(Event event)
     {
         String maxAttendeesString = maxAttendeeEditText.getText().toString();
@@ -322,6 +348,11 @@ public class AddEventActivity extends AppCompatActivity
 
     }
 
+    //javadocs
+    /**
+     * This method adds an event to the user's list of organized events.
+     * @param eventId The ID of the event to be added to the user's list of organized events.
+     */
     private void addEventToUserOrganizedEvents(String eventId)
     {
         // Get the current user's ID
@@ -351,6 +382,12 @@ public class AddEventActivity extends AppCompatActivity
     }
 
 
+    //javadocs
+    /**
+     * This method is called when the user clicks on the back button.
+     * @param item The item that was clicked.
+     * @return True if the back button was clicked, false otherwise.
+     */
     // Handles The Top Bar menu clicks
     public boolean onOptionsItemSelected(@NonNull MenuItem item)
     {
@@ -364,6 +401,13 @@ public class AddEventActivity extends AppCompatActivity
 
     }
 
+    //javadocs
+    /**
+     * This method shows a dialog box with an EditText field.
+     * The user can input text into the EditText field.
+     * @param title The title of the dialog box.
+     * @param positiveClickListener The listener for the positive button.
+     */
     private void showTextDialog(String title, DialogInterface.OnClickListener positiveClickListener)
     {
         final EditText input = new EditText(this);
@@ -388,6 +432,10 @@ public class AddEventActivity extends AppCompatActivity
                 .show();
     }
 
+    //javadocs
+    /**
+     * This method allows the user to pick an image from the gallery.
+     */
     // To pick an image from the gallery
     private void pickImage()
     {
@@ -395,6 +443,10 @@ public class AddEventActivity extends AppCompatActivity
         resultLauncher.launch(intent);
     }
 
+    //javadocs
+    /**
+     * This method registers the result of the image picker.
+     */
     // Register the result of the image picker
     private void registerResult()
     {
@@ -420,6 +472,11 @@ public class AddEventActivity extends AppCompatActivity
                 });
     }
 
+    //javadocs
+    /**
+     * This method shows a dialog box with a DatePicker and a TimePicker.
+     * The user can select a date and time.
+     */
     private void showDateTimePicker() {
         final Calendar date = Calendar.getInstance();
         final Calendar currentDate = Calendar.getInstance();
@@ -447,6 +504,12 @@ public class AddEventActivity extends AppCompatActivity
         datePickerDialog.show();
     }
 
+    //javadocs
+    /**
+     * This method shows a dialog box with a TimePicker.
+     * The user can select a time.
+     * @param date The date for which the time is being selected.
+     */
     private void showTimePicker(final Calendar date) {
         final Calendar currentDate = Calendar.getInstance();
 
@@ -481,6 +544,13 @@ public class AddEventActivity extends AppCompatActivity
         timePickerDialog.show();
     }
 
+    //javadocs
+    /**
+     * This method formats the time as a string.
+     * @param hour The hour of the time.
+     * @param minute The minute of the time.
+     * @return The formatted time as a string.
+     */
     private String formatTime(int hour, int minute) {
         // creates calendar object
         Calendar calendar = Calendar.getInstance();
@@ -496,6 +566,13 @@ public class AddEventActivity extends AppCompatActivity
         // returns formatted time as string
         return date.format(calendar.getTime());
     }
+
+    //javadocs
+    /**
+     * This method formats the date and time as a string.
+     * @param date The date and time to be formatted.
+     * @return The formatted date and time as a string.
+     */
     private String formatDateTime(Calendar date) {
         // simple date format that outputs the date and time
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy h:mm a", Locale.getDefault());
