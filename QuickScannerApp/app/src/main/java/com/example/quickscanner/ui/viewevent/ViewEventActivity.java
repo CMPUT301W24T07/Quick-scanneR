@@ -61,8 +61,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.Objects;
 
-public class ViewEventActivity extends AppCompatActivity
-{
+public class ViewEventActivity extends AppCompatActivity {
     String eventID;
     private FirebaseEventController fbEventController;
     private FirebaseImageController fbImageController;
@@ -72,7 +71,7 @@ public class ViewEventActivity extends AppCompatActivity
     private ActivityVieweventNewBinding binding;
     private ProgressBar loading;
     private RelativeLayout contentLayout;
-    private Integer  loadCount;
+    private Integer loadCount;
     private FirebaseAnnouncementController fbAnnouncementController;
 
 
@@ -87,8 +86,7 @@ public class ViewEventActivity extends AppCompatActivity
 
     @SuppressLint("SetTextI18n")
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityVieweventNewBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -110,7 +108,6 @@ public class ViewEventActivity extends AppCompatActivity
         binding.signUpButton.setVisibility(View.GONE);
         loadCount = 5;
         Log.d("LoadCount", "Decrementing loadCount, current value: " + loadCount);
-
 
 
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
@@ -146,13 +143,11 @@ public class ViewEventActivity extends AppCompatActivity
 
         // Grab any Intent bundle/parameters
         Bundle inputBundle = getIntent().getExtras();
-        if (inputBundle != null)
-        {
+        if (inputBundle != null) {
             eventID = inputBundle.getString("eventID");
 //            Log.d("Beans", eventID);
         }
-        if (eventID != null)
-        {
+        if (eventID != null) {
             Log.e("halpp", "Event ID is: " + eventID);
         }
         fetchEventData();
@@ -209,16 +204,13 @@ public class ViewEventActivity extends AppCompatActivity
         });
 
 
-
         // Get a reference to the share button
         FloatingActionButton shareButton = findViewById(R.id.share_button);
 
         // Set an OnClickListener to the button
-        shareButton.setOnClickListener(new View.OnClickListener()
-        {
+        shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 // Convert the QR code Bitmap to a Uri
                 String path = MediaStore.Images.Media.insertImage(getContentResolver(), qrCodeBitmap, "QR Code", null);
                 Log.d("beans", "this is wheere it fails");
@@ -242,9 +234,9 @@ public class ViewEventActivity extends AppCompatActivity
         });
 
         // implement geolocation switch behaviour
-        toggleGeolocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-        {
+        toggleGeolocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
+
             public void onCheckedChanged(CompoundButton switchView, boolean isChecked)
             {
                 if (event != null && doneSetting == true)
@@ -255,6 +247,7 @@ public class ViewEventActivity extends AppCompatActivity
                     fbEventController.updateEvent(event)
                             .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
                             .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
+
                 }
                 else
                 {
@@ -266,7 +259,7 @@ public class ViewEventActivity extends AppCompatActivity
 
     }
 
-    
+
     private void showOrganiserDetailsDialog() {
 
         Dialog dialog = new Dialog(this);
@@ -288,8 +281,7 @@ public class ViewEventActivity extends AppCompatActivity
                     // Set the organiser details
 
                     // Get the URL of the organizer's profile picture
-                    if (user.getUserProfile().getImageUrl() == null || user.getUserProfile().getImageUrl().isEmpty())
-                    {
+                    if (user.getUserProfile().getImageUrl() == null || user.getUserProfile().getImageUrl().isEmpty()) {
                         //TODO: set default image to our default. i forget what the path is.
                         user.getUserProfile().setImageUrl("default.jpeg");
                     }
@@ -310,28 +302,19 @@ public class ViewEventActivity extends AppCompatActivity
 
                         });
                     });
-                    if (user.getUserProfile().getName() == null || user.getUserProfile().getName().isEmpty())
-                    {
+                    if (user.getUserProfile().getName() == null || user.getUserProfile().getName().isEmpty()) {
                         organiserName.setText("Anonymous Organizer");
-                    }
-                    else
-                    {
+                    } else {
                         organiserName.setText(user.getUserProfile().getName());
                     }
-                    if (user.getUserProfile().getEmail() == null || user.getUserProfile().getEmail().isEmpty())
-                    {
+                    if (user.getUserProfile().getEmail() == null || user.getUserProfile().getEmail().isEmpty()) {
                         organiserEmail.setText("No email provided");
-                    }
-                    else
-                    {
+                    } else {
                         organiserEmail.setText(user.getUserProfile().getEmail());
                     }
-                    if (user.getUserProfile().getWebsite() == null || user.getUserProfile().getWebsite().isEmpty())
-                    {
+                    if (user.getUserProfile().getWebsite() == null || user.getUserProfile().getWebsite().isEmpty()) {
                         organiserLinkedIn.setText("No LinkedIn provided");
-                    }
-                    else
-                    {
+                    } else {
                         organiserLinkedIn.setText(user.getUserProfile().getWebsite());
                     }
                 } else {
@@ -350,17 +333,13 @@ public class ViewEventActivity extends AppCompatActivity
     }
 
     // Fetches the event data from Firestore
-    private void fetchEventData()
-    {
+    private void fetchEventData() {
 
         String UiD = fbUserController.getCurrentUserUid();
-        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<Event>()
-        {
+        fbEventController.getEvent(eventID).addOnSuccessListener(new OnSuccessListener<Event>() {
             @Override
-            public void onSuccess(Event gotEvent)
-            {
-                if (gotEvent == null)
-                {
+            public void onSuccess(Event gotEvent) {
+                if (gotEvent == null) {
                     throw new RuntimeException("No such Event");
                 }
                 event = gotEvent;
@@ -374,8 +353,7 @@ public class ViewEventActivity extends AppCompatActivity
                 qrCodeBitmap = generateQRCode(event.getPromoQrCode());
                 setEventDataToUI(event, UiD);
 
-                binding.signUpButton.setOnClickListener(new View.OnClickListener()
-                {
+                binding.signUpButton.setOnClickListener(new View.OnClickListener() {
 
                     @Override
                     public void onClick(View v) {
@@ -384,27 +362,20 @@ public class ViewEventActivity extends AppCompatActivity
                             confirmCancelSignUp(UiD, eventID);
                             setEventDataToUI(event, UiD);
                         } else if (buttonText.equals("Sign Up for Event")) {
-                            fbAttendanceController.signUp(UiD, eventID).addOnSuccessListener(new OnSuccessListener<Void>()
-                            {
-                                @Override
-                                public void onSuccess(Void unused)
-                                {
-                                    setEventDataToUI(event, UiD);
-                                }
-
-
-                            })
-                                    .addOnFailureListener(new OnFailureListener()
-                                    {
+                            fbAttendanceController.signUp(UiD, eventID).addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
-                                        public void onFailure(@NonNull Exception e)
-                                        {
-                                            if ("Event is full".equals(e.getMessage()))
-                                            {
+                                        public void onSuccess(Void unused) {
+                                            setEventDataToUI(event, UiD);
+                                        }
+
+
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            if ("Event is full".equals(e.getMessage())) {
                                                 Toast.makeText(ViewEventActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                            }
-                                            else
-                                            {
+                                            } else {
                                                 Toast.makeText(ViewEventActivity.this, "Error, please try again!", Toast.LENGTH_SHORT).show();
                                             }
                                         }
@@ -425,11 +396,9 @@ public class ViewEventActivity extends AppCompatActivity
                 decrementLoadCount("event");
 
             }
-        }).addOnFailureListener(new OnFailureListener()
-        {
+        }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onFailure(@NonNull Exception e)
-            {
+            public void onFailure(@NonNull Exception e) {
                 Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
             }
         });
@@ -444,12 +413,9 @@ public class ViewEventActivity extends AppCompatActivity
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
         binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
-        fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>()
-        {
-            public void onSuccess(User user)
-            {
-                if (user != null && user.getUserProfile() != null)
-                {
+        fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
+            public void onSuccess(User user) {
+                if (user != null && user.getUserProfile() != null) {
                     //disable this organiser text line if creating new event crashes
 //                    binding.organiserText.setText(user.getUserProfile().getName());
                     // this code exists to underline the organiser's name
@@ -507,9 +473,7 @@ public class ViewEventActivity extends AppCompatActivity
                             }
                         }
                         decrementLoadCount("button");
-                    }
-                    else
-                    {
+                    } else {
                         Log.e(TAG, "Failed at checking sign up", task.getException());
                     }
                 }
@@ -563,25 +527,20 @@ public class ViewEventActivity extends AppCompatActivity
 //    }
 
     //generates QR code
-    private Bitmap generateQRCode(String text)
-    {
+    private Bitmap generateQRCode(String text) {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        try
-        {
+        try {
             BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
             int width = bitMatrix.getWidth();
             int height = bitMatrix.getHeight();
             Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
                     bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
                 }
             }
             return bitmap;
-        } catch (WriterException e)
-        {
+        } catch (WriterException e) {
             e.printStackTrace();
         }
         return null;
@@ -590,25 +549,16 @@ public class ViewEventActivity extends AppCompatActivity
     /*         Inflate Handle Top Menu Options        */
     // Create the Top Menu bar
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.viewevent_top_nav_menu, menu);
         return true;
     }
 
     /*    Handle click events for the Top Menu Bar    */
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item)
-    {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
-        if (itemId == R.id.navigation_attendance_list)
-        {// Handle Edit Profile click
-            // Handle click
-            Toast.makeText(this, "navigation_attendance_list clicked", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-        else if (itemId == R.id.navigation_QR_check_in)
-        {
+        if (itemId == R.id.navigation_QR_check_in) {
             // Handle Click
             Toast.makeText(this, "navigation_QR_check_in clicked", Toast.LENGTH_SHORT).show();
 
@@ -621,9 +571,7 @@ public class ViewEventActivity extends AppCompatActivity
 
             return true;
 
-        }
-        else if (itemId == R.id.navigation_QR_promotional)
-        {
+        } else if (itemId == R.id.navigation_QR_promotional) {
             // Handle click
             Toast.makeText(this, "navigation_QR_promotional clicked", Toast.LENGTH_SHORT).show();
 
@@ -639,15 +587,12 @@ public class ViewEventActivity extends AppCompatActivity
 
             return true;
 
-        }
-        else if (itemId == R.id.map)
-        {
+        } else if (itemId == R.id.map) {
             // Handle Map click
             Intent intent = new Intent(ViewEventActivity.this, MapActivity.class);
             Bundle bundle = new Bundle();
             // Check if Geolocation is Enabled
-            if (!event.getIsGeolocationEnabled())
-            {
+            if (!event.getIsGeolocationEnabled()) {
                 Toast.makeText(this, R.string.enable_geolocation, Toast.LENGTH_SHORT).show();
                 return true;
             }
@@ -658,33 +603,25 @@ public class ViewEventActivity extends AppCompatActivity
             intent.putExtras(bundle);
             startActivity(intent);
             return true;
-        }
-        else if(itemId == R.id.navigation_delete)
-        {
+        } else if (itemId == R.id.navigation_delete) {
             new AlertDialog.Builder(this)
                     .setTitle("Delete Event")
                     .setMessage("Are you sure you want to delete this Event?")
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener()
-                    {
-                        public void onClick(DialogInterface dialog, int whichButton)
-                        {
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
                             fbEventController.deleteEvent(eventID)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>()
-                                    {
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
-                                        public void onSuccess(Void aVoid)
-                                        {
+                                        public void onSuccess(Void aVoid) {
                                             Toast.makeText(ViewEventActivity.this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
                                             Intent intent = new Intent(ViewEventActivity.this, BrowseEventsActivity.class);
                                             startActivity(intent);
                                             finish();
                                         }
                                     })
-                                    .addOnFailureListener(new OnFailureListener()
-                                    {
+                                    .addOnFailureListener(new OnFailureListener() {
                                         @Override
-                                        public void onFailure(@NonNull Exception e)
-                                        {
+                                        public void onFailure(@NonNull Exception e) {
                                             Toast.makeText(ViewEventActivity.this, "Failed to delete event", Toast.LENGTH_SHORT).show();
                                         }
                                     });
@@ -693,9 +630,7 @@ public class ViewEventActivity extends AppCompatActivity
                     .setNegativeButton("Cancel", null)
                     .show();
             return true;
-        }
-        else if (item.getItemId() == android.R.id.home)
-        {
+        } else if (item.getItemId() == android.R.id.home) {
             // Handle the Back button press
             finish();
             return true;
@@ -704,30 +639,23 @@ public class ViewEventActivity extends AppCompatActivity
 
     }
 
-    public void confirmCancelSignUp(String UiD, String eventID)
-    {
+    public void confirmCancelSignUp(String UiD, String eventID) {
         // Create an AlertDialog
         new AlertDialog.Builder(ViewEventActivity.this)
                 .setTitle("Cancel Sign Up")
                 .setMessage("Are you sure you want to cancel your sign up?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener()
-                {
-                    public void onClick(DialogInterface dialog, int yesButton)
-                    {
-                        fbAttendanceController.removeFromSignUp(UiD, eventID).addOnSuccessListener(new OnSuccessListener<Void>()
-                                {
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int yesButton) {
+                        fbAttendanceController.removeFromSignUp(UiD, eventID).addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
-                                    public void onSuccess(Void aVoid)
-                                    {
+                                    public void onSuccess(Void aVoid) {
                                         // Refresh the UI upon successful sign-up cancellation
                                         setEventDataToUI(event, UiD);
                                     }
                                 })
-                                .addOnFailureListener(new OnFailureListener()
-                                {
+                                .addOnFailureListener(new OnFailureListener() {
                                     @Override
-                                    public void onFailure(@NonNull Exception e)
-                                    {
+                                    public void onFailure(@NonNull Exception e) {
                                         // Display a toast message upon failure
                                         Toast.makeText(ViewEventActivity.this, "Removal failed, please try again!", Toast.LENGTH_SHORT).show();
                                     }
@@ -743,6 +671,7 @@ public class ViewEventActivity extends AppCompatActivity
         binding.signUpButton.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.VISIBLE);
     }
+
     private synchronized void decrementLoadCount(String location) {
         loadCount--;
         Log.d(TAG, "loadCount after decrement " + location + " : " + loadCount); // Corrected to log after decrement

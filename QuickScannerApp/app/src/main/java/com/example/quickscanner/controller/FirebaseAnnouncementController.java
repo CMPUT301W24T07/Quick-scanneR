@@ -163,28 +163,69 @@ public class FirebaseAnnouncementController
                         Log.e("FirebaseAnnouncementController", "No announcements found");
                         return;
                     }
+                    if (value.isEmpty()) {
+                        listView.setVisibility(View.GONE);
+                        emptyAnnouncement.setVisibility(View.VISIBLE);
+                    }
 
                     for (DocumentChange dc : value.getDocumentChanges()) {
-                        switch (dc.getType()) {
-                            case ADDED:
-                                Announcement newAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                announcementDataList.add(0, newAnnouncement);
-                                break;
-                            case MODIFIED:
-                                Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                for (int i = 0; i < announcementDataList.size(); i++)
-                                {
-                                    if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId()))
-                                    {
-                                        announcementDataList.set(i, modifiedAnnouncement);
+                        Announcement ann = dc.getDocument().toObject(Announcement.class);
+                        if (userid.equals(ann.getOrganizerID())) {
+                            //current user is the organiser.
+                            //show only milestone announcements
+                            Log.d("weird", "organiser id equals user id");
+                            if (ann.getIsMilestone()) {
+                                switch (dc.getType()) {
+                                    case ADDED:
+                                        Announcement newAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.add(0, newAnnouncement);
                                         break;
-                                    }
+                                    case MODIFIED:
+                                        Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        for (int i = 0; i < announcementDataList.size(); i++) {
+                                            if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId())) {
+                                                announcementDataList.set(i, modifiedAnnouncement);
+                                                break;
+                                            }
+                                        }
+                                        break;
+                                    case REMOVED:
+                                        //TODO make this method inside all other listeners.
+                                        Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.removeIf(announcement -> announcement.getId().equals(removedAnnouncement.getId()));
+                                        break;
                                 }
-                            case REMOVED:
-                                Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
-                                announcementDataList.remove(removedAnnouncement);
-                                break;
+                            }
+                        } else {
+                            //current user is not the organiser.
+                            //show only non milestone announcements
+                            if (!ann.getIsMilestone()) {
+                                Log.d("weird", "organiser id does not                             Log.d(\"weird\",\"organiser id equals user id\");\nequals user id");
+
+                                switch (dc.getType()) {
+                                    case ADDED:
+                                        Announcement newAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.add(0, newAnnouncement);
+                                        break;
+                                    case MODIFIED:
+                                        Announcement modifiedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        for (int i = 0; i < announcementDataList.size(); i++) {
+                                            if (announcementDataList.get(i).getId().equals(modifiedAnnouncement.getId())) {
+                                                announcementDataList.set(i, modifiedAnnouncement);
+                                                break;
+                                            }
+                                        }
+                                        break;
+                                    case REMOVED:
+                                        //TODO make this method inside all other listeners.
+                                        Announcement removedAnnouncement = dc.getDocument().toObject(Announcement.class);
+                                        announcementDataList.removeIf(announcement -> announcement.getId().equals(removedAnnouncement.getId()));
+                                        break;
+                                }
+                            }
                         }
+
+
                     }
 
 
@@ -196,16 +237,20 @@ public class FirebaseAnnouncementController
                     //or something
                     //if you dont want to just remove the text view and the listview form parameters
                     //and delete this.
-                    if (announcementDataList.isEmpty()) {
-                        emptyAnnouncement.setVisibility(View.VISIBLE);
-                        listView.setVisibility(View.GONE);
-                    } else {
-                        emptyAnnouncement.setVisibility(View.GONE);
-                        listView.setVisibility(View.VISIBLE);
-                    }
-
+                    updateVisibility(announcementDataList, listView, emptyAnnouncement);
+                    Log.d("Halpp", "announcement changes made");
                     adapter.notifyDataSetChanged();
                 });
+    }
+
+    private void updateVisibility(ArrayList<Announcement> announcementDataList, ListView listView, TextView emptyAnnouncement) {
+        if (announcementDataList.isEmpty()) {
+            emptyAnnouncement.setVisibility(View.VISIBLE);
+            listView.setVisibility(View.GONE);
+        } else {
+            emptyAnnouncement.setVisibility(View.GONE);
+            listView.setVisibility(View.VISIBLE);
+        }
     }
 }
 
