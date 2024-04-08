@@ -52,7 +52,7 @@ public class QRScanner {
             Result result = multiFormatReader.decode(binaryBitmap);
             return result.getText(); // Return the decoded text (QR code value)
         } catch (NotFoundException e) {
-            Log.d("QRScanner", "QR code not found",e);
+            e.printStackTrace();
             return null; // Return null if QR code is not found
         }
     }

@@ -3,7 +3,10 @@ package com.example.quickscanner.controller;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.example.quickscanner.model.Image;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.AggregateQuery;
 import com.google.firebase.firestore.AggregateQuerySnapshot;
@@ -12,6 +15,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -19,14 +23,16 @@ import com.google.firebase.storage.UploadTask;
 
 public class FirebaseImageController
 {
+    private final FirebaseFirestore db;
     private final FirebaseStorage idb;
     private final CollectionReference imagesRef;
+    private final StorageReference imageStorage;
 
     public FirebaseImageController()
     {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db = FirebaseFirestore.getInstance();
         idb = FirebaseStorage.getInstance();
-        StorageReference imageStorage = idb.getReference();
+        imageStorage = idb.getReference();
         imagesRef = db.collection("Images");
 
     }

@@ -6,8 +6,6 @@ package com.example.quickscanner.model;
 
 import com.example.quickscanner.controller.FirebaseImageController;
 
-import java.util.Objects;
-
 /**
  * Represents a User's profile with name, email, website, and image URL.
  */
@@ -47,11 +45,11 @@ public class Profile {
         int sum = 0;
         int pfpCount = 10;
         String generatee = userID;
-        if (!Objects.equals(name, "")) {
+        if (name != "") {
             generatee = name;
         }
         for(int i = 0; i < generatee.length(); i++) {
-            sum += generatee.charAt(i);
+            sum += (int)generatee.charAt(i);
         }
         return String.valueOf(sum%pfpCount) + ".png";
     }

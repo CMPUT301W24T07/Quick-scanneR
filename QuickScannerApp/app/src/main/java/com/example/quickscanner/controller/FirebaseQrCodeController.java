@@ -2,8 +2,10 @@ package com.example.quickscanner.controller;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 
 import com.example.quickscanner.model.Event;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
@@ -12,12 +14,16 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * Controller for managing QR codes in Firebase Firestore.
@@ -84,16 +90,19 @@ public class FirebaseQrCodeController {
         CollectionReference qrCodesRef = usersRef.document(userId).collection("QrCodes");
         // Orders qr code strings by timestamp in descending order
         Query query = qrCodesRef.orderBy("timestamp", Query.Direction.DESCENDING);
-        return query.get().continueWith(task -> {
-            if (task.isSuccessful()) {
-                List<String> qrCodeIds = new ArrayList<>();
-                for (DocumentSnapshot document : task.getResult()) {
-                    //adds each Qr codes id to the list
-                    qrCodeIds.add(document.getId());
+        return query.get().continueWith(new Continuation<QuerySnapshot, List<String>>() {
+            @Override
+            public List<String> then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                if (task.isSuccessful()) {
+                    List<String> qrCodeIds = new ArrayList<>();
+                    for (DocumentSnapshot document : task.getResult()) {
+                        //adds each Qr codes id to the list
+                        qrCodeIds.add(document.getId());
+                    }
+                    return qrCodeIds;
+                } else {
+                    throw task.getException();
                 }
-                return qrCodeIds;
-            } else {
-                throw task.getException();
             }
         });
     }
@@ -110,17 +119,20 @@ public class FirebaseQrCodeController {
         validateId(qrCode);
         CollectionReference eventsRef = db.collection("Events");
         Query query = eventsRef.whereEqualTo("checkInQrCode", qrCode).limit(1);
-        return query.get().continueWith(task -> {
-            if (task.isSuccessful()) {
-                QuerySnapshot querySnapshot = task.getResult();
-                if (!querySnapshot.isEmpty()) {
-                    DocumentSnapshot document = querySnapshot.getDocuments().get(0);
-                    return document.toObject(Event.class);
+        return query.get().continueWith(new Continuation<QuerySnapshot, Event>() {
+            @Override
+            public Event then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                if (task.isSuccessful()) {
+                    QuerySnapshot querySnapshot = task.getResult();
+                    if (!querySnapshot.isEmpty()) {
+                        DocumentSnapshot document = querySnapshot.getDocuments().get(0);
+                        return document.toObject(Event.class);
+                    } else {
+                        return null; // No event found with the provided QR code
+                    }
                 } else {
-                    return null; // No event found with the provided QR code
+                    throw task.getException();
                 }
-            } else {
-                throw task.getException();
             }
         });
     }
@@ -135,18 +147,21 @@ public class FirebaseQrCodeController {
         validateId(qrCode);
         CollectionReference eventsRef = db.collection("Events");
         Query query = eventsRef.whereEqualTo("promoQrCode", qrCode).limit(1);
-        return query.get().continueWith(task -> {
-            if (task.isSuccessful()) {
-                QuerySnapshot querySnapshot = task.getResult();
-                if (!querySnapshot.isEmpty()) {
-                    DocumentSnapshot document = querySnapshot.getDocuments().get(0);
-                    return document.toObject(Event.class);
+        return query.get().continueWith(new Continuation<QuerySnapshot, Event>() {
+            @Override
+            public Event then(@NonNull Task<QuerySnapshot> task) throws Exception {
+                if (task.isSuccessful()) {
+                    QuerySnapshot querySnapshot = task.getResult();
+                    if (!querySnapshot.isEmpty()) {
+                        DocumentSnapshot document = querySnapshot.getDocuments().get(0);
+                        return document.toObject(Event.class);
+                    } else {
+                        Log.d("testerrrr","no event found in qrcode controller");
+                        return null; // No event found with the provided QR code
+                    }
                 } else {
-                    Log.d("testerrrr","no event found in qrcode controller");
-                    return null; // No event found with the provided QR code
+                    throw task.getException();
                 }
-            } else {
-                throw task.getException();
             }
         });
     }
