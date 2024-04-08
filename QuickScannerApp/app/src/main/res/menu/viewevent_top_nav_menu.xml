@@ -10,10 +10,6 @@
         app:showAsAction="never"
         />
     <item
-        android:id="@+id/navigation_attendance_list"
-        android:title="@string/attendance_list"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/navigation_QR_check_in"
         android:title="@string/qr_code_check_in"
         app:showAsAction="never" />
