@@ -9,13 +9,13 @@
     <RelativeLayout
         android:id="@+id/EventFragmentContent_itemClicked"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="250dp">
 
 
         <ImageView
             android:id="@+id/EventFragment_Image"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="250dp"
+            android:layout_height="200dp"
             android:layout_centerVertical="true"
             android:src="@drawable/baseline_catching_pokemon_24" />
 
@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="5dp"
-            android:layout_marginEnd="5dp"
+            android:layout_marginEnd="10dp"
             android:layout_toStartOf="@id/EventFragment_DropDown"
             android:layout_toEndOf="@+id/EventFragment_Image"
             android:orientation="vertical">
@@ -37,7 +37,7 @@
                 android:padding="5dp"
                 android:text="@string/event_name"
                 android:textColor="@android:color/black"
-                android:textSize="18sp"
+                android:textSize="24sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -47,19 +47,9 @@
                 android:padding="5dp"
                 android:text="@string/time"
                 android:textColor="@android:color/black"
-                android:textSize="15sp" />
+                android:textSize="18sp" />
 
         </LinearLayout>
-
-        <ImageView
-            android:id="@+id/EventFragment_DropDown"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="3dp"
-            android:visibility="invisible"
-            android:contentDescription="@string/expandable_arrow"
-            android:src="@drawable/baseline_catching_pokemon_24" />
 
     </RelativeLayout>
 
