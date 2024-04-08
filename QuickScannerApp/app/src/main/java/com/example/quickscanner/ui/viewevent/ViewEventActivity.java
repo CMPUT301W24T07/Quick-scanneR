@@ -187,7 +187,6 @@ public class ViewEventActivity extends AppCompatActivity {
             Log.e("halpp", "Event ID is: " + eventID);
         }
         fetchEventData();
-        //Toast.makeText(this, eventID, Toast.LENGTH_SHORT).show();
 
 
         // Get a reference to the announcement button
@@ -724,7 +723,6 @@ public class ViewEventActivity extends AppCompatActivity {
         else if (itemId == R.id.navigation_QR_check_in)
         {
             // Handle Click
-            Toast.makeText(this, "navigation_QR_check_in clicked", Toast.LENGTH_SHORT).show();
 
             //todo: implement dialog fragment for check in qr code
             String checkinQrCode = event.getCheckInQrCode();
@@ -737,7 +735,6 @@ public class ViewEventActivity extends AppCompatActivity {
 
         } else if (itemId == R.id.navigation_QR_promotional) {
             // Handle click
-            Toast.makeText(this, "navigation_QR_promotional clicked", Toast.LENGTH_SHORT).show();
 
             //todo: implement dialog fragment for promotional qr code
             String promoQrCode = event.getPromoQrCode();
