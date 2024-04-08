@@ -1,6 +1,8 @@
 package com.example.quickscanner.ui.viewevent;
 
 import static android.content.ContentValues.TAG;
+import static android.text.InputType.TYPE_CLASS_TEXT;
+import static android.text.InputType.TYPE_NULL;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -17,6 +19,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,6 +32,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -61,11 +65,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.Objects;
 
-//javadocs
-/**
- * This class is the View Event Activity.
- * It allows the user to view an event.
- */
 public class ViewEventActivity extends AppCompatActivity {
     String eventID;
     private FirebaseEventController fbEventController;
@@ -82,19 +81,14 @@ public class ViewEventActivity extends AppCompatActivity {
 
     private FirebaseQrCodeController fbQRCodeController;
     // UI reference
-    Switch toggleGeolocation;
-    public boolean doneSetting;
+    private Switch toggleGeolocation;
 
+    private boolean editMode;
+    public boolean doneSetting;
 
     private Event currentEvent;
     private Bitmap qrCodeBitmap;
 
-    //javadocs
-    /**
-     * This method creates the View Event Activity.
-     * Usage: call once.
-     * @param savedInstanceState
-     */
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -268,13 +262,10 @@ public class ViewEventActivity extends AppCompatActivity {
             }
         });
 
+
     }
 
-    //javadocs
-    /**
-     * This method shows the organiser details dialog.
-     * Usage: call once.
-     */
+
     private void showOrganiserDetailsDialog() {
 
         Dialog dialog = new Dialog(this);
@@ -347,11 +338,6 @@ public class ViewEventActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    //javadocs
-/**
-     * This method fetches the event data.
-     * Usage: call once.
-     */
     // Fetches the event data from Firestore
     private void fetchEventData() {
 
@@ -410,6 +396,20 @@ public class ViewEventActivity extends AppCompatActivity {
                             intent.putExtra("eventID", eventID);
                             // Start the AttendanceActivity
                             startActivity(intent);
+                        } else if (buttonText.equals("Save")) {
+                            setNonEditConstraint();
+                            binding.signUpButton.setText("Attendance Information");
+
+                            event.setLocation(String.valueOf(binding.locationTextview.getText()));
+                            event.setName(String.valueOf(binding.eventTitleText.getText()));
+                            event.setDescription(String.valueOf(binding.eventDescriptionText.getText()));
+
+                            binding.locationTextview.setInputType(TYPE_NULL);
+                            binding.eventTitleText.setInputType(TYPE_NULL);
+                            binding.eventDescriptionText.setInputType(TYPE_NULL);
+                            editMode = false;
+
+                            fbEventController.updateEvent(event);
                         }
                     }
                 });
@@ -425,21 +425,80 @@ public class ViewEventActivity extends AppCompatActivity {
 
     }
 
+    private void setNonEditConstraint() {
+        Button timeButton = binding.setTimeButton;
+        Button locationButton = binding.setLocationButton;
+        timeButton.setVisibility(View.GONE);
+        locationButton.setVisibility(View.GONE);
 
-    //javadocs
-    /**
-     * This method sets the event data to the UI.
-     * Usage: call once.
-     * @param event
-     * @param UiD
-     */
+        EditText timeText = binding.eventTimeText;
+        EditText locationText = binding.locationTextview;
+        EditText descriptionText = binding.eventDescriptionText;
+
+        ConstraintLayout.LayoutParams timeParams = (ConstraintLayout.LayoutParams) timeText.getLayoutParams();
+        ConstraintLayout.LayoutParams locationParams = (ConstraintLayout.LayoutParams) locationText.getLayoutParams();
+        ConstraintLayout.LayoutParams descriptionParams = (ConstraintLayout.LayoutParams) descriptionText.getLayoutParams();
+
+        locationParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+        locationParams.startToEnd = ConstraintLayout.LayoutParams.UNSET;
+        locationParams.startToStart = binding.constraintLayout.getId();
+        locationParams.topToBottom = timeText.getId();
+
+        timeParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.startToEnd = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.startToStart = binding.constraintLayout.getId();
+        timeParams.topToTop = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.topToBottom = binding.organiserProfilePicture.getId();
+
+        descriptionParams.topMargin = 100;
+
+        timeText.setLayoutParams(timeParams);
+        locationText.setLayoutParams(locationParams);
+        descriptionText.setLayoutParams(descriptionParams);
+    }
+
+    private void setEditConstraint() {
+        Button timeButton = binding.setTimeButton;
+        Button locationButton = binding.setLocationButton;
+        timeButton.setVisibility(View.VISIBLE);
+        locationButton.setVisibility(View.VISIBLE);
+
+        EditText timeText = binding.eventTimeText;
+        EditText locationText = binding.locationTextview;
+        EditText descriptionText = binding.eventDescriptionText;
+
+        ConstraintLayout.LayoutParams timeParams = (ConstraintLayout.LayoutParams) timeText.getLayoutParams();
+        ConstraintLayout.LayoutParams locationParams = (ConstraintLayout.LayoutParams) locationText.getLayoutParams();
+        ConstraintLayout.LayoutParams descriptionParams = (ConstraintLayout.LayoutParams) descriptionText.getLayoutParams();
+
+        locationParams.bottomToBottom = locationButton.getId();
+        locationParams.startToEnd = locationButton.getId();
+        locationParams.startToStart = ConstraintLayout.LayoutParams.UNSET;
+        locationParams.topToBottom = timeButton.getId();
+
+        timeParams.bottomToBottom = timeButton.getId();
+        timeParams.startToEnd = timeButton.getId();
+        timeParams.startToStart = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.topToTop = timeButton.getId();
+        timeParams.topToBottom = ConstraintLayout.LayoutParams.UNSET;
+
+
+        descriptionParams.topMargin = 30;
+
+        timeText.setLayoutParams(timeParams);
+        locationText.setLayoutParams(locationParams);
+        descriptionText.setLayoutParams(descriptionParams);
+    }
+
     private void setEventDataToUI(Event event, String UiD) {
-
+        editMode = false;
         //use event object to update all the views
+        setNonEditConstraint();
         binding.eventTitleText.setText(event.getName());
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
         binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
+        // disabling the set buttons for location and time
         fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
             public void onSuccess(User user) {
                 if (user != null && user.getUserProfile() != null) {
@@ -542,13 +601,7 @@ public class ViewEventActivity extends AppCompatActivity {
         });
     }
 
-    //javadocs
-    /**
-     * This method generates the QR code.
-     * Usage: call once.
-     * @param text
-     * @return Bitmap
-     */
+
     //generates QR code
     private Bitmap generateQRCode(String text) {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -569,19 +622,66 @@ public class ViewEventActivity extends AppCompatActivity {
         return null;
     }
 
-    /**         Inflate Handle Top Menu Options        */
+    /*         Inflate Handle Top Menu Options        */
     // Create the Top Menu bar
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        // inflate menu
         getMenuInflater().inflate(R.menu.viewevent_top_nav_menu, menu);
+
+        // grant organizer access
+        Bundle menuBundle = getIntent().getExtras();
+        String menuEventID = menuBundle.getString("eventID");
+        // Query Event Object from Firebase
+        new FirebaseEventController().getEvent(menuEventID)
+            .addOnSuccessListener(new OnSuccessListener<Event>() {
+                @Override
+                public void onSuccess(Event event) {
+                    if (event == null){
+                        throw new RuntimeException("No such Event");
+                    }
+                    // event exists
+                    if (Objects.equals(event.getOrganizerID(), new FirebaseUserController().getCurrentUserUid())) {
+                        // user is an organizer. Allow organizer permissions.
+                        menu.findItem(R.id.navigation_QR_check_in).setVisible(true);
+                        menu.findItem(R.id.navigation_edit).setVisible(true);
+                        menu.findItem(R.id.map).setVisible(true);
+                    }
+
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
+                }
+        });
+
+
+        // grant admin access
+        Boolean isAdmin = menuBundle.getBoolean("adminkey", false);
+        if (isAdmin) {
+            menu.findItem(R.id.navigation_delete).setVisible(true);
+        }
+
         return true;
+
     }
 
-    /**    Handle click events for the Top Menu Bar    */
+    /*    Handle click events for the Top Menu Bar    */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
-        if (itemId == R.id.navigation_QR_check_in) {
+        if (itemId == R.id.navigation_edit) {
+            setEditConstraint();
+            binding.signUpButton.setText("Save");
+
+            binding.locationTextview.setInputType(TYPE_CLASS_TEXT);
+            binding.eventTitleText.setInputType(TYPE_CLASS_TEXT);
+            binding.eventDescriptionText.setInputType(TYPE_CLASS_TEXT);
+        }
+        else if (itemId == R.id.navigation_QR_check_in)
+        {
             // Handle Click
             Toast.makeText(this, "navigation_QR_check_in clicked", Toast.LENGTH_SHORT).show();
 
@@ -662,13 +762,6 @@ public class ViewEventActivity extends AppCompatActivity {
 
     }
 
-    //javadocs
-    /**
-     * This method confirms the cancellation of sign up.
-     * Usage: call once.
-     * @param UiD
-     * @param eventID
-     */
     public void confirmCancelSignUp(String UiD, String eventID) {
         // Create an AlertDialog
         new AlertDialog.Builder(ViewEventActivity.this)
@@ -696,23 +789,12 @@ public class ViewEventActivity extends AppCompatActivity {
                 .show();
     }
 
-    //javadocs
-    /**
-     * This method shows the content.
-     * Usage: call once.
-     */
     private void showContent() {
         loading.setVisibility(View.GONE);
         binding.signUpButton.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.VISIBLE);
     }
 
-    //javadocs
-    /**
-     * This method decrements the load count.
-     * Usage: call once.
-     * @param location
-     */
     private synchronized void decrementLoadCount(String location) {
         loadCount--;
         Log.d(TAG, "loadCount after decrement " + location + " : " + loadCount); // Corrected to log after decrement

@@ -16,15 +16,9 @@ import com.example.quickscanner.databinding.FragmentAnnouncementsBinding;
 import com.example.quickscanner.R;
 
 import android.os.Bundle;
-import android.util.Log;
 
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.transition.AutoTransition;
-import android.transition.TransitionManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -33,16 +27,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import com.example.quickscanner.model.Announcement;
-import com.example.quickscanner.model.Event;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.firestore.EventListener;
 
 import java.util.ArrayList;
 
@@ -124,7 +109,7 @@ public class AnnouncementsFragment extends Fragment {
 
 
         // Initialize the Announcement data list and ArrayAdapter
-        AnnouncementsDataList = new ArrayList<Announcement>();
+        AnnouncementsDataList = new ArrayList<>();
         announcementsAdapter = new AnnouncementArrayAdapter(getContext(), AnnouncementsDataList);
         // Set the adapter to the ListView
         announcementListView.setAdapter(announcementsAdapter);
@@ -145,28 +130,25 @@ public class AnnouncementsFragment extends Fragment {
 
 
         /*      Announcement ListView Click       */
-        announcementListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                // get announcement
-                Announcement clickedAnnouncement = (Announcement) adapterView.getItemAtPosition(position);
+        announcementListView.setOnItemClickListener((adapterView, view1, position, id) -> {
+            // get announcement
+            Announcement clickedAnnouncement = (Announcement) adapterView.getItemAtPosition(position);
 
-                // references again
-                dropDownLayout = view.findViewById(R.id.announcementsFragment_Extension);
-                expandableArrow = view.findViewById(R.id.announcementsFragment_DropDown);
-                itemClicked = view.findViewById(R.id.announcementsContent_itemClicked);
-                fullRowLayout = view.findViewById(R.id.announcementsContent_Row);
+            // references again
+            dropDownLayout = view1.findViewById(R.id.announcementsFragment_Extension);
+            expandableArrow = view1.findViewById(R.id.announcementsFragment_DropDown);
+            itemClicked = view1.findViewById(R.id.announcementsContent_itemClicked);
+            fullRowLayout = view1.findViewById(R.id.announcementsContent_Row);
 
-                // display fragment
-                if (dropDownLayout.getVisibility() == View.GONE) {
-                    dropDownLayout.setVisibility(View.VISIBLE);
-                    expandableArrow.setImageResource(R.drawable.ic_up_arrow);
-                } else {
-                    dropDownLayout.setVisibility(View.GONE);
-                    expandableArrow.setImageResource(R.drawable.ic_down_arrow);
-                }
-
+            // display fragment
+            if (dropDownLayout.getVisibility() == View.GONE) {
+                dropDownLayout.setVisibility(View.VISIBLE);
+                expandableArrow.setImageResource(R.drawable.ic_up_arrow);
+            } else {
+                dropDownLayout.setVisibility(View.GONE);
+                expandableArrow.setImageResource(R.drawable.ic_down_arrow);
             }
+
         });
     }
 

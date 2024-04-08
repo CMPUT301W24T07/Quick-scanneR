@@ -77,14 +77,12 @@ public class BrowseImagesActivity extends AppCompatActivity {
 
         // Find the delete button
         FloatingActionButton deleteButton = findViewById(R.id.delete_button);
-        deleteButton.setOnClickListener(v -> {
-            new AlertDialog.Builder(BrowseImagesActivity.this)
-                    .setTitle("Delete Images")
-                    .setMessage("Are you sure you want to delete these Image(s)?")
-                    .setPositiveButton("Yes", (dialog, which) -> deleteSelectedImages())
-                    .setNegativeButton("Cancel", null)
-                    .show();
-        });
+        deleteButton.setOnClickListener(v -> new AlertDialog.Builder(BrowseImagesActivity.this)
+                .setTitle("Delete Images")
+                .setMessage("Are you sure you want to delete these Image(s)?")
+                .setPositiveButton("Yes", (dialog, which) -> deleteSelectedImages())
+                .setNegativeButton("Cancel", null)
+                .show());
     }
 
     //javadocs
@@ -133,12 +131,10 @@ public class BrowseImagesActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 }
