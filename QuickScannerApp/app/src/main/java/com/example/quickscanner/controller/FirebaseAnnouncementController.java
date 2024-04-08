@@ -72,6 +72,8 @@ public class FirebaseAnnouncementController
         fbAttendanceController.getEventAttendeeIds(eventId).addOnSuccessListener(userIds -> {
             DocumentReference eventAnnouncementRef = eventsRef.document(eventId)
                     .collection("Announcements").document();
+            String announcementId = eventAnnouncementRef.getId();
+            announcement.setId(announcementId);
             // attempts to add the announcement to the event
             eventAnnouncementRef.set(announcement).addOnSuccessListener(aVoid -> {
                 // If adding the announcement succeeds, proceeds as normal
