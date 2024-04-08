@@ -129,7 +129,7 @@ public class ScannerFragment extends Fragment {
             // Scan the QR code
             qrScanner.scanQRCode(qrCodeValue -> {
 
-                AtomicBoolean isUserAdmin= new AtomicBoolean(false);
+                AtomicBoolean isUserAdmin = new AtomicBoolean(false);
                 String usedId = fbUserController.getCurrentUserUid();
                 DocumentReference adminAuthRef = FirebaseFirestore.getInstance().collection("config").document("Admin Auth Code");
                 adminAuthRef.get().addOnSuccessListener(documentSnapshot -> {
@@ -139,9 +139,16 @@ public class ScannerFragment extends Fragment {
                             //get current user reference, and make the isAdmin field true in firebase
                             DocumentReference userRef = FirebaseFirestore.getInstance().collection("users").document(usedId);
 
-                            userRef.update("admin", true);
-                            isUserAdmin.set(true);
-                            Toast.makeText(getContext(), "Admin Privileges Unlocked", Toast.LENGTH_LONG).show();
+                            userRef.update("admin", true).addOnSuccessListener(aVoid -> {
+                                Log.d("testerrr", "User is now an admin");
+                                isUserAdmin.set(true);
+
+                                if (getActivity() != null) {
+                                    getActivity().runOnUiThread(() -> getActivity().invalidateOptionsMenu()); // Invalidate the options menu
+                                }
+
+                                Toast.makeText(getContext(), "Admin Privileges Unlocked", Toast.LENGTH_LONG).show();
+                            });
                         }
                     }
                 });
@@ -235,16 +242,16 @@ public class ScannerFragment extends Fragment {
                             //setup milestones code
 
                             //int list of milestones: 1,5,10
-                            int[] milestones = {1,2,3,4, 5,6, 10, 25, 50, 100};
+                            int[] milestones = {1, 2, 3, 4, 5, 6, 10, 25, 50, 100};
 
-                            for (int milestone: milestones) {
+                            for (int milestone : milestones) {
                                 if (currentAttendance == milestone) {
                                     //if the current attendance is equal to a milestone, give the user a badge
                                     //and show a toast message
                                     Log.d("miless", "Milestone reached: " + milestone);
                                     Toast.makeText(getContext(), "Milestone reached: " + milestone, Toast.LENGTH_LONG).show();
 
-                                    String msg = "Congratulations, your event "+event.getName()+" has reached a milestone of "+milestone+" attendees!";
+                                    String msg = "Congratulations, your event " + event.getName() + " has reached a milestone of " + milestone + " attendees!";
                                     //add announcement to the event
                                     Announcement ann_actual = new Announcement(msg, event.getName());
                                     ann_actual.setOrganizerID(event.getOrganizerID());
@@ -254,7 +261,6 @@ public class ScannerFragment extends Fragment {
 
                                 }
                             }
-
 
 
                         } else {

@@ -118,14 +118,8 @@ public class MainActivity extends AppCompatActivity {
 
         MenuItem adminItem = menu.findItem(R.id.navigation_adminPage);
         if (adminItem != null) {
-            // Check if the user is an admin
-            if (isUserAdmin) {
-                adminItem.setVisible(true);
-            } else {
-                adminItem.setVisible(false);
-            }
+            adminItem.setVisible(isUserAdmin);
         }
-
         return super.onPrepareOptionsMenu(menu);
     }
 
