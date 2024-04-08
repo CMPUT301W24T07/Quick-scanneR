@@ -8,10 +8,12 @@
         android:id="@+id/navigation_edit"
         android:title="@string/edit"
         app:showAsAction="never"
+        android:visible="false"
         />
     <item
         android:id="@+id/navigation_QR_check_in"
         android:title="@string/qr_code_check_in"
+        android:visible="false"
         app:showAsAction="never" />
     <item
         android:id="@+id/navigation_QR_promotional"
@@ -20,11 +22,15 @@
     <item
         android:id="@+id/map"
         android:title="@string/map"
-        app:showAsAction="never" />
+        app:showAsAction="never"
+        android:visible="false"
+        />
     <item
         android:id="@+id/navigation_delete"
         android:title="@string/delete"
-        app:showAsAction="never" />
+        app:showAsAction="never"
+        android:visible="false"
+        />
 
 
 
