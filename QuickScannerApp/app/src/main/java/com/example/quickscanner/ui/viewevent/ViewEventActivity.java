@@ -80,7 +80,6 @@ public class ViewEventActivity extends AppCompatActivity
     // UI reference
     Switch toggleGeolocation;
 
-
     private Event currentEvent;
     private Bitmap qrCodeBitmap;
 
@@ -261,6 +260,7 @@ public class ViewEventActivity extends AppCompatActivity
 
             }
         });
+
 
     }
 
@@ -548,16 +548,6 @@ public class ViewEventActivity extends AppCompatActivity
         });
     }
 
-//    // Handles The Top Bar menu clicks
-//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-//        if (item.getItemId() == android.R.id.home) {
-//            // Handle the Back button press
-//            finish();
-//            return true;
-//        }
-//        return super.onOptionsItemSelected(item);
-//
-//    }
 
     //generates QR code
     private Bitmap generateQRCode(String text)
@@ -589,8 +579,45 @@ public class ViewEventActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
+        // inflate menu
         getMenuInflater().inflate(R.menu.viewevent_top_nav_menu, menu);
+
+        // grant organizer access
+        Bundle menuBundle = getIntent().getExtras();
+        String menuEventID = menuBundle.getString("eventID");
+        // Query Event Object from Firebase
+        new FirebaseEventController().getEvent(menuEventID)
+            .addOnSuccessListener(new OnSuccessListener<Event>() {
+                @Override
+                public void onSuccess(Event event) {
+                    if (event == null){
+                        throw new RuntimeException("No such Event");
+                    }
+                    // event exists
+                    if (Objects.equals(event.getOrganizerID(), new FirebaseUserController().getCurrentUserUid())) {
+                        // user is an organizer. Allow organizer permissions.
+                        menu.findItem(R.id.navigation_QR_check_in).setVisible(true);
+                        menu.findItem(R.id.navigation_edit).setVisible(true);
+                        menu.findItem(R.id.map).setVisible(true);
+                    }
+
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.e("ViewEventActivity", "Error fetching event data: " + e.getMessage());
+                }
+        });
+
+
+        // grant admin access
+        Boolean isAdmin = menuBundle.getBoolean("adminkey", false);
+        if (isAdmin) {
+            menu.findItem(R.id.navigation_delete).setVisible(true);
+        }
+
         return true;
+
     }
 
     /*    Handle click events for the Top Menu Bar    */
@@ -598,13 +625,7 @@ public class ViewEventActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(@NonNull MenuItem item)
     {
         int itemId = item.getItemId();
-        if (itemId == R.id.navigation_attendance_list)
-        {// Handle Edit Profile click
-            // Handle click
-            Toast.makeText(this, "navigation_attendance_list clicked", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-        else if (itemId == R.id.navigation_QR_check_in)
+        if (itemId == R.id.navigation_QR_check_in)
         {
             // Handle Click
             Toast.makeText(this, "navigation_QR_check_in clicked", Toast.LENGTH_SHORT).show();
