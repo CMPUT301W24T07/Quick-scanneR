@@ -1,6 +1,8 @@
 package com.example.quickscanner.ui.viewevent;
 
 import static android.content.ContentValues.TAG;
+import static android.text.InputType.TYPE_CLASS_TEXT;
+import static android.text.InputType.TYPE_NULL;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -17,6 +19,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,6 +32,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -77,7 +81,9 @@ public class ViewEventActivity extends AppCompatActivity {
 
     private FirebaseQrCodeController fbQRCodeController;
     // UI reference
-    Switch toggleGeolocation;
+    private Switch toggleGeolocation;
+
+    private boolean editMode;
     public boolean doneSetting;
 
     private Event currentEvent;
@@ -390,6 +396,20 @@ public class ViewEventActivity extends AppCompatActivity {
                             intent.putExtra("eventID", eventID);
                             // Start the AttendanceActivity
                             startActivity(intent);
+                        } else if (buttonText.equals("Save")) {
+                            setNonEditConstraint();
+                            binding.signUpButton.setText("Attendance Information");
+
+                            event.setLocation(String.valueOf(binding.locationTextview.getText()));
+                            event.setName(String.valueOf(binding.eventTitleText.getText()));
+                            event.setDescription(String.valueOf(binding.eventDescriptionText.getText()));
+
+                            binding.locationTextview.setInputType(TYPE_NULL);
+                            binding.eventTitleText.setInputType(TYPE_NULL);
+                            binding.eventDescriptionText.setInputType(TYPE_NULL);
+                            editMode = false;
+
+                            fbEventController.updateEvent(event);
                         }
                     }
                 });
@@ -405,14 +425,80 @@ public class ViewEventActivity extends AppCompatActivity {
 
     }
 
+    private void setNonEditConstraint() {
+        Button timeButton = binding.setTimeButton;
+        Button locationButton = binding.setLocationButton;
+        timeButton.setVisibility(View.GONE);
+        locationButton.setVisibility(View.GONE);
+
+        EditText timeText = binding.eventTimeText;
+        EditText locationText = binding.locationTextview;
+        EditText descriptionText = binding.eventDescriptionText;
+
+        ConstraintLayout.LayoutParams timeParams = (ConstraintLayout.LayoutParams) timeText.getLayoutParams();
+        ConstraintLayout.LayoutParams locationParams = (ConstraintLayout.LayoutParams) locationText.getLayoutParams();
+        ConstraintLayout.LayoutParams descriptionParams = (ConstraintLayout.LayoutParams) descriptionText.getLayoutParams();
+
+        locationParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+        locationParams.startToEnd = ConstraintLayout.LayoutParams.UNSET;
+        locationParams.startToStart = binding.constraintLayout.getId();
+        locationParams.topToBottom = timeText.getId();
+
+        timeParams.bottomToBottom = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.startToEnd = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.startToStart = binding.constraintLayout.getId();
+        timeParams.topToTop = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.topToBottom = binding.organiserProfilePicture.getId();
+
+        descriptionParams.topMargin = 100;
+
+        timeText.setLayoutParams(timeParams);
+        locationText.setLayoutParams(locationParams);
+        descriptionText.setLayoutParams(descriptionParams);
+    }
+
+    private void setEditConstraint() {
+        Button timeButton = binding.setTimeButton;
+        Button locationButton = binding.setLocationButton;
+        timeButton.setVisibility(View.VISIBLE);
+        locationButton.setVisibility(View.VISIBLE);
+
+        EditText timeText = binding.eventTimeText;
+        EditText locationText = binding.locationTextview;
+        EditText descriptionText = binding.eventDescriptionText;
+
+        ConstraintLayout.LayoutParams timeParams = (ConstraintLayout.LayoutParams) timeText.getLayoutParams();
+        ConstraintLayout.LayoutParams locationParams = (ConstraintLayout.LayoutParams) locationText.getLayoutParams();
+        ConstraintLayout.LayoutParams descriptionParams = (ConstraintLayout.LayoutParams) descriptionText.getLayoutParams();
+
+        locationParams.bottomToBottom = locationButton.getId();
+        locationParams.startToEnd = locationButton.getId();
+        locationParams.startToStart = ConstraintLayout.LayoutParams.UNSET;
+        locationParams.topToBottom = timeButton.getId();
+
+        timeParams.bottomToBottom = timeButton.getId();
+        timeParams.startToEnd = timeButton.getId();
+        timeParams.startToStart = ConstraintLayout.LayoutParams.UNSET;
+        timeParams.topToTop = timeButton.getId();
+        timeParams.topToBottom = ConstraintLayout.LayoutParams.UNSET;
+
+
+        descriptionParams.topMargin = 30;
+
+        timeText.setLayoutParams(timeParams);
+        locationText.setLayoutParams(locationParams);
+        descriptionText.setLayoutParams(descriptionParams);
+    }
 
     private void setEventDataToUI(Event event, String UiD) {
-
+        editMode = false;
         //use event object to update all the views
+        setNonEditConstraint();
         binding.eventTitleText.setText(event.getName());
         binding.eventDescriptionText.setText(event.getDescription());
         binding.locationTextview.setText(event.getLocation());
         binding.organiserProfilePicture.setImageResource(R.drawable.ic_home_black_24dp);
+        // disabling the set buttons for location and time
         fbUserController.getUser(event.getOrganizerID()).addOnSuccessListener(new OnSuccessListener<User>() {
             public void onSuccess(User user) {
                 if (user != null && user.getUserProfile() != null) {
@@ -586,9 +672,16 @@ public class ViewEventActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
+        if (itemId == R.id.navigation_edit) {
+            setEditConstraint();
+            binding.signUpButton.setText("Save");
 
-        if (itemId == R.id.navigation_QR_check_in) {
-
+            binding.locationTextview.setInputType(TYPE_CLASS_TEXT);
+            binding.eventTitleText.setInputType(TYPE_CLASS_TEXT);
+            binding.eventDescriptionText.setInputType(TYPE_CLASS_TEXT);
+        }
+        else if (itemId == R.id.navigation_QR_check_in)
+        {
             // Handle Click
             Toast.makeText(this, "navigation_QR_check_in clicked", Toast.LENGTH_SHORT).show();
 

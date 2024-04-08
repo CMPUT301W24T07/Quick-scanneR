@@ -4,7 +4,6 @@ package com.example.quickscanner.model;
  * Represents an image.
  */
 public class Image {
-
     private String imageUrl;
     public boolean isSelected;
     private String source;
