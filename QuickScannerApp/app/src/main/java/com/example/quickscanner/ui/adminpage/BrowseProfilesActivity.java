@@ -57,7 +57,7 @@ public class BrowseProfilesActivity extends AppCompatActivity {
         profileListView = findViewById(R.id.BrowseProfilesListView);
 
         // Initialize the profile data list and ArrayAdapter
-        profilesDataList = new ArrayList<User>();
+        profilesDataList = new ArrayList<>();
         profileAdapter = new ProfileArrayAdapter(this, profilesDataList);
         // Set the adapter to the ListView
         profileListView.setAdapter(profileAdapter);
@@ -67,9 +67,7 @@ public class BrowseProfilesActivity extends AppCompatActivity {
             profilesDataList.clear();  // removes current data
                 profilesDataList.addAll(users); // adds new data from db
             profileAdapter.notifyDataSetChanged();
-        }).addOnFailureListener(e ->{
-            Log.e("Firestore failed to load users:", e.toString());
-        });
+        }).addOnFailureListener(e -> Log.e("Firestore failed to load users:", e.toString()));
 
         // Inside onCreate method
         profileListView.setOnItemClickListener((parent, view, position, id) -> {
@@ -82,14 +80,12 @@ public class BrowseProfilesActivity extends AppCompatActivity {
 
         // Find the delete button
         FloatingActionButton deleteButton = findViewById(R.id.delete_button);
-        deleteButton.setOnClickListener(v -> {
-            new AlertDialog.Builder(BrowseProfilesActivity.this)
-                    .setTitle("Delete Profiles")
-                    .setMessage("Are you sure you want to delete these Profile(s)?")
-                    .setPositiveButton("Yes", (dialog, which) -> deleteSelectedProfiles())
-                    .setNegativeButton("Cancel", null)
-                    .show();
-        });
+        deleteButton.setOnClickListener(v -> new AlertDialog.Builder(BrowseProfilesActivity.this)
+                .setTitle("Delete Profiles")
+                .setMessage("Are you sure you want to delete these Profile(s)?")
+                .setPositiveButton("Yes", (dialog, which) -> deleteSelectedProfiles())
+                .setNegativeButton("Cancel", null)
+                .show());
     }
 
     //javadocs
@@ -130,12 +126,10 @@ public class BrowseProfilesActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 }

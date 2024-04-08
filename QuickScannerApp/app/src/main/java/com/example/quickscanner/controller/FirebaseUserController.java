@@ -230,7 +230,11 @@ public class FirebaseUserController
         //TODO remove this and replace with other get user method
         return usersRef.document(userId).get();
     }
-
+/*
+    public Task<DocumentSnapshot> deleteEventFromUser(String eventID) {
+       //return
+    }
+ */
     public Task<User> getUserByImageURL(String imageURL) {
         Log.d("testing", "imageURL: " + imageURL);
         Query query = usersRef.whereEqualTo(FieldPath.of("userProfile.imageUrl"), imageURL);

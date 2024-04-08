@@ -79,21 +79,19 @@ public class SignUpAdapter extends ArrayAdapter<User> {
             name.setText(currentName);
         }
         FirebaseImageController fbImageController = new FirebaseImageController();
-        fbImageController.downloadImage(profilePicturePath).addOnSuccessListener(uri -> {
-            Picasso.get()
-                    .load(uri)
-                    .into(profilePicture, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            loadingSpinner.setVisibility(View.GONE);
-                        }
+        fbImageController.downloadImage(profilePicturePath).addOnSuccessListener(uri -> Picasso.get()
+                .load(uri)
+                .into(profilePicture, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        loadingSpinner.setVisibility(View.GONE);
+                    }
 
-                        @Override
-                        public void onError(Exception e) {
-                            loadingSpinner.setVisibility(View.GONE);
-                        }
-                    });
-        });
+                    @Override
+                    public void onError(Exception e) {
+                        loadingSpinner.setVisibility(View.GONE);
+                    }
+                }));
 
 
         return view;
