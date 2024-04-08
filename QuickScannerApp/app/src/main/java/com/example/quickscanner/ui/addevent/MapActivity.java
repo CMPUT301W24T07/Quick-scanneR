@@ -119,7 +119,7 @@ public class MapActivity extends AppCompatActivity {
         Log.d("Selected Location", "Lat: " + touchedPoint.getLatitude() + ", Lon: " + touchedPoint.getLongitude());
     }
 
-    /* Turns a coordinate string (hash) into latitude/longitude and places
+    /** Turns a coordinate string (hash) into latitude/longitude and places
      * a corresponding marker on the map
      * @param hash: represents the latitude and longitude of a coordinate in String format.
      */
@@ -131,7 +131,7 @@ public class MapActivity extends AppCompatActivity {
         map.getOverlays().add(startMarker);
     }
 
-    /* Turns a coordinate string (hash) into latitude/longitude and places
+    /** Turns a coordinate string (hash) into latitude/longitude and places
      * a corresponding marker on the map
      * And then centers the map on the marker
      * @param hash: represents the latitude and longitude of a coordinate in String format.
@@ -144,7 +144,7 @@ public class MapActivity extends AppCompatActivity {
     }
 
 
-    /* Turns a coordinate string (hash) into latitude/longitude and places
+    /** Turns a coordinate string (hash) into latitude/longitude and places
      * @param hash: represents the latitude and longitude of a coordinate in String format.
      */
     public GeoPoint decodeHash(String hash) {

@@ -1,7 +1,6 @@
 package com.example.quickscanner.ui.adminpage;
 
 import android.content.Context;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,11 +10,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.List;
 
 import com.example.quickscanner.R;
 import com.example.quickscanner.model.*;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class AdminEventArrayAdapter extends ArrayAdapter<Event> {
     /*

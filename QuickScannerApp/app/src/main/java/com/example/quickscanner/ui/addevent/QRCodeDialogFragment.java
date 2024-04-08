@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,8 +34,6 @@ import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 
 public class QRCodeDialogFragment extends DialogFragment {
@@ -80,13 +79,12 @@ public class QRCodeDialogFragment extends DialogFragment {
     private void generateQRCode(String eventId, ImageView qrCodeImageView) {
         MultiFormatWriter writer = new MultiFormatWriter();
         try {
-            String content = eventId;
-            BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, 512, 512);
+            BitMatrix bitMatrix = writer.encode(eventId, BarcodeFormat.QR_CODE, 512, 512);
             BarcodeEncoder encoder = new BarcodeEncoder();
             Bitmap bitmap = encoder.createBitmap(bitMatrix);
             qrCodeImageView.setImageBitmap(bitmap);
         } catch (WriterException e) {
-            e.printStackTrace();
+            Log.d("QRCodeDialogFragment", "Failed to generate QR code", e);
         }
     }
 
@@ -127,7 +125,6 @@ public class QRCodeDialogFragment extends DialogFragment {
                     Toast.makeText(requireContext(), "Failed to save QR Code image", Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 Toast.makeText(requireContext(), "Failed to save QR Code image", Toast.LENGTH_SHORT).show();
             }
         } else {

@@ -12,15 +12,12 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -60,7 +57,6 @@ public class AddEventActivity extends AppCompatActivity
     private ImageView eventImageView;
     private String editedEventName;
     private String editedEventDescription;
-    private String editedImagePath;
     private EditText locationEditText;
     private EditText geolocationEditText;
     private EditText timeEditText;
@@ -124,14 +120,7 @@ public class AddEventActivity extends AppCompatActivity
 
         timeEditText = findViewById(R.id.time_textview);
         timeEditText.setFocusable(false); // can't type, must interact with listener
-        timeEditText.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                showDateTimePicker();
-            }
-        });
+        timeEditText.setOnClickListener(view -> showDateTimePicker());
 
         // Initialize the event data list and ArrayAdapter
         eventDataList = new ArrayList<>();
@@ -143,21 +132,16 @@ public class AddEventActivity extends AppCompatActivity
         // Location Text Click behaviour
         geolocationEditText = findViewById(R.id.geolocation_textview);
         geolocationEditText.setFocusable(false); // can't type, must interact with listener
-        geolocationEditText.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                // Open map activity to choose your location
-                // Credit: https://developer.android.com/training/basics/intents/result
-                Intent intent = new Intent(AddEventActivity.this, MapActivity.class);
-                // Pass the current location to the map activity
-                Bundle bundle = new Bundle(1);
-                bundle.putString("geoHash", geolocationEditText.getText().toString());
-                intent.putExtras(bundle);
-                // start map activity
-                mapGetLocation.launch(intent);
-            }
+        geolocationEditText.setOnClickListener(view -> {
+            // Open map activity to choose your location
+            // Credit: https://developer.android.com/training/basics/intents/result
+            Intent intent = new Intent(AddEventActivity.this, MapActivity.class);
+            // Pass the current location to the map activity
+            Bundle bundle = new Bundle(1);
+            bundle.putString("geoHash", geolocationEditText.getText().toString());
+            intent.putExtras(bundle);
+            // start map activity
+            mapGetLocation.launch(intent);
         });
 
         // Edit Button 1
@@ -200,7 +184,6 @@ public class AddEventActivity extends AppCompatActivity
                 // Retrieve the text from the EditText fields
                 String location = locationEditText.getText().toString();
                 String geolocation = geolocationEditText.getText().toString();
-                String time = timeEditText.getText().toString();
 
                 // Create an Event object with the edited values
                 Event newEvent = new Event(editedEventName, editedEventDescription,
@@ -210,18 +193,6 @@ public class AddEventActivity extends AppCompatActivity
                 // Add the event to the database
                 addEventToFirestore(newEvent);
 
-                /*
-                // Add the event to the list and update the ArrayAdapter
-                eventDataList.add(newEvent);
-                eventAdapter.notifyDataSetChanged();
-
-                // Update the QR code with the eventId and show the dialog
-                QRCodeDialogFragment.newInstance(newEvent.getEventID()).show(getSupportFragmentManager(), "QRCodeDialogFragment");
-
-
-                // finish the activity or perform other actions
-                finish();
-                */
             }
         });
     }
@@ -252,13 +223,6 @@ public class AddEventActivity extends AppCompatActivity
                         fbImageController.uploadImage(event.getImagePath(), "event", imageData);
                     }
 
-
-                    //this should happen after qr code is added
-//                // Pass the JSON string to the next activity
-//                Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
-//                intent.putExtra("eventJson", new Gson().toJson(event));
-//                startActivity(intent);
-
                 })
                 .addOnFailureListener(e ->
                 {
@@ -275,23 +239,6 @@ public class AddEventActivity extends AppCompatActivity
                     event.setPromoQrCode(documentReference.getId());
                     Log.d("testerrrr", "event has set check in code: " + event.getPromoQrCode());
 
-
-                    //show the event details page on this event
-
-//                    // Pass the JSON string to the next activity
-//                    Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
-//                    Bundle bundle = new Bundle(1);
-//                    // Pass the Event Identifier to the New Activity
-//                    bundle.putString("eventID", event.getEventID());
-//                    startActivity(intent);
-//                    finish();
-
-                    //commenting this out cos it is bugging out the app for now
-                    // Pass the JSON string to the next activity
-//                Intent intent = new Intent(AddEventActivity.this, ViewEventActivity.class);
-//                intent.putExtra("eventJson", new Gson().toJson(event));
-//                startActivity(intent);
-//                 finish();
 
                 })
                 .addOnFailureListener(e ->
@@ -342,10 +289,8 @@ public class AddEventActivity extends AppCompatActivity
 //                                Log.d("uteeee", eventId.toString());
                             })
                             .addOnFailureListener(e ->
-                            {
-                                Log.e("AddEventActivity",
-                                        "Error updating user's organized events", e);
-                            });
+                                    Log.e("AddEventActivity",
+                                            "Error updating user's organized events", e));
                 });
 
     }
@@ -435,12 +380,9 @@ public class AddEventActivity extends AppCompatActivity
             minDate = currentDate;
         }
         // Set the min and max dates for the DatePickerDialog
-        DatePickerDialog datePickerDialog = new DatePickerDialog(AddEventActivity.this, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                date.set(year, monthOfYear, dayOfMonth);
-                showTimePicker(date);
-            }
+        DatePickerDialog datePickerDialog = new DatePickerDialog(AddEventActivity.this, (view, year, monthOfYear, dayOfMonth) -> {
+            date.set(year, monthOfYear, dayOfMonth);
+            showTimePicker(date);
         }, minDate.get(Calendar.YEAR), minDate.get(Calendar.MONTH), minDate.get(Calendar.DATE));
         datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
         datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
@@ -457,25 +399,21 @@ public class AddEventActivity extends AppCompatActivity
         int maxMinute = configSingleton.getMaxMinute();
 
         // Sets the min and max times for the TimePickerDialog
-        TimePickerDialog timePickerDialog = new TimePickerDialog(AddEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
+        TimePickerDialog timePickerDialog = new TimePickerDialog(AddEventActivity.this, (view, hourOfDay, minute) -> {
+            date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            date.set(Calendar.MINUTE, minute);
+            if (date.before(currentDate))
+            {
+                Toast.makeText(AddEventActivity.this, "Time has passed, choose a different time.", Toast.LENGTH_LONG).show();
+                showTimePicker(date);
+            }
+            if (hourOfDay < minHour || hourOfDay > maxHour || (hourOfDay == minHour && minute < minMinute) || (hourOfDay == maxHour && minute > maxMinute)) {
+                Toast.makeText(AddEventActivity.this, "Invalid time. Please select a time between " + formatTime(minHour, minMinute) + " and " + formatTime(maxHour, maxMinute) + ".", Toast.LENGTH_LONG).show();
+                showTimePicker(date);
+            } else {
 
-            @Override
-            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                date.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                date.set(Calendar.MINUTE, minute);
-                if (date.before(currentDate))
-                {
-                    Toast.makeText(AddEventActivity.this, "Time has passed, choose a different time.", Toast.LENGTH_LONG).show();
-                    showTimePicker(date);
-                }
-                if (hourOfDay < minHour || hourOfDay > maxHour || (hourOfDay == minHour && minute < minMinute) || (hourOfDay == maxHour && minute > maxMinute)) {
-                    Toast.makeText(AddEventActivity.this, "Invalid time. Please select a time between " + formatTime(minHour, minMinute) + " and " + formatTime(maxHour, maxMinute) + ".", Toast.LENGTH_LONG).show();
-                    showTimePicker(date);
-                } else {
-
-                    eventTime = new Timestamp(date.getTime());
-                    timeEditText.setText(formatDateTime(date));
-                }
+                eventTime = new Timestamp(date.getTime());
+                timeEditText.setText(formatDateTime(date));
             }
         }, currentDate.get(Calendar.HOUR_OF_DAY), currentDate.get(Calendar.MINUTE), false);
         timePickerDialog.show();
