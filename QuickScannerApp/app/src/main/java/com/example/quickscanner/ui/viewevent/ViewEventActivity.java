@@ -79,6 +79,7 @@ public class ViewEventActivity extends AppCompatActivity
     private FirebaseQrCodeController fbQRCodeController;
     // UI reference
     Switch toggleGeolocation;
+    public boolean doneSetting;
 
 
     private Event currentEvent;
@@ -91,6 +92,8 @@ public class ViewEventActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         binding = ActivityVieweventNewBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        doneSetting = false;
 
         //references
         fbEventController = new FirebaseEventController();
@@ -244,7 +247,7 @@ public class ViewEventActivity extends AppCompatActivity
             @Override
             public void onCheckedChanged(CompoundButton switchView, boolean isChecked)
             {
-                if (event != null)
+                if (event != null && doneSetting == true)
                 {
                     // toggle user's geolocation preferences
                     event.toggleIsGeolocationEnabled();
@@ -252,7 +255,6 @@ public class ViewEventActivity extends AppCompatActivity
                     fbEventController.updateEvent(event)
                             .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
                             .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
-
                 }
                 else
                 {
@@ -365,6 +367,7 @@ public class ViewEventActivity extends AppCompatActivity
                 boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
                 toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
                 event.setGeolocationEnabled(oldIsGeolocationEnabled);
+                doneSetting = true;
                 fbEventController.updateEvent(event)
                         .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
                         .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
@@ -455,10 +458,6 @@ public class ViewEventActivity extends AppCompatActivity
                     binding.organiserText.setText(content);
 
                     Log.d("halpp", "Organiser name is: " + user.getUserProfile().getName());
-
-
-                    //SIDDHARTH HERE PAY ATTENTION
-                    //TODO: set the profile picture of the organiser
 
 //                    Profile organizerProfile = organizer.getUserProfile();
 
