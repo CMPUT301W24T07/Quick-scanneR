@@ -61,6 +61,11 @@ import com.squareup.picasso.Picasso;
 
 import java.util.Objects;
 
+//javadocs
+/**
+ * This class is the View Event Activity.
+ * It allows the user to view an event.
+ */
 public class ViewEventActivity extends AppCompatActivity {
     String eventID;
     private FirebaseEventController fbEventController;
@@ -84,6 +89,12 @@ public class ViewEventActivity extends AppCompatActivity {
     private Event currentEvent;
     private Bitmap qrCodeBitmap;
 
+    //javadocs
+    /**
+     * This method creates the View Event Activity.
+     * Usage: call once.
+     * @param savedInstanceState
+     */
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -259,7 +270,11 @@ public class ViewEventActivity extends AppCompatActivity {
 
     }
 
-
+    //javadocs
+    /**
+     * This method shows the organiser details dialog.
+     * Usage: call once.
+     */
     private void showOrganiserDetailsDialog() {
 
         Dialog dialog = new Dialog(this);
@@ -332,6 +347,11 @@ public class ViewEventActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    //javadocs
+/**
+     * This method fetches the event data.
+     * Usage: call once.
+     */
     // Fetches the event data from Firestore
     private void fetchEventData() {
 
@@ -406,6 +426,13 @@ public class ViewEventActivity extends AppCompatActivity {
     }
 
 
+    //javadocs
+    /**
+     * This method sets the event data to the UI.
+     * Usage: call once.
+     * @param event
+     * @param UiD
+     */
     private void setEventDataToUI(Event event, String UiD) {
 
         //use event object to update all the views
@@ -515,17 +542,13 @@ public class ViewEventActivity extends AppCompatActivity {
         });
     }
 
-//    // Handles The Top Bar menu clicks
-//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-//        if (item.getItemId() == android.R.id.home) {
-//            // Handle the Back button press
-//            finish();
-//            return true;
-//        }
-//        return super.onOptionsItemSelected(item);
-//
-//    }
-
+    //javadocs
+    /**
+     * This method generates the QR code.
+     * Usage: call once.
+     * @param text
+     * @return Bitmap
+     */
     //generates QR code
     private Bitmap generateQRCode(String text) {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -546,7 +569,7 @@ public class ViewEventActivity extends AppCompatActivity {
         return null;
     }
 
-    /*         Inflate Handle Top Menu Options        */
+    /**         Inflate Handle Top Menu Options        */
     // Create the Top Menu bar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -554,7 +577,7 @@ public class ViewEventActivity extends AppCompatActivity {
         return true;
     }
 
-    /*    Handle click events for the Top Menu Bar    */
+    /**    Handle click events for the Top Menu Bar    */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
@@ -639,6 +662,13 @@ public class ViewEventActivity extends AppCompatActivity {
 
     }
 
+    //javadocs
+    /**
+     * This method confirms the cancellation of sign up.
+     * Usage: call once.
+     * @param UiD
+     * @param eventID
+     */
     public void confirmCancelSignUp(String UiD, String eventID) {
         // Create an AlertDialog
         new AlertDialog.Builder(ViewEventActivity.this)
@@ -666,12 +696,23 @@ public class ViewEventActivity extends AppCompatActivity {
                 .show();
     }
 
+    //javadocs
+    /**
+     * This method shows the content.
+     * Usage: call once.
+     */
     private void showContent() {
         loading.setVisibility(View.GONE);
         binding.signUpButton.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.VISIBLE);
     }
 
+    //javadocs
+    /**
+     * This method decrements the load count.
+     * Usage: call once.
+     * @param location
+     */
     private synchronized void decrementLoadCount(String location) {
         loadCount--;
         Log.d(TAG, "loadCount after decrement " + location + " : " + loadCount); // Corrected to log after decrement

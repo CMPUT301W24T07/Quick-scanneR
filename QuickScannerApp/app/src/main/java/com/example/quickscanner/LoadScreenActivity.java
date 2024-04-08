@@ -6,8 +6,19 @@ import android.os.Bundle;
 
 import com.example.quickscanner.singletons.ConferenceConfigSingleton;
 
+//javadocs
+/**
+ * This activity is the loading screen for the app.
+ * It fetches the conference configuration from the database and then starts the MainActivity.
+ */
 public class LoadScreenActivity extends Activity {
 
+    //javadocs
+    /**
+     * This method initializes the ConferenceConfigSingleton and sets the OnConfigFetchedListener.
+     * Usage: call once.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

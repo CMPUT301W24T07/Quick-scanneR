@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ch.hsr.geohash.GeoHash;
 
+
 public class MainActivity extends AppCompatActivity {
     /**
      * Our Main Activity hosts our three main menu options.
@@ -63,7 +64,12 @@ public class MainActivity extends AppCompatActivity {
     private boolean isUserAdmin=false;
 
 
-
+    //javadocs
+    /**
+     * This method creates the Main Activity.
+     * Usage: call once.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +104,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //javadocs
+    /**
+     * This method is called when the view is created.
+     * @param view
+     * @param savedInstanceState
+     */
     private void checkIfUserAdmin() {
         DocumentReference adminAuthRef = FirebaseFirestore.getInstance().collection("users").document(fbUserController.getCurrentUserUid());
 //        AtomicBoolean isAdmin= new AtomicBoolean(false);
@@ -113,6 +125,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //javadocs
+    /**
+     * This method is called when the view is created.
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
 
@@ -129,9 +147,9 @@ public class MainActivity extends AppCompatActivity {
      *            Menu Functions                 *
      *                                           */
 
-    /*         Create and Inflate bottom menu        */
+    /**         Create and Inflate bottom menu        */
     private void createBottomMenu(){
-        /*
+        /**
             Creates the bottom menu of our Main Activity
             Usage: call once.
             no inputs/outputs
@@ -146,13 +164,13 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
 
-    /*         Inflate Handle Top Menu Options        */
+    /**         Inflate Handle Top Menu Options        */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.top_nav_menu, menu);
         return true;
     }
-    /*    Handle click events for the Top Menu Bar    */
+    /**    Handle click events for the Top Menu Bar    */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
@@ -188,6 +206,11 @@ public class MainActivity extends AppCompatActivity {
      *            User Sign in Functions         *
      *                                           */
 
+    //javadocs
+    /**
+     * This method creates a new user and signs them in.
+     * Usage: call once.
+     */
     public void createUserAndSignIn() {
         // Creates anonymous user
         fbUserController.createAnonymousUser().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -225,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
      *            Geolocation Functions          *
      *                                           */
 
-    /*
+    /**
      *   This functions returns a hashed (String) version of geolocation
      *   If User or Phone has geolocation disabled, returns NULL.
      *   Otherwise, returns a hashed String
@@ -257,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /*
+    /**
      *   Checks if a User and Device have Geolocation Tracking enabled
      *   This is used in conjunction with "getDeviceGeolocation"
      *   Returns true if enabled on both
@@ -275,7 +298,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    /*
+    /**
      * Gets and then Returns the Geolocation from this Device.
      *   Use this in conjunction with "validGeolocationPermissions"
      *   to ensure the device and user has geolocation enabled.
@@ -302,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
         return hashLoc;
     }
 
-    /* Turns a Latitude and Longitude into a Hashed String
+    /** Turns a Latitude and Longitude into a Hashed String
      *  Returns a hashed GeoLocation
      */
     public static String hashCoordinates(double latitude, double longitude) {
@@ -310,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
         return geoHash.toBase32();
     }
 
-    /*
+    /**
      *   Singleton Initialization
      */
     protected void initSingletons(){
