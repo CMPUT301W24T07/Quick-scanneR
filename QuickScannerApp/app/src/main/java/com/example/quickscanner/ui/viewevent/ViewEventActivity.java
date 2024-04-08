@@ -78,6 +78,7 @@ public class ViewEventActivity extends AppCompatActivity {
     private FirebaseQrCodeController fbQRCodeController;
     // UI reference
     Switch toggleGeolocation;
+    public boolean doneSetting;
 
 
     private Event currentEvent;
@@ -89,6 +90,8 @@ public class ViewEventActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityVieweventNewBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        doneSetting = false;
 
         //references
         fbEventController = new FirebaseEventController();
@@ -233,8 +236,11 @@ public class ViewEventActivity extends AppCompatActivity {
         // implement geolocation switch behaviour
         toggleGeolocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton switchView, boolean isChecked) {
-                if (event != null) {
+
+            public void onCheckedChanged(CompoundButton switchView, boolean isChecked)
+            {
+                if (event != null && doneSetting == true)
+                {
                     // toggle user's geolocation preferences
                     event.toggleIsGeolocationEnabled();
                     // update user's geolocation preferences in firebase
@@ -242,7 +248,9 @@ public class ViewEventActivity extends AppCompatActivity {
                             .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
                             .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
 
-                } else {
+                }
+                else
+                {
                     Log.e("ViewEventActivity", "Event object is null");
                 }
 
@@ -338,6 +346,7 @@ public class ViewEventActivity extends AppCompatActivity {
                 boolean oldIsGeolocationEnabled = event.getIsGeolocationEnabled();
                 toggleGeolocation.setChecked(event.getIsGeolocationEnabled());
                 event.setGeolocationEnabled(oldIsGeolocationEnabled);
+                doneSetting = true;
                 fbEventController.updateEvent(event)
                         .addOnSuccessListener(aVoid -> Log.d(TAG, "Event successfully Updated"))
                         .addOnFailureListener(e -> Log.d(TAG, "Event failed to update"));
