@@ -78,7 +78,7 @@ public class BrowseEventsActivity extends AppCompatActivity {
 
                 // Start the ViewEventActivity
                 startActivity(intent);
-            }
+            
         });
 
         // Create FireStore Listener for Updates to the Events List.
