@@ -32,7 +32,7 @@
                     <EditText
                         android:id="@+id/eventDescription_text"
                         android:inputType="none"
-                        android:enabled="false"
+                        android:editable="false"
                         android:textColor="@android:color/white"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
@@ -51,7 +51,7 @@
                     <EditText
                         android:id="@+id/location_textview"
                         android:inputType="none"
-                        android:enabled="false"
+                        android:editable="false"
                         android:textColor="@android:color/white"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -65,7 +65,7 @@
                     <EditText
                         android:id="@+id/eventTime_text"
                         android:inputType="none"
-                        android:enabled="false"
+                        android:editable="false"
                         android:textColor="@android:color/white"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -129,7 +129,7 @@
                     <EditText
                         android:id="@+id/eventTitle_text"
                         android:inputType="none"
-                        android:enabled="false"
+                        android:editable="false"
                         android:layout_width="0dp"
                         android:layout_height="75dp"
                         android:background="@android:color/transparent"
