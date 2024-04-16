@@ -1,0 +1,15 @@
+com.example.quickscanner
+com.example.quickscanner.controller
+com.example.quickscanner.model
+com.example.quickscanner.singletons
+com.example.quickscanner.ui.addevent
+com.example.quickscanner.ui.adminpage
+com.example.quickscanner.ui.announcements
+com.example.quickscanner.ui.attendance
+com.example.quickscanner.ui.homepage_event
+com.example.quickscanner.ui.my_events
+com.example.quickscanner.ui.profile
+com.example.quickscanner.ui.scanner
+com.example.quickscanner.ui.settings
+com.example.quickscanner.ui.viewevent
+com.example.quickscanner.ui.viewevent.map
